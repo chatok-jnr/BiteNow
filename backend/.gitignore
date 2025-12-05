@@ -1,0 +1,26 @@
+# Node
+node_modules/
+build/
+dist/
+.env
+.env.*
+.DS_Store
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+coverage/
+*.local
+*.env
+*.secret
+.idea/
+.vscode/
+*.log
+*.pem
+*.crt
+*.key
+*.sublime-workspace
+*.sublime-project
+# OS
+Thumbs.db
+# Misc
+*.tgz
