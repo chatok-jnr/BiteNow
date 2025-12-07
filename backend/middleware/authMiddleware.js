@@ -1,53 +1,70 @@
 const jwt = require('jsonwebtoken');
 const User_infos = require('./../models/userModel');
 
+const jwt = require('jsonwebtoken');
+const User_infos = require('../models/user_infos');
+
 exports.protect = async (req, res, next) => {
   try {
-    //get token from the header
-    let token = req.headers.authorization.split(' ')[1];
-
-    // if there is no token
-    if(!token) {
+    let token;
+    
+    // 1. Get token from Authorization header
+    if (
+      req.headers.authorization &&
+      req.headers.authorization.startsWith('Bearer')
+    ) {
+      token = req.headers.authorization.split(' ')[1];
+    }
+    // 2. Or get token from cookies (for web apps)
+    else if (req.cookies && req.cookies.jwt) {
+      token = req.cookies.jwt;
+    }
+    
+    // 3. Check if token exists
+    if (!token) {
       return res.status(401).json({
-        status:'failed',
-        message:'You are not logged in, please log in again to get access'
+        status: 'failed',
+        message: 'You are not logged in. Please log in to get access.'
       });
     }
-
-    // verify token
-    const decode = jwt.verify(token, process.env.JWT_SECRECT);
-
-    // check if user still exist
-    const currentUser = await User_infos.findById(decode.id);
-    if(!currentUser) {
+    
+    // 4. Verify token (FIXED: JWT_SECRET not JWT_SECRECT)
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    
+    // 5. Check if user still exists
+    const currentUser = await User_infos.findById(decoded.id);
+    if (!currentUser) {
       return res.status(401).json({
-        status:'failed',
-        message:'User with this token is no longer exist'
+        status: 'failed',
+        message: 'The user belonging to this token no longer exists.'
       });
     }
-
-    // check if user changed password after token was issued
-    if(currentUser.changedPasswordAfter && currentUser.changedPasswordAfter(decode.iat)) {
+    
+    // 6. Check if user changed password after token was issued
+    // Make sure your model has this method!
+    if (currentUser.changedPasswordAfter && currentUser.changedPasswordAfter(decoded.iat)) {
       return res.status(401).json({
-        status:'failed',
-        message:'User recently changed password, please login again'
+        status: 'failed',
+        message: 'User recently changed password. Please log in again.'
       });
     }
-
-    // check if acount is active
-    if(currentUser.status !== 'Active') {
-      return res.status(400).json({
-        status:'failed',
-        message:'Your accont is no longer active'
+    
+    // 7. Check if account is active
+    if (currentUser.user_status !== 'Active') {
+      return res.status(403).json({ 
+        status: 'failed',
+        message: 'Your account is not active.'
       });
     }
-
-    // Grant request
+    
+    // 8. Grant access 
     req.user = currentUser;
-    req.local.user = currentUser
-
+    res.locals.user = currentUser; // For views if using templates
+    
     next();
-  } catch(error) {
+    
+  } catch (error) {
+    // Handle specific JWT errors
     if (error.name === 'JsonWebTokenError') {
       return res.status(401).json({
         status: 'failed',
@@ -62,12 +79,22 @@ exports.protect = async (req, res, next) => {
       });
     }
     
+    
+    if (error.name === 'TypeError' && error.message.includes("Cannot read properties of undefined")) {
+      return res.status(401).json({
+        status: 'failed',
+        message: 'No authorization token provided.'
+      });
+    }
+    
+    console.error('Auth middleware error:', error.message);
+    
     return res.status(500).json({
       status: 'failed',
       message: 'Something went wrong with authentication.'
     });
   }
-}
+};
 
 /*
 after creating all roles

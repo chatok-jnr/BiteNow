@@ -67,7 +67,7 @@ userSchema.pre('save', async function(next) {
   if (!this.isModified('user_password')) return next();
 
   try {
-    // Generate salt (FIXED: Added await)
+
     const salt = await bcrypt.genSalt(10);
     // Hash the password
     this.user_password = await bcrypt.hash(this.user_password, salt);
@@ -78,7 +78,7 @@ userSchema.pre('save', async function(next) {
 });
 
 // Save the time of the last change of a password
-userSchema.pre('save', function(next) { // FIXED: Removed async
+userSchema.pre('save', function(next) {
   // Only update timestamp if password was modified and user is not new
   if (!this.isModified('user_password') || this.isNew) return next();
   
@@ -96,19 +96,18 @@ userSchema.methods.comparePassword = async function(candidatePassword) {
   }
 }
 
-// Check if password was changed after token was issued
-// userSchema.methods.changedPasswordAfter = function(JWTTimestamps) {
-//   // FIXED: Corrected spelling and added return statement
-//   if (this.passwordChangedAt) {
-//     const changeTimestamps = parseInt(
-//       this.passwordChangedAt.getTime() / 1000, 
-//       10
-//     );
-//     // Return true if token was issued before password change
-//     return JWTTimestamps < changeTimestamps;
-//   }
-//   return false;
-// }
+//Check if password was changed after token was issued
+userSchema.methods.changedPasswordAfter = function(JWTTimestamps) {
+  if (this.passwordChangedAt) {
+    const changeTimestamps = parseInt(
+      this.passwordChangedAt.getTime() / 1000, 
+      10
+    );
+    // Return true if token was issued before password change
+    return JWTTimestamps < changeTimestamps;
+  }
+  return false;
+}
 
 /*
 The password reset generator
