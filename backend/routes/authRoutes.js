@@ -16,4 +16,7 @@ router
   .route('/verify-otp')
   .post(authController.verifyOtp);
 
+router
+  .route('/new-otp')
+  .post(authController.newOtp);
 module.exports = router;

@@ -169,6 +169,63 @@ exports.verifyOtp = async (req, res) => {
   }
 }
 
+exports.newOtp = async(req, res) => {
+  try {
+
+    const email = req.body.email;
+
+    const record = await OTP.find({email})
+    .sort({createdAt: -1})
+    .limit(1);
+
+    if(!record) {
+      return res.status(400).json({
+        status:'failed',
+        message:'Invalid Email address'
+      });
+    }
+
+    const lastUpdate = record[0];
+
+    if(lastUpdate.expiresAt >= Date.now()) {
+      return res.status(400).json({
+        status:'failed',
+        message:'You can request for a new code only if the last one expired'
+      })
+    } 
+
+    const nOtp = Math.floor(1000 + Math.random() * 90000).toString();
+
+    await OTP.findOneAndUpdate(
+      {
+        email:lastUpdate.email, otp: lastUpdate.otp
+      },
+      {
+        otp:nOtp,
+        expiresAt: Date.now() + 5 * 60 * 1000
+      }
+    )
+
+    const htmlTemplate = `
+      <h1>Your New Otp is ${nOtp}</h1>
+      <p>Expires in 5 minute</p>
+    `
+    await sendEmail(email, "New Otp", htmlTemplate);
+    res.status(200).json({
+      status:'success',
+      message:'new otp sent',
+      data:{
+        nOtp
+      }
+    })
+  } catch(err) {
+    res.status(400).json({
+      status:'failed',
+      message:err.message
+    });
+  }
+}
+
 exports.loginUser = async (req, res) => {
   try {
 
