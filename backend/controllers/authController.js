@@ -1,6 +1,8 @@
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
 const User_infos = require('./../models/userModel')
+const OTP = require('./../models/otpModel');
+const sendEmail = require('./../utils/sendEmail');
 
 exports.createUser = async (req, res) => {
   try {
@@ -25,50 +27,36 @@ exports.createUser = async (req, res) => {
     // Prepare user data
     const userData = {
       user_name: req.body.user_name,
-      user_email: req.body.user_email, // Fixed typo
+      user_email: req.body.user_email, 
       user_phone: req.body.user_phone,
       gender: req.body.gender,
       user_birth_date: req.body.user_birth_date,
       user_address: req.body.user_address,
-      user_password: req.body.user_password, // Fixed typo
+      user_password: req.body.user_password, 
       user_role: req.body.user_role || 'Customer'
     };
 
-    // Create user - model validation will handle the rest
     const newUser = await User_infos.create(userData);
 
-    // Generate JWT token
-    const token = jwt.sign(
-      {
-        id: newUser._id, // Use 'id' not '_id' for standard JWT claims
-        role: newUser.user_role,
-        email: newUser.user_email
-      },
-      process.env.JWT_SECRET, // Fixed typo
-      { expiresIn: process.env.JWT_EXPIRES_IN || '7d' } // Fixed typo, added fallback
-    );
+    // OTP-------------------------------------------------------------------------------------
+    const otp = Math.floor(1000 + Math.random() * 90000).toString();
+    await OTP.create({
+      email: req.body.user_email,
+      otp,
+      expiresAt: Date.now() + 5 * 60 * 1000
+    });
 
-    // Remove password from response
-    const userResponse = {
-      id: newUser._id,
-      name: newUser.user_name,
-      email: newUser.user_email,
-      phone: newUser.user_phone,
-      gender: newUser.gender,
-      birth_date: newUser.user_birth_date,
-      address: newUser.user_address,
-      role: newUser.user_role,
-      status: newUser.user_status,
-      createdAt: newUser.createdAt
-    };
+    const htmlTemplate = `
+      <h2>Your verification code</h2>
+      <p style = "font-size:22px"><b>${otp}</b></p>
+      <p>This code will expire in 5 minute</p>
+    `
+    await sendEmail(req.body.user_email, "Verify you account", htmlTemplate);
+    // OTP-------------------------------------------------------------------------------------
 
-    res.status(201).json({ // 201 for resource creation
-      status: 'success', // Standard: 'success' not 'Success'
-      message: 'Account created successfully',
-      token,
-      data: {
-        user: userResponse
-      }
+    res.status(200).json({ 
+      status: 'success', 
+      message: 'To Active your Account please Enter the otp send to your Email address',
     });
 
   } catch (err) {
@@ -96,6 +84,147 @@ exports.createUser = async (req, res) => {
     });
   }
 };
+
+exports.verifyOtp = async (req, res) => {
+  try {
+    const {email, otp} = req.body;
+
+    const record = await OTP.find({email})
+    .sort({createdAt:-1})
+    .limit(1);
+
+    if(!record) {
+      return res.status(400).json({
+        status:'failed',
+        message:'Otp not found'
+      });
+    }
+
+    if(record.expiresAt < Date.now()) {
+      return res.status(400).json({
+        status:'failed',
+        message:'Otp expired'
+      });
+    }
+
+    if(record[0].otp !== otp) {
+      return res.status(400).json({
+        status:'failed',
+        message:'Invalid Otp'
+      });
+    }
+
+    const newUser = await User_infos.findOneAndUpdate(
+      {
+        user_email:email
+      },
+      {
+        is_verified: true,
+        user_status:"Active"
+      }
+    );
+
+    await OTP.deleteOne({email});
+
+    // Generating JWT token
+    const token = jwt.sign(
+      {
+        id: newUser._id, // Use 'id' not '_id' for standard JWT claims
+        role: newUser.user_role,
+        email: newUser.user_email
+      },
+      process.env.JWT_SECRET, 
+      { expiresIn: process.env.JWT_EXPIRES_IN || '7d' }
+    );
+
+    // Remove password from response
+    const userResponse = {
+      id: newUser._id,
+      name: newUser.user_name,
+      email: newUser.user_email,
+      phone: newUser.user_phone,
+      gender: newUser.gender,
+      birth_date: newUser.user_birth_date,
+      address: newUser.user_address,
+      role: newUser.user_role,
+      status: newUser.user_status,
+      createdAt: newUser.createdAt,
+      verified: newUser.is_verified
+    };
+
+    res.status(200).json({
+      status: 'success',
+      message: 'Account Activated Successfully',
+      token,
+      data: {
+        user: userResponse
+      }
+    });
+
+  } catch(error) {
+    res.status(400).json({
+      status:"failed",
+      message:error.message
+    });
+  }
+}
+
+exports.newOtp = async(req, res) => {
+  try {
+
+    const email = req.body.email;
+
+    const record = await OTP.find({email})
+    .sort({createdAt: -1})
+    .limit(1);
+
+    if(!record) {
+      return res.status(400).json({
+        status:'failed',
+        message:'Invalid Email address'
+      });
+    }
+
+    const lastUpdate = record[0];
+
+    if(lastUpdate.expiresAt >= Date.now()) {
+      return res.status(400).json({
+        status:'failed',
+        message:'You can request for a new code only if the last one expired'
+      })
+    } 
+
+    const nOtp = Math.floor(1000 + Math.random() * 90000).toString();
+
+    await OTP.findOneAndUpdate(
+      {
+        email:lastUpdate.email, otp: lastUpdate.otp
+      },
+      {
+        otp:nOtp,
+        expiresAt: Date.now() + 5 * 60 * 1000
+      }
+    )
+
+    const htmlTemplate = `
+      <h1>Your New Otp is ${nOtp}</h1>
+      <p>Expires in 5 minute</p>
+    `
+    await sendEmail(email, "New Otp", htmlTemplate);
+    res.status(200).json({
+      status:'success',
+      message:'new otp sent',
+      data:{
+        nOtp
+      }
+    })
+  } catch(err) {
+    res.status(400).json({
+      status:'failed',
+      message:err.message
+    });
+  }
+}
 
 exports.loginUser = async (req, res) => {
   try {
