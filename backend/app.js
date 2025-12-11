@@ -11,5 +11,4 @@ app.use(express.json());
 app.use(express.static(`${__dirname}/public`))
 
 app.use('/api/v1/auth', authRoutes);
-app.use('api/v1/auth', authRoutes);
 module.exports = app;

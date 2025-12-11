@@ -1,4 +1,5 @@
 const express = require('express');
+const sendEmail = require('./../utils/sendEmail');
 const authController = require('./../controllers/authController');
 
 const router = express.Router();
@@ -10,5 +11,9 @@ router
 router  
   .route('/login')
   .post(authController.loginUser);
+
+router
+  .route('/verify-otp')
+  .post(authController.verifyOtp);
 
 module.exports = router;
