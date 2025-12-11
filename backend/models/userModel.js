@@ -35,8 +35,8 @@ const userSchema = new mongoose.Schema({
   },
   user_status: {
     type: String,
-    enum: ['Active', 'Suspended'],
-    default: 'Active'
+    enum: ['Active', 'Suspended', 'Unverified'],
+    default: 'Unverified'
   },
   user_role: {
     type: String,
@@ -53,13 +53,16 @@ const userSchema = new mongoose.Schema({
     minlength: [6, 'A password length must be 6 or more'], 
     select: false
   },
+  is_verified:{
+    type:Boolean,
+    default: false
+  },
   passwordChangedAt: Date,
   // passwordResetToken: String,
   // passwordResetExpires: Date 
 }, {
   timestamps: true
 });
-
 
 // Hashing the password before saving
 userSchema.pre('save', async function(next) {
