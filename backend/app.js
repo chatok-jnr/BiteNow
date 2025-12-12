@@ -4,6 +4,7 @@ const cors = require("cors");
 
 const authRoutes = require("./routes/authRoutes");
 const restaurantRoutes = require("./routes/restaurantRoutes");
+const foodRoutes = require("./routes/foodRoutes");
 
 const app = express();
 
@@ -13,4 +14,6 @@ app.use(express.static(`${__dirname}/public`));
 
 app.use("/api/v1/auth", authRoutes);
 app.use("/api/v1/restaurants", restaurantRoutes);
+app.use("/api/v1/food", foodRoutes);
+
 module.exports = app;
