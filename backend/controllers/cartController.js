@@ -44,6 +44,14 @@ exports.addToCart = async (req, res) => {
       });
     }
 
+    // Validate quantity is a positive number
+    if (typeof quantity !== 'number' || isNaN(quantity) || quantity <= 0 || !Number.isInteger(quantity)) {
+      return res.status(400).json({
+        status: 'failed',
+        message: 'Quantity must be a positive integer'
+      });
+    }
+
     // Get food to check availability and get restaurant
     const food = await Food.findById(food_id);
     if (!food) {
