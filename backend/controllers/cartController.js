@@ -35,7 +35,7 @@ exports.getOrCreateCart = async (req, res) => {
 // Add to Cart
 exports.addToCart = async (req, res) => {
   try {
-    const { food_id, quantity = 1 } = req.body;
+    let { food_id, quantity = 1 } = req.body;
     
     if (!food_id) {
       return res.status(400).json({
@@ -44,7 +44,12 @@ exports.addToCart = async (req, res) => {
       });
     }
 
-    // Validate quantity is a positive number
+    // Parse quantity if it's a string
+    if (typeof quantity === 'string') {
+      quantity = Number(quantity);
+    }
+
+    // Validate quantity is a positive integer
     if (typeof quantity !== 'number' || isNaN(quantity) || quantity <= 0 || !Number.isInteger(quantity)) {
       return res.status(400).json({
         status: 'failed',
