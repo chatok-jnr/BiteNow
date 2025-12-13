@@ -75,6 +75,11 @@ const cartSchema = new mongoose.Schema({
 
 //Methods
 
+// Helper method to calculate discounted price
+cartSchema.methods.calculateDiscountedPrice = function(price, discount) {
+  return price - (price * discount / 100);
+};
+
 // Calculate Total cost
 cartSchema.methods.calculateTotal = function() {
   this.subtotal = this.items.reduce((sum, item) => sum + item.total_price, 0);
@@ -103,8 +108,10 @@ cartSchema.methods.addItem = async function(foodId, quantity) {
     this.items[existingItemIndex].quantity += quantity;
     this.items[existingItemIndex].total_price = 
       this.items[existingItemIndex].quantity * 
-      (this.items[existingItemIndex].price_at_time - 
-       (this.items[existingItemIndex].price_at_time * this.items[existingItemIndex].discount_at_time / 100));
+      this.calculateDiscountedPrice(
+        this.items[existingItemIndex].price_at_time,
+        this.items[existingItemIndex].discount_at_time
+      );
   } else {
     // Add new item
     this.items.push({
@@ -138,8 +145,10 @@ cartSchema.methods.removeItem = function(foodId, quantity = 'all') {
     this.items[itemIndex].quantity -= quantity;
     this.items[itemIndex].total_price = 
       this.items[itemIndex].quantity * 
-      (this.items[itemIndex].price_at_time - 
-       (this.items[itemIndex].price_at_time * this.items[itemIndex].discount_at_time / 100));
+      this.calculateDiscountedPrice(
+        this.items[itemIndex].price_at_time,
+        this.items[itemIndex].discount_at_time
+      );
   }
 
   this.calculateTotal();
