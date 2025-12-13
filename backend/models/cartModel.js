@@ -177,8 +177,6 @@ cartSchema.statics.findOrCreateCart = async function(userId, restaurantId) {
       user_id: userId,
       restaurant_id: restaurantId
     });
-    // Populate the newly created cart to maintain consistency
-    cart = await cart.populate('items.food_id', 'food_name food_price discount_percentage');
   }
 
   return cart;
