@@ -35,7 +35,7 @@ exports.getOrCreateCart = async (req, res) => {
 // Add to Cart
 exports.addToCart = async (req, res) => {
   try {
-    let { food_id, quantity = 1 } = req.body;
+    const { food_id, quantity = 1 } = req.body;
     
     if (!food_id) {
       return res.status(400).json({
@@ -45,12 +45,15 @@ exports.addToCart = async (req, res) => {
     }
 
     // Parse quantity if it's a string
-    if (typeof quantity === 'string') {
-      quantity = Number(quantity);
-    }
+    const parsedQuantity = typeof quantity === 'string' ? Number(quantity) : quantity;
 
     // Validate quantity is a positive integer
-    if (typeof quantity !== 'number' || isNaN(quantity) || quantity <= 0 || !Number.isInteger(quantity)) {
+    const isNumber = typeof parsedQuantity === 'number';
+    const isValidNumber = isNumber && !isNaN(parsedQuantity);
+    const isPositive = parsedQuantity > 0;
+    const isInteger = Number.isInteger(parsedQuantity);
+    
+    if (!isValidNumber || !isPositive || !isInteger) {
       return res.status(400).json({
         status: 'failed',
         message: 'Quantity must be a positive integer'
@@ -89,7 +92,7 @@ exports.addToCart = async (req, res) => {
     }
 
     // Add item to cart
-    await cart.addItem(food_id, quantity);
+    await cart.addItem(food_id, parsedQuantity);
     await cart.save();
 
     res.status(200).json({
