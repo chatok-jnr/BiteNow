@@ -213,7 +213,7 @@ exports.restockFood  = async (req, res) => {
       status:'success',
       message:'Restocked food successfully',
       data:{
-        newStock: food.quantity
+        newstock: food.food_quantity
       }
     });
   } catch(err) {

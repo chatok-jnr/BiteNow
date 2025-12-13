@@ -17,12 +17,12 @@ router
   .get(Food.getDiscountedFood);
 
 router
-  .route('/:id/restock')
-  .patch(Food.restockFood);
+  .route('/restaurant/:restaurantId')
+  .get(Food.getFoodByRestaurant);
 
 router
-  .route('/:restaurantId')
-  .get(Food.getFoodByRestaurant);
+  .route('/:id/restock')
+  .patch(Food.restockFood);
 
 router  
   .route('/:id')
