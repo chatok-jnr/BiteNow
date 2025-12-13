@@ -56,22 +56,26 @@ exports.addToCart = async (req, res) => {
     // Get user_id from auth middleware
     const user_id = req.user._id;
     
-    // Find or create cart for this restaurant
+    // First check if user has any active cart
     let cart = await Cart.findOne({
       user_id,
-      restaurant_id: food.restaurant_id,
-      is_active: true
+      is_active: true,
+      expires_at: { $gt: new Date() }
     });
 
+    // If cart exists, check if it's for a different restaurant
+    if (cart && cart.restaurant_id.toString() !== food.restaurant_id.toString()) {
+      return res.status(400).json({
+        status: 'failed',
+        message: 'Cannot add items from different restaurants to the same cart'
+      });
+    }
+
+    // If no cart exists, create one for this restaurant
     if (!cart) {
       cart = await Cart.create({
         user_id,
         restaurant_id: food.restaurant_id
-      });
-    } else if (cart.restaurant_id.toString() !== food.restaurant_id.toString()) {
-      return res.status(400).json({
-        status: 'failed',
-        message: 'Cannot add items from different restaurants to the same cart'
       });
     }
 
