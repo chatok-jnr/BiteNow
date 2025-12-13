@@ -170,7 +170,7 @@ cartSchema.statics.findOrCreateCart = async function(userId, restaurantId) {
     restaurant_id: restaurantId,
     is_active: true,
     expires_at: { $gt: new Date() }
-  });
+  }).populate('items.food_id', 'food_name food_price discount_percentage');
 
   if (!cart) {
     cart = await this.create({
