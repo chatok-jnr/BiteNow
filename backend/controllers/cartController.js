@@ -44,15 +44,11 @@ exports.addToCart = async (req, res) => {
       });
     }
 
-    // Parse quantity if it's a string
-    const parsedQuantity = typeof quantity === 'string' ? Number(quantity) : quantity;
+    // Parse quantity to number (reject boolean inputs)
+    const parsedQuantity = typeof quantity === 'boolean' ? NaN : Number(quantity);
 
     // Validate quantity is a positive integer
-    const isValidNumber = typeof parsedQuantity === 'number' && !isNaN(parsedQuantity);
-    const isPositive = parsedQuantity > 0;
-    const isInteger = Number.isInteger(parsedQuantity);
-    
-    if (!isValidNumber || !isPositive || !isInteger) {
+    if (isNaN(parsedQuantity) || parsedQuantity <= 0 || !Number.isInteger(parsedQuantity)) {
       return res.status(400).json({
         status: 'failed',
         message: 'Quantity must be a positive integer'
