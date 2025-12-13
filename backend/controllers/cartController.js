@@ -1,7 +1,5 @@
-// controllers/cartController.js
 const Cart = require('./../models/cartModel');
 const Food = require('./../models/foodModel');
-const mongoose = require('mongoose');
 
 // Get or Create Cart
 exports.getOrCreateCart = async (req, res) => {
@@ -44,6 +42,14 @@ exports.addToCart = async (req, res) => {
       });
     }
 
+    // Validate quantity
+    if (!Number.isInteger(quantity) || quantity <= 0) {
+      return res.status(400).json({
+        status: 'failed',
+        message: 'Quantity must be a positive integer'
+      });
+    }
+
     // Get food to check availability and get restaurant
     const food = await Food.findById(food_id);
     if (!food) {
@@ -56,22 +62,25 @@ exports.addToCart = async (req, res) => {
     // Get user_id from auth middleware
     const user_id = req.user._id;
     
-    // Find or create cart for this restaurant
+    // Check if user has ANY active cart first
     let cart = await Cart.findOne({
       user_id,
-      restaurant_id: food.restaurant_id,
       is_active: true
     });
 
+    // If cart exists, verify it's for the same restaurant
+    if (cart && cart.restaurant_id.toString() !== food.restaurant_id.toString()) {
+      return res.status(400).json({
+        status: 'failed',
+        message: 'Cannot add items from different restaurants to the same cart. Please clear your current cart first.'
+      });
+    }
+
+    // Create new cart if none exists
     if (!cart) {
       cart = await Cart.create({
         user_id,
         restaurant_id: food.restaurant_id
-      });
-    } else if (cart.restaurant_id.toString() !== food.restaurant_id.toString()) {
-      return res.status(400).json({
-        status: 'failed',
-        message: 'Cannot add items from different restaurants to the same cart'
       });
     }
 

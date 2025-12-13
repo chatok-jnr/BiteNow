@@ -28,11 +28,9 @@ const cartItemSchema = new mongoose.Schema({
     required: true
   }
 }, {
-  _id: true
-}, {
+  _id: true,
   timestamps: true
-}
-);
+});
 
 const cartSchema = new mongoose.Schema({
   user_id:{
@@ -61,7 +59,7 @@ const cartSchema = new mongoose.Schema({
   }, 
   expires_at:{
     type: Date,
-    default: new Date(+new Date() + 24*60*60*1000)
+    default: () => new Date(Date.now() + 24*60*60*1000)
   },
   is_active:{
     type:Boolean,
@@ -160,7 +158,9 @@ cartSchema.statics.findActiveByUser = function(userId) {
     user_id: userId,
     is_active: true,
     expires_at: { $gt: new Date() }
-  }).populate('items.food_id', 'food_name food_price discount_percentage');
+  })
+    .populate('items.food_id', 'food_name food_price discount_percentage')
+    .populate('restaurant_id', 'restaurant_name');
 };
 
 //Create Cart
@@ -170,13 +170,19 @@ cartSchema.statics.findOrCreateCart = async function(userId, restaurantId) {
     restaurant_id: restaurantId,
     is_active: true,
     expires_at: { $gt: new Date() }
-  });
+  })
+    .populate('items.food_id', 'food_name food_price discount_percentage')
+    .populate('restaurant_id', 'restaurant_name');
 
   if (!cart) {
     cart = await this.create({
       user_id: userId,
       restaurant_id: restaurantId
     });
+    
+    // Populate the newly created cart
+    await cart.populate('items.food_id', 'food_name food_price discount_percentage');
+    await cart.populate('restaurant_id', 'restaurant_name');
   }
 
   return cart;
