@@ -27,8 +27,6 @@ const riderSchema = new mongoose.Schema(
         "Approved",
         "Rejected",
         "Suspended",
-        "Active",
-        "Inactive",
       ],
       default: "Pending",
     },
