@@ -44,6 +44,17 @@ exports.addToCart = async (req, res) => {
       });
     }
 
+    // Parse quantity to number (reject boolean inputs)
+    const parsedQuantity = typeof quantity === 'boolean' ? NaN : Number(quantity);
+
+    // Validate quantity is a positive integer
+    if (isNaN(parsedQuantity) || parsedQuantity <= 0 || !Number.isInteger(parsedQuantity)) {
+      return res.status(400).json({
+        status: 'failed',
+        message: 'Quantity must be a positive integer'
+      });
+    }
+
     // Get food to check availability and get restaurant
     const food = await Food.findById(food_id);
     if (!food) {
@@ -76,7 +87,7 @@ exports.addToCart = async (req, res) => {
     }
 
     // Add item to cart
-    await cart.addItem(food_id, quantity);
+    await cart.addItem(food_id, parsedQuantity);
     await cart.save();
 
     res.status(200).json({
