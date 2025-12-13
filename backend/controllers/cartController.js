@@ -48,8 +48,7 @@ exports.addToCart = async (req, res) => {
     const parsedQuantity = typeof quantity === 'string' ? Number(quantity) : quantity;
 
     // Validate quantity is a positive integer
-    const isNumber = typeof parsedQuantity === 'number';
-    const isValidNumber = isNumber && !isNaN(parsedQuantity);
+    const isValidNumber = typeof parsedQuantity === 'number' && !isNaN(parsedQuantity);
     const isPositive = parsedQuantity > 0;
     const isInteger = Number.isInteger(parsedQuantity);
     
