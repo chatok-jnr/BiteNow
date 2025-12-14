@@ -4,10 +4,10 @@ const cors = require("cors");
 
 const authRoutes = require("./routes/authRoutes");
 const restaurantRoutes = require("./routes/restaurantRoutes");
+const riderRoutes = require("./routes/riderRoutes");
 const foodRoutes = require("./routes/foodRoutes");
 const cartRoutes = require("./routes/cartRoutes");
-const orderRoutes = require('./routes/orderRoutes');
-
+const orderRoutes = require("./routes/orderRoutes");
 
 const app = express();
 
@@ -18,6 +18,7 @@ app.use(express.static(`${__dirname}/public`));
 
 app.use("/api/v1/auth", authRoutes);
 app.use("/api/v1/restaurants", restaurantRoutes);
+app.use("/api/v1/riders", riderRoutes);
 app.use("/api/v1/food", foodRoutes);
 app.use("/api/v1/cart", cartRoutes);
 app.use("/api/v1/order", orderRoutes);

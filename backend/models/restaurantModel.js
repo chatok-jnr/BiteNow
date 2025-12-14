@@ -134,6 +134,12 @@ const restaurantSchema = new mongoose.Schema(
       createdAt: "restaurant_created_at",
       updatedAt: "restaurant_updated_at",
     },
+    toJSON: {
+      virtuals: true,
+    },
+    toObject: {
+      virtuals: true,
+    },
   }
 );
 

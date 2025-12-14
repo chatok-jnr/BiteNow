@@ -10,7 +10,7 @@ router.get("/search/all", restaurantController.searchRestaurants);
 router.get("/:id", restaurantController.getRestaurantById);
 
 //protected - ADD AUTHENTICATION MIDDLEWARE
-router.post("/", authMiddleware.protect, restaurantController.createRestaurant);
+router.post("/register", authMiddleware.protect, restaurantController.createRestaurant);
 router.get(
   "/my/list",
   authMiddleware.protect,
