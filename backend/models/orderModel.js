@@ -41,6 +41,16 @@ const orderSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref:'User'
   },
+  rider_pin:{
+    type: Number,
+    min:1000,
+    max:9999
+  },
+  customer_pin:{
+    type: Number,
+    min:1000,
+    max:9999
+  },
   items:[orderItemSchema],
   subtotal:Number,
   delivery_charge: Number,

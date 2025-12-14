@@ -339,21 +339,40 @@ exports.getLookForRider = async(req, res) => {
 // Rider Accepting Order
 exports.availableToDeliver = async (req, res) => {
   try{
+
+    const pin1 = Math.floor(Math.random() * (9999 - 1000 + 1)) + 1000;
+    const pin2 = Math.floor(Math.random() * (9999 - 1000 + 1)) + 1000;
+
     const acceptRide = await Order.findByIdAndUpdate(
       req.params.orderId,
       {
-        order_status:'preparing'
+        order_status:'preparing',
+        rider_pin: pin1,
+        customer_pin: pin2
       },
       {
         new:true,
         runValidators:true
       }
-    );
+    ).populate('restaurant_id', 'restaurant_address');
+
+    const riderResponse = {
+      delivery_address: acceptRide.delivery_address,
+      pickup_addresss: acceptRide.restaurant_id.restaurant_address,
+      items:acceptRide.items,
+      subtotal:acceptRide.subtotal,
+      deliver_charge:acceptRide.delivery_charge,
+      total:acceptRide.total_amount,
+      payment_status:acceptRide.payment_status,
+      order_status:acceptRide.order_status,
+      estimated_delivery_time:acceptRide.estimated_delivery_time,
+      rider_pin:acceptRide.rider_pin
+    };
 
     res.status(200).json({
       status:'Accepted',
       data:{
-        acceptRide
+        riderResponse
       }
     });
   } catch(err) {
