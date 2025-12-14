@@ -175,14 +175,6 @@ exports.createRestaurant = async (req, res) => {
       });
     }
 
-    //owner role must be Restaurant
-    if (owner.user_role !== "Restaurant") {
-      return res.status(403).json({
-        status: "fail",
-        message: "User must have Restaurant role to create a restaurant",
-      });
-    }
-
     //create restaurant
     const newRestaurant = await Restaurant.create(req.body);
     res.status(201).json({
@@ -255,7 +247,7 @@ exports.updateRestaurant = async (req, res) => {
         status: "fail",
         message: "You are not authorized to update this restaurant",
       });
-    }
+    } //change hobe kichu
 
     //allowed field for update
     const allowedUpdates = [
