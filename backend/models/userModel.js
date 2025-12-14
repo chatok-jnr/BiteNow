@@ -43,6 +43,14 @@ const userSchema = new mongoose.Schema({
     enum: ['Customer', 'Restaurant', 'Rider', 'Admin'],
     default: 'Customer'
   },
+  is_rider:{
+    type:Boolean,
+    default: false
+  },
+  is_restaurant_owner:{
+    type: Boolean,
+    default: false
+  },
   user_address: {
     type: String, 
     required: [true, 'A user must have an address']
