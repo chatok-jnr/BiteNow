@@ -1,2 +1,0 @@
-0000000000000000000000000000000000000000 65cc504d50361b247ccb6832afde149504bb26cd Ramim19 <ramim.c26@gmail.com> 1765175965 +0600	clone: from https://github.com/chatok-jnr/BiteNow.git
-65cc504d50361b247ccb6832afde149504bb26cd 47d6d3e437dd90b722b6a20b353895f169470b12 Ramim19 <ramim.c26@gmail.com> 1765177651 +0600	commit: feat: initialize frontend with React, Vite, and Tailwind CSS
