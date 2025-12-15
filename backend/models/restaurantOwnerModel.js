@@ -51,6 +51,11 @@ const restaurantOwnerSchema = new mongoose.Schema(
       type: Date,
       required: true,
     },
+    role:{
+      type:String,
+      enum:['restaurant_owner'],
+      default:'restaurant_owner'
+    },
     restaurant_owner_address: {
       type: String,
       required: [true, "A Restaurant owner must have a address"],

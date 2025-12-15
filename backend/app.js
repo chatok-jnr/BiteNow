@@ -3,6 +3,7 @@ const morgan = require("morgan");
 const cors = require("cors");
 
 const authRoutes = require("./routes/authRoutes");
+const adminRoutes = require('./routes/adminRoutes');
 const restaurantRoutes = require("./routes/restaurantRoutes");
 const riderRoutes = require("./routes/riderRoutes");
 const foodRoutes = require("./routes/foodRoutes");
@@ -18,6 +19,7 @@ app.use(express.json());
 app.use(express.static(`${__dirname}/public`));
 
 app.use("/api/v1/auth", authRoutes);
+app.use("/api/v1/admin", adminRoutes);
 app.use("/api/v1/restaurants", restaurantRoutes);
 app.use("/api/v1/riders", riderRoutes);
 app.use("/api/v1/food", foodRoutes);

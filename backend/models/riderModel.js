@@ -52,6 +52,11 @@ const riderSchema = new mongoose.Schema(
       enum: ["Pending", "Approved", "Rejected", "Suspended"],
       default: "Pending",
     },
+    role:{
+      type:String,
+      enum:['rider'],
+      default:'rider'
+    },
     rider_documents: {
       nid_no: {
         type: String,

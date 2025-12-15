@@ -1,11 +1,13 @@
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
 
+const Admin = require('./../models/adminModel');
+const Customer = require('../models/customerModel');
 const Rider = require('./../models/riderModel');
 const RestaurantOwner = require("./../models/restaurantOwnerModel");
+
 const OTP = require('./../models/otpModel');
 const sendEmail = require('./../utils/sendEmail');
-const Customer = require('../models/customerModel');
 
 //Customer
 //Register
@@ -313,7 +315,6 @@ exports.createRider = async(req, res) => {
     });
   }
 }
-
 //Verify accounut
 exports.verifyRiderOtp = async(req, res) => {
 
@@ -379,7 +380,6 @@ exports.verifyRiderOtp = async(req, res) => {
     });
   };
 }
-
 //Login
 exports.loginRider = async (req, res) => {
   try{
@@ -544,7 +544,6 @@ exports.createRestaurantOwner = async (req, res) => {
     });
   }
 };
-
 //Verify account
 exports.restaurantOwnerVerification = async(req, res) => {
   try{
@@ -595,7 +594,6 @@ exports.restaurantOwnerVerification = async(req, res) => {
     });
   }
 }
-
 //Login
 exports.loginRestaurantOwner = async(req, res) => {
   try{
@@ -677,6 +675,192 @@ exports.loginRestaurantOwner = async(req, res) => {
   } catch(err) {
     res.status(400).json({
       status:'failed',
+      message:err.message
+    });
+  }
+}
+
+//Admin---------------------------------------------------------
+exports.createAdmin = async(req, res) => {
+  try{
+    
+    const requiredFields = [
+      'admin_name',
+      'admin_email',
+      'admin_phone',
+      'admin_dob',
+      'admin_password',
+      'admin_gender',
+    ]
+
+    let missingFields = [];
+    requiredFields.forEach(el => {
+        if(!req.body[el]) {
+          missingFields.push(el.replace('admin_', ''));
+        }
+      }
+    );
+    if(missingFields.length > 0) {
+      return res.status(400).json({
+        status:'failed',
+        message:`Missing Required Fields: ${missingFields.join(', ')}`
+      });
+    }
+
+    const otp = Math.floor(1000 + Math.random() * 90000).toString();
+    const htmlTemplate = `
+      <h2>Your Admin Account Verification OTP</h2>
+      <p>Your otp is ${otp}</p>
+      <p>This otp will expires in 5 minutes</p>
+    `
+    await OTP.create({
+      email:req.body.admin_email,
+      user_type:"admin",
+      otp,
+      expiresAt:Date.now() + 5 * 60 * 1000
+    });
+
+    const adminData = {
+      admin_name:req.body.admin_name,
+      admin_email:req.body.admin_email,
+      admin_phone:req.body.admin_phone,
+      admin_dob:req.body.admin_dob,
+      admin_password:req.body.admin_password,
+      admin_gender:req.body.admin_gender,
+      admin_address:req.body.admin_address || '',
+      admin_photo:req.body.admin_photo || '',
+    };
+
+    await sendEmail(req.body.admin_email, 'Admin Account Verification Code', htmlTemplate)
+    await Admin.create(adminData);
+    res.status(201).json({
+      status:'Success',
+      message:'Enter the otp to activate your account'
+    });
+  } catch(err) {
+    res.status(400).json({
+      status:'failed',
+      message:err.message
+    });
+  }
+}
+exports.adminLogin = async (req, res) => {
+  try{
+    const {admin_email, admin_password} = req.body;
+    if(!admin_email || !admin_password) {
+      return res.status(400).json({
+        status:'failed',
+        message:'Email & Password required'
+      });
+    }
+
+    const admin = await Admin.findOne({admin_email:admin_email});
+    if(!admin) {
+      return res.status(404).json({
+        status:'failed',
+        message:'Invalid Email'
+      });
+    }
+
+    const isPasswordValid = await admin.comparePassword(admin_password);
+    if(!isPasswordValid) {
+      return res.status(400).json({
+        status:'failed',
+        message:'Password is wrong'
+      });
+    }
+
+    if(admin.admin_is_verified === false) {
+      return res.status(400).json({
+        status:'failed',
+        message:'Your account is not verified yet'
+      });
+    }
+
+    const token = admin.jwtToken();
+
+    const adminResponse = {
+      admin_name:admin.admin_name,
+      admin_email:admin.admin_email,
+      admin_phone:admin.admin_phone,
+      admin_dob:admin.admin_dob,
+      admin_gender:admin.admin_gender,
+      admin_address:admin.admin_address || '',
+      role:admin.role,
+      admin_photo:admin.admin_photo || ''
+    }
+
+    res.status(200).json({
+      status:'success',
+      message:'Welcome back to BiteNow',
+      token,
+      data:{
+        adminResponse
+      }
+    });
+  } catch(err) {
+    res.status(400).json({
+      status:'failed',
+      message:err.message
+    });
+  }
+}
+exports.verifyAdmin = async (req, res) => {
+  try{
+    const {email, user_type, otp} = req.body;
+    if(!email || !user_type || !otp) {
+      return res.status(400).json({
+        status:'failed',
+        message:'Please enter email, user_type and otp'
+      });
+    }
+
+    const record = await OTP.find(
+      {
+        email:email,
+        user_type:user_type
+      }
+    )
+    .sort('-createdAt')
+    .limit(1);
+
+    if(record.length === 0) {
+      return res.status(404).json({
+        status:'failed',
+        message:'Wrong Data'
+      });
+    }
+
+    if(record[0].otp !== otp) {
+      return res.status(400).json({
+        status:'failed',
+        message:'Wrong OTP'
+      });
+    }
+
+    if(record[0].expiresAt < Date.now()) {
+      return res.status(400).json({
+        status:'failed',
+        message:'Otp has been expired please request for a new one'
+      });
+    }
+
+    await OTP.deleteMany({email:email, user_type:user_type});
+    await Admin.findOneAndUpdate({
+        admin_email:email
+      },{
+        admin_is_verified:true,
+      }
+    );
+
+    res.status(200).json({
+      status:'success',
+      message:'You account is activated successfully'
+    });
+
+  } catch(err) {
+    res.status(400).json({
+      status:'success',
       message:err.message
     });
   }

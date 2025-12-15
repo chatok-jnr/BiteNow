@@ -4,6 +4,17 @@ const authController = require('./../controllers/authController');
 
 const router = express.Router();
 
+//For Admin
+router
+  .route('/register/admin')
+  .post(authController.createAdmin);
+router
+  .route('/verify-admin')
+  .post(authController.verifyAdmin);
+router
+  .route('/login/admin')
+  .post(authController.adminLogin);
+
 //For Customer
 router
   .route('/register/customer')
