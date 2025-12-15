@@ -8,7 +8,6 @@ const foodRoutes = require("./routes/foodRoutes");
 const cartRoutes = require("./routes/cartRoutes");
 const orderRoutes = require('./routes/orderRoutes');
 
-
 const app = express();
 
 app.use(morgan("dev"));

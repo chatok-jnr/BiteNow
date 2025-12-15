@@ -5,6 +5,11 @@ const otpSchema = new mongoose.Schema({
     type:String,
     required: true
   },
+  user_type:{
+    type:String,
+    enum:['rider', 'customer', 'restaurant_owner'],
+    required: true
+  },
   otp: {
     type: String,
     required: true
