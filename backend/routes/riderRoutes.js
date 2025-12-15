@@ -1,12 +1,19 @@
 const express = require("express");
-const authMiddleware = require("./../middleware/authMiddleware");
+const {protect, restrictTo} = require("./../middleware/authMiddleware");
 const riderController = require("./../controllers/riderController");
 
 const router = express.Router();
 
-router.get("/all", riderController.getAllRiders);
-router.get("/:id", riderController.getRiderById);
-router.patch("/:id", authMiddleware.protect, riderController.updateRider);
-router.delete("/:id", authMiddleware.protect, riderController.deleteRider);
+router.use(protect);
+
+router
+  .route('/all')
+  .get(restrictTo('rider', 'admin'), riderController.getAllRiders);
+
+router
+  .route('/:id')
+  .get(restrictTo('rider', 'admin'), riderController.getRiderById)
+  .patch(restrictTo('rider', 'admin'), riderController.updateRider)
+  .delete(restrictTo('rider', 'admin'), riderController.deleteRider);
 
 module.exports = router;

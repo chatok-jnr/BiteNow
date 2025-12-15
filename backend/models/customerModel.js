@@ -49,6 +49,11 @@ const customerSchema = new mongoose.Schema({
     select: false
   },
   customer_photo:String,
+  role:{
+    type:String,
+    enum:['customer'],
+    default:'customer'
+  },
   customer_is_verified:{
     type:Boolean,
     default: false

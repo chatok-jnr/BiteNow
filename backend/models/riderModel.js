@@ -4,11 +4,6 @@ const User_infos = require("./../models/userModel");
 
 const riderSchema = new mongoose.Schema(
   {
-    rider_id: {
-      type: mongoose.Schema.Types.ObjectId,
-      required: true,
-      ref: "User_infos",
-    },
     rider_name: {
       type: String,
       required: [true, "A rider must have a name"],
@@ -57,6 +52,11 @@ const riderSchema = new mongoose.Schema(
       type: String,
       enum: ["Pending", "Approved", "Rejected", "Suspended"],
       default: "Pending",
+    },
+    role:{
+      type:String,
+      enum:['rider'],
+      default:'rider'
     },
     rider_documents: {
       nid_no: {
