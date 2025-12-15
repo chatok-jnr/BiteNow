@@ -86,8 +86,17 @@ function Signup() {
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    
+    // Validate password match
+    if (formData.password !== formData.confirmPassword) {
+      alert("Passwords do not match!");
+      return;
+    }
+    
+    // Remove sensitive data before logging
+    const { password, confirmPassword, ...sanitizedData } = formData;
     console.log("Signup:", {
-      ...formData,
+      ...sanitizedData,
       role: selectedRole,
     });
     // Add registration logic here
@@ -188,8 +197,10 @@ function Signup() {
               required
               value={formData.phone}
               onChange={handleInputChange}
+              pattern="^\+880 ?1[3-9][0-9]{8}$"
+              title="Please enter a valid Bangladeshi phone number (e.g., +880 1xxxxxxxxx)"
               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
-              placeholder="+880 1971-311958"
+              placeholder="+880 1xxxxxxxxx"
             />
           </div>
 
@@ -208,10 +219,10 @@ function Signup() {
               onChange={handleInputChange}
               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
             >
-              <option value="">Select gender</option>
+              <option value="" disabled hidden>Select gender</option>
               <option value="Male">Male</option>
               <option value="Female">Female</option>
-              <option value="Other">Other</option>
+              <option value="Prefer not to say">Prefer not to say</option>
             </select>
           </div>
 
@@ -229,6 +240,8 @@ function Signup() {
               required
               value={formData.birthDate}
               onChange={handleInputChange}
+              max={new Date().toISOString().split('T')[0]}
+              min="1900-01-01"
               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
             />
           </div>
@@ -264,11 +277,13 @@ function Signup() {
               name="password"
               type="password"
               required
+              minLength="8"
               value={formData.password}
               onChange={handleInputChange}
               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
-              placeholder="Create a password"
+              placeholder="Create a password (min 6 characters)"
             />
+            <p className="text-xs text-gray-500 mt-1">Must be at least 6 characters long</p>
           </div>
 
           <div>
