@@ -4,6 +4,7 @@ const authMiddleware = require("./../middleware/authMiddleware");
 
 const router = express.Router();
 
-router.post("/register", restaurantOwnerController.registerRestaurantOwner);
 router.patch("/update/:id", authMiddleware.protect, restaurantOwnerController.updateRestaurantOwner);
+router.delete("/delete/:id", authMiddleware.protect, restaurantOwnerController.deleteRestaurantOwner);
+
 module.exports = router;

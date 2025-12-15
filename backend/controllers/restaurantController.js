@@ -331,7 +331,7 @@ exports.deleteRestaurant = async (req, res) => {
       });
     }
 
-    //checkout delation of restaurant revenue and sales
+    //Delete restaurant
     await Restaurant.findByIdAndDelete(restaurantID);
     res.status(200).json({
       status: "success",
