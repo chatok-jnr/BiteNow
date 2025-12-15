@@ -1,5 +1,5 @@
 const mongoose = require("mongoose");
-const User_infos = require("./../models/userModel");
+const RestaurantOwner = require("./../models/restaurantOwnerModel");
 const Restaurant = require("./../models/restaurantModel");
 
 //public
@@ -35,7 +35,7 @@ exports.getAllRestaurant = async (req, res) => {
 
     //execute query
     const restaurants = await Restaurant.find(filter)
-      .populate("owner_id", "user_name user_phone user_email")
+      .populate("owner_id", "restaurant_owner_name restaurant_owner_phone restaurant_owner_email")
       .sort(sort)
       .skip(skip)
       .limit(limit)
@@ -66,7 +66,7 @@ exports.getAllRestaurant = async (req, res) => {
 exports.getRestaurantById = async (req, res) => {
   try {
     const restaurant = await Restaurant.findById(req.params.id)
-      .populate("owner_id", "user_name user_email user_phone")
+      .populate("owner_id", "restaurant_owner_name restaurant_owner_email restaurant_owner_phone")
       .select("-__v");
 
     if (!restaurant) {
@@ -76,9 +76,8 @@ exports.getRestaurantById = async (req, res) => {
       });
     }
 
-    if (
-      restaurant.restaurant_status !== "Accepted" &&
-      !(req.user && req.user.user_role === "Admin")
+    if ( // replace
+      restaurant.restaurant_status !== "Accepted"
     ) {
       return res.status(403).json({
         status: "fail",
@@ -133,7 +132,7 @@ exports.searchRestaurants = async (req, res) => {
     }
 
     const restaurants = await Restaurant.find(filter)
-      .populate("owner_id", "user_name")
+      .populate("owner_id", "restaurant_owner_name")
       .limit(20)
       .select(
         "restaurant_name restaurant_location restaurant_address restaurant_rating restaurant_category"
@@ -228,7 +227,7 @@ exports.getMyRestaurants = async (req, res) => {
 exports.updateRestaurant = async (req, res) => {
   try {
     const restaurantID = req.params.id;
-    const userID = req.user._id;
+    const ownerID = req.user._id;
 
     const restaurant = await Restaurant.findById(restaurantID);
     if (!restaurant) {
@@ -240,14 +239,13 @@ exports.updateRestaurant = async (req, res) => {
 
     //check for authorized user
     if (
-      restaurant.owner_id.toString() !== userID.toString() &&
-      req.user.user_role !== "Admin"
+      restaurant.owner_id.toString() !== ownerID.toString()
     ) {
       return res.status(403).json({
         status: "fail",
         message: "You are not authorized to update this restaurant",
       });
-    } //change hobe kichu
+    } //
 
     //allowed field for update
     const allowedUpdates = [
@@ -313,7 +311,7 @@ exports.updateRestaurant = async (req, res) => {
 exports.deleteRestaurant = async (req, res) => {
   try {
     const restaurantID = req.params.id;
-    const userID = req.user._id;
+    const ownerID = req.user._id;
 
     const restaurant = await Restaurant.findById(restaurantID);
     if (!restaurant) {
@@ -325,8 +323,7 @@ exports.deleteRestaurant = async (req, res) => {
 
     //chech user is authorized or not
     if (
-      restaurant.owner_id.toString() !== userID.toString() &&
-      req.user.user_role !== "Admin"
+      restaurant.owner_id.toString() !== ownerID.toString()
     ) {
       return res.status(403).json({
         status: "fail",
@@ -334,7 +331,7 @@ exports.deleteRestaurant = async (req, res) => {
       });
     }
 
-    //checkout delation of restaurant revenue and sales
+    //Delete restaurant
     await Restaurant.findByIdAndDelete(restaurantID);
     res.status(200).json({
       status: "success",

@@ -1,14 +1,8 @@
 const mongoose = require("mongoose");
 const bcrypt = require("bcrypt");
-const User_infos = require("./../models/userModel");
 
 const riderSchema = new mongoose.Schema(
   {
-    rider_id: {
-      type: mongoose.Schema.Types.ObjectId,
-      required: true,
-      ref: "User_infos",
-    },
     rider_name: {
       type: String,
       required: [true, "A rider must have a name"],
@@ -17,7 +11,7 @@ const riderSchema = new mongoose.Schema(
     },
     rider_email: {
       type: String,
-      required: [true, "A user must have an e-mail"],
+      required: [true, "A rider must have an e-mail"],
       lowercase: true,
       unique: true,
       validate: {

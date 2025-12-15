@@ -1,12 +1,12 @@
 const mongoose = require("mongoose");
-const User_infos = require("./../models/userModel");
+const RestaurantOwner = require('./restaurantOwnerModel');
 
 const restaurantSchema = new mongoose.Schema(
   {
     owner_id: {
       type: mongoose.Schema.Types.ObjectId,
       required: true,
-      ref: "User_infos", // Use string reference instead of model variable
+      ref: "RestaurantOwner", // Use string reference instead of model variable
     },
     restaurant_name: {
       type: String,
