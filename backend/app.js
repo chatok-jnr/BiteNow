@@ -8,6 +8,7 @@ const riderRoutes = require("./routes/riderRoutes");
 const foodRoutes = require("./routes/foodRoutes");
 const cartRoutes = require("./routes/cartRoutes");
 const orderRoutes = require("./routes/orderRoutes");
+const restaurantOwnerRoutes = require('./routes/restaurantOwnerRoutes');
 
 const app = express();
 
@@ -22,5 +23,6 @@ app.use("/api/v1/riders", riderRoutes);
 app.use("/api/v1/food", foodRoutes);
 app.use("/api/v1/cart", cartRoutes);
 app.use("/api/v1/order", orderRoutes);
+app.use("/api/v1/restaurants-owner", restaurantOwnerRoutes);
 
 module.exports = app;
