@@ -277,7 +277,7 @@ function Signup() {
               name="password"
               type="password"
               required
-              minLength="8"
+              minLength="6"
               value={formData.password}
               onChange={handleInputChange}
               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
