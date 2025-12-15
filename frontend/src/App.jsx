@@ -1,9 +1,9 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import Login from "./pages/Login";
-import Signup from "./pages/Signup";
-import CustomerDashboard from "./pages/CustomerDashboard";
-import RiderDashboard from "./pages/RiderDashboard";
-import RestaurantDashboard from "./pages/RestaurantDashboard";
+import Login from "./pages/common/Login";
+import Signup from "./pages/common/Signup";
+import CustomerDashboard from "./pages/customer/Dashboard";
+import RiderDashboard from "./pages/rider/Dashboard";
+import RestaurantDashboard from "./pages/restaurant/Dashboard";
 
 function App() {
   return (
