@@ -32,11 +32,7 @@ const restaurantOwnerSchema = new mongoose.Schema(
       minlength: [6, "A password length must be 6 or more"],
       select: false,
     },
-    restaurant_owner_is_verified: {
-      type: Boolean,
-      default: false,
-    },
-    passwordChangeAt: Date,
+  //  passwordChangeAt: Date(),
     restaurant_owner_gender: {
       type: String,
       enum: ["Male", "Female"],
@@ -44,8 +40,12 @@ const restaurantOwnerSchema = new mongoose.Schema(
     },
     restaurant_owner_status: {
       type: String,
-      enum: ["Offline", "Active", "Suspended"],
-      default: "Offline",
+      enum: ["Pending", "Active", "Suspended"],
+      default:"Pending"
+    },
+    restaurant_owner_is_verified:{
+      type:Boolean,
+      default:false
     },
     restaurant_owner_dob: {
       type: Date,
@@ -58,14 +58,6 @@ const restaurantOwnerSchema = new mongoose.Schema(
       maxLength: [50, "Restaurant owner address cannot exceed 50 characters"],
     },
     restaurant_owner_last_active_at: Date,
-    restaurant_owner_created_at: {
-      type: Date,
-      default: Date.now,
-    },
-    restaurant_owner_updated_at: {
-      type: Date,
-      default: Date.now,
-    },
   },
   {
     timestamps: {
@@ -139,16 +131,12 @@ restaurantOwnerSchema.virtual("status_color").get(function () {
       return "green";
     case "Suspended":
       return "red";
-    case "Offline":
+    case "Pending":
       return "gray";
     default:
       return "black";
   }
 });
 
-//model
-const RestaurantOwner = mongoose.model(
-  "RestaurantOwner",
-  restaurantOwnerSchema
-);
+const RestaurantOwner = mongoose.model("RestaurantOwner", restaurantOwnerSchema);
 module.exports = RestaurantOwner;

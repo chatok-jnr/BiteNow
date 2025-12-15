@@ -33,7 +33,7 @@ exports.registerRestaurantOwner = async (req, res) => {
       restaurant_owner_email: req.body.restaurant_owner_email,
       restaurant_owner_password: req.body.restaurant_owner_password,
       restaurant_owner_gender: req.body.restaurant_owner_gender,
-      restaurant_owner_status: "Offline",
+      restaurant_owner_status: "Pending",
       restaurant_owner_dob: req.body.restaurant_owner_dob,
       restaurant_owner_address: req.body.restaurant_owner_address,
     };
@@ -82,9 +82,46 @@ exports.updateRestaurantOwner = async (req, res) => {
         message: "Invalid request! Restaurant owner not found",
       });
     }
-    
-    //
+    // Authorization check
+    if (restaurantOwner._id.toString() !== userID.toString()) {
+      return res.status(403).json({
+        status: "error",
+        message: "You are not authorized to update this restaurant owner",
+      });
+    }
+    // allowed fields
+    const allowedUpdates = [
+      "restaurant_owner_name",
+      "restaurant_owner_phone",
+      "restaurant_owner_gender",
+      "restaurant_owner_dob",
+      "restaurant_owner_address",
+    ];
 
+    const update = {};
+    Object.keys(req.body).forEach((key) => {
+      if (allowedUpdates.includes(key)) {
+        update[key] = req.body[key];
+      }
+    });
+
+    if (Object.keys(update).length === 0) {
+      return res.status(400).json({
+        status: "error",
+        message: "No valid fields to update",
+      });
+    }
+
+    Object.assign(restaurantOwner, update);
+    await restaurantOwner.save();
+
+    res.status(200).json({
+      status: "success",
+      message: "Restaurant owner updated successfully",
+      data: {
+        restaurantOwner,
+      },
+    });
   } catch (err) {
     res.status(400).json({
       status: "error",
