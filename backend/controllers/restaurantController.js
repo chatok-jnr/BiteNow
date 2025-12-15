@@ -19,8 +19,6 @@ exports.getAllRestaurant = async (req, res) => {
     //filter by status
     if (req.query.status) {
       filter.restaurant_status = req.query.status;
-    } else {
-      filter.restaurant_status = "Accepted";
     }
     //filter by category
     if (req.query.category) {
@@ -177,14 +175,6 @@ exports.createRestaurant = async (req, res) => {
       });
     }
 
-    //owner role must be Restaurant
-    if (owner.user_role !== "Restaurant") {
-      return res.status(403).json({
-        status: "fail",
-        message: "User must have Restaurant role to create a restaurant",
-      });
-    }
-
     //create restaurant
     const newRestaurant = await Restaurant.create(req.body);
     res.status(201).json({
@@ -238,7 +228,7 @@ exports.getMyRestaurants = async (req, res) => {
 exports.updateRestaurant = async (req, res) => {
   try {
     const restaurantID = req.params.id;
-    const userID = req.user._id; // FIXED: was req.User_infos._id
+    const userID = req.user._id;
 
     const restaurant = await Restaurant.findById(restaurantID);
     if (!restaurant) {
@@ -248,7 +238,7 @@ exports.updateRestaurant = async (req, res) => {
       });
     }
 
-    //check for authorized user - UNCOMMENTED
+    //check for authorized user
     if (
       restaurant.owner_id.toString() !== userID.toString() &&
       req.user.user_role !== "Admin"
@@ -257,7 +247,7 @@ exports.updateRestaurant = async (req, res) => {
         status: "fail",
         message: "You are not authorized to update this restaurant",
       });
-    }
+    } //change hobe kichu
 
     //allowed field for update
     const allowedUpdates = [
