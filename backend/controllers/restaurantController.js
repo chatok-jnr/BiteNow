@@ -152,7 +152,6 @@ exports.searchRestaurants = async (req, res) => {
   }
 };
 
-//protected
 exports.createRestaurant = async (req, res) => {
   try {
     //required field
@@ -166,7 +165,7 @@ exports.createRestaurant = async (req, res) => {
     }
 
     //verify owner
-    const owner = await User_infos.findById(owner_id);
+    const owner = await RestaurantOwner.findById(owner_id);
     if (!owner) {
       return res.status(404).json({
         status: "fail",
@@ -185,10 +184,11 @@ exports.createRestaurant = async (req, res) => {
   } catch (err) {
     res.status(400).json({
       status: "fail",
-      message: "Invalid data sent",
+      message: err.message
     });
   }
 };
+
 exports.getMyRestaurants = async (req, res) => {
   try {
     const owner_id = req.user._id;
