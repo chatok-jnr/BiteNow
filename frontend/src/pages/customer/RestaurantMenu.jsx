@@ -11,8 +11,6 @@ function RestaurantMenu() {
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [cart, setCart] = useState([]);
   const [showCart, setShowCart] = useState(false);
-  const [selectedItem, setSelectedItem] = useState(null);
-  const [selectedVariant, setSelectedVariant] = useState(null);
 
   useEffect(() => {
     const foundRestaurant = mockRestaurants.find((r) => r.id === parseInt(id));
@@ -28,22 +26,33 @@ function RestaurantMenu() {
     ? ["All", ...new Set(menuItems.map((item) => item.category))]
     : ["All"];
 
+  // Expand items with variants into separate items
+  const expandedMenuItems = menuItems.flatMap((item) => {
+    if (item.variants && item.variants.length > 0) {
+      return item.variants.map((variant, index) => ({
+        ...item,
+        id: `${item.id}-${index}`,
+        name: `${item.name} (${variant.name})`,
+        price: variant.price,
+        variants: null, // Remove variants from expanded items
+      }));
+    }
+    return [item];
+  });
+
   const filteredItems =
     selectedCategory === "All"
-      ? menuItems
-      : menuItems.filter((item) => item.category === selectedCategory);
+      ? expandedMenuItems
+      : expandedMenuItems.filter((item) => item.category === selectedCategory);
 
-  const addToCart = (item, variant = null) => {
+  const addToCart = (item) => {
     const cartItem = {
       ...item,
-      selectedVariant: variant,
-      finalPrice: variant ? variant.price : item.price,
+      finalPrice: item.price,
       quantity: 1,
-      cartId: Date.now(),
+      cartId: `${Date.now()}-${Math.random()}`, // Ensure unique ID
     };
     setCart([...cart, cartItem]);
-    setSelectedItem(null);
-    setSelectedVariant(null);
     setShowCart(true);
     setTimeout(() => setShowCart(false), 2000);
   };
@@ -70,34 +79,29 @@ function RestaurantMenu() {
   );
   const deliveryFee = restaurant?.deliveryFee || 0;
   const total = subtotal + deliveryFee;
+  const minOrder = 50; // Fixed minimum order amount
 
   const handleCheckout = () => {
     if (cart.length === 0) return;
     
-    // Save order to localStorage (simulate placing order)
-    const newOrder = {
-      id: `ORD${Date.now()}`,
+    // Save order data for checkout page
+    const checkoutData = {
       restaurantId: restaurant.id,
       restaurantName: restaurant.name,
       items: cart.map(item => ({
         name: item.name,
-        variant: item.selectedVariant?.name,
         quantity: item.quantity,
         price: item.finalPrice
       })),
       subtotal,
       deliveryFee,
       total,
-      status: "pending",
-      orderTime: new Date().toLocaleString(),
-      isActive: true,
     };
     
-    const existingOrders = JSON.parse(localStorage.getItem("customerOrders") || "[]");
-    localStorage.setItem("customerOrders", JSON.stringify([newOrder, ...existingOrders]));
+    localStorage.setItem("pendingCheckout", JSON.stringify(checkoutData));
     
-    // Navigate to orders page
-    navigate("/customer-dashboard/orders");
+    // Navigate to checkout page
+    navigate("/customer-dashboard/checkout");
   };
 
   if (!restaurant) {
@@ -137,7 +141,7 @@ function RestaurantMenu() {
                 </div>
                 <div className="flex items-center space-x-1">
                   <span>📦</span>
-                  <span>Min: ৳{restaurant.minOrder}</span>
+                  <span>Min: ৳50</span>
                 </div>
               </div>
             </div>
@@ -202,21 +206,12 @@ function RestaurantMenu() {
                           </p>
                         </div>
                       </div>
-                      {item.variants && item.variants.length > 0 ? (
-                        <button
-                          onClick={() => setSelectedItem(item)}
-                          className="mt-3 bg-primary text-white px-4 py-2 rounded-lg hover:bg-primary/90 transition-colors text-sm font-medium"
-                        >
-                          Customize
-                        </button>
-                      ) : (
-                        <button
-                          onClick={() => addToCart(item)}
-                          className="mt-3 bg-primary text-white px-4 py-2 rounded-lg hover:bg-primary/90 transition-colors text-sm font-medium"
-                        >
-                          Add to Cart
-                        </button>
-                      )}
+                      <button
+                        onClick={() => addToCart(item)}
+                        className="mt-3 bg-primary text-white px-4 py-2 rounded-lg hover:bg-primary/90 transition-colors text-sm font-medium"
+                      >
+                        Add to Cart
+                      </button>
                     </div>
                   </div>
                 </div>
@@ -249,11 +244,6 @@ function RestaurantMenu() {
                             <h4 className="font-medium text-gray-900 text-sm">
                               {item.name}
                             </h4>
-                            {item.selectedVariant && (
-                              <p className="text-xs text-gray-600">
-                                {item.selectedVariant.name}
-                              </p>
-                            )}
                           </div>
                           <button
                             onClick={() => removeFromCart(item.cartId)}
@@ -309,15 +299,15 @@ function RestaurantMenu() {
 
                   <button
                     onClick={handleCheckout}
-                    disabled={subtotal < restaurant.minOrder}
+                    disabled={subtotal < minOrder}
                     className={`w-full mt-4 py-3 rounded-lg font-semibold transition-colors ${
-                      subtotal >= restaurant.minOrder
+                      subtotal >= minOrder
                         ? "bg-secondary text-white hover:bg-secondary/90"
                         : "bg-gray-300 text-gray-500 cursor-not-allowed"
                     }`}
                   >
-                    {subtotal < restaurant.minOrder
-                      ? `Min order: ৳${restaurant.minOrder}`
+                    {subtotal < minOrder
+                      ? `Min order: ৳${minOrder}`
                       : "Checkout"}
                   </button>
                 </>
@@ -326,57 +316,6 @@ function RestaurantMenu() {
           </div>
         </div>
       </div>
-
-      {/* Variant Selection Modal */}
-      {selectedItem && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg max-w-md w-full p-6">
-            <h3 className="text-xl font-bold text-gray-900 mb-4">
-              Customize {selectedItem.name}
-            </h3>
-            <div className="space-y-2 mb-6">
-              {selectedItem.variants.map((variant, index) => (
-                <button
-                  key={index}
-                  onClick={() => setSelectedVariant(variant)}
-                  className={`w-full flex justify-between items-center p-3 rounded-lg border-2 transition-colors ${
-                    selectedVariant === variant
-                      ? "border-primary bg-primary/5"
-                      : "border-gray-200 hover:border-gray-300"
-                  }`}
-                >
-                  <span className="font-medium">{variant.name}</span>
-                  <span className="font-bold text-primary">৳{variant.price}</span>
-                </button>
-              ))}
-            </div>
-            <div className="flex space-x-3">
-              <button
-                onClick={() => {
-                  setSelectedItem(null);
-                  setSelectedVariant(null);
-                }}
-                className="flex-1 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-100"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={() =>
-                  selectedVariant && addToCart(selectedItem, selectedVariant)
-                }
-                disabled={!selectedVariant}
-                className={`flex-1 px-4 py-2 rounded-lg ${
-                  selectedVariant
-                    ? "bg-primary text-white hover:bg-primary/90"
-                    : "bg-gray-300 text-gray-500 cursor-not-allowed"
-                }`}
-              >
-                Add to Cart
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* Cart Notification */}
       {showCart && (

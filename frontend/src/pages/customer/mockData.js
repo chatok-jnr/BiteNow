@@ -11,6 +11,9 @@ export const mockRestaurants = [
     image: "🍛",
     popular: true,
     priceRange: "$$",
+    discount: 20,
+    fastDelivery: false,
+    topDeal: true,
   },
   {
     id: 2,
@@ -23,6 +26,9 @@ export const mockRestaurants = [
     image: "🍕",
     popular: true,
     priceRange: "$$$",
+    discount: 0,
+    fastDelivery: false,
+    topDeal: true,
   },
   {
     id: 3,
@@ -35,6 +41,9 @@ export const mockRestaurants = [
     image: "🍔",
     popular: false,
     priceRange: "$$",
+    discount: 30,
+    fastDelivery: true,
+    topDeal: false,
   },
   {
     id: 4,
@@ -47,6 +56,9 @@ export const mockRestaurants = [
     image: "🍣",
     popular: true,
     priceRange: "$$$",
+    discount: 0,
+    fastDelivery: false,
+    topDeal: true,
   },
   {
     id: 5,
@@ -59,6 +71,9 @@ export const mockRestaurants = [
     image: "🍛",
     popular: false,
     priceRange: "$$",
+    discount: 25,
+    fastDelivery: false,
+    topDeal: false,
   },
   {
     id: 6,
@@ -71,7 +86,21 @@ export const mockRestaurants = [
     image: "🍜",
     popular: false,
     priceRange: "$$",
+    discount: 15,
+    fastDelivery: true,
+    topDeal: false,
   },
+];
+
+// Cuisine Categories with Icons
+export const cuisineCategories = [
+  { id: "All", name: "All", icon: "🍽️" },
+  { id: "Bangladeshi", name: "Bangladeshi", icon: "🍛" },
+  { id: "Italian", name: "Italian", icon: "🍕" },
+  { id: "American", name: "American", icon: "🍔" },
+  { id: "Japanese", name: "Japanese", icon: "🍣" },
+  { id: "Indian", name: "Indian", icon: "🍛" },
+  { id: "Thai", name: "Thai", icon: "🍜" },
 ];
 
 // Mock Menu Items by Restaurant

@@ -55,7 +55,7 @@ function CustomerNavbar() {
             </span>
             <button
               onClick={handleLogout}
-              className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg font-medium transition-colors duration-200"
+              className="px-4 py-2 rounded-lg font-medium text-gray-700 hover:bg-gray-100 transition-colors duration-200"
             >
               Logout
             </button>
