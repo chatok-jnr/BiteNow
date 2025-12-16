@@ -111,11 +111,11 @@ const restaurantSchema = new mongoose.Schema(
       },
     },
 
-    restaurant_images: [
+    restaurant_image: [
       {
         url: String,
         altText: String,
-        isPrimary: Boolean,
+        public_id: String,
       },
     ],
 
