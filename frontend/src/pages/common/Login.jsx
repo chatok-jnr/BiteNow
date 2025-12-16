@@ -129,6 +129,24 @@ function Login() {
             </a>
           </div>
 
+          {/* Demo credentials info */}
+          <div className="p-4 bg-green-50 border border-green-200 rounded-lg text-sm">
+            <p className="font-semibold text-green-900 mb-2">
+              ✅ Demo Credentials (Choose any):
+            </p>
+            <div className="space-y-1 text-green-800">
+              <p>
+                <strong>Customer:</strong> customer@test.com / customer123
+              </p>
+              <p>
+                <strong>Rider:</strong> rider@test.com / rider123
+              </p>
+              <p>
+                <strong>Restaurant:</strong> restaurant@test.com / restaurant123
+              </p>
+            </div>
+          </div>
+
           {error && (
             <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-red-600 text-sm">
               {error}
@@ -141,22 +159,6 @@ function Login() {
           >
             Log In
           </button>
-
-          {/* Demo credentials info */}
-          <div className="mt-4 p-4 bg-gray-50 rounded-lg text-xs text-gray-600 space-y-1">
-            <p className="font-semibold text-gray-700 mb-2">
-              Demo Credentials:
-            </p>
-            <p>
-              <strong>Customer:</strong> customer@test.com / customer123
-            </p>
-            <p>
-              <strong>Rider:</strong> rider@test.com / rider123
-            </p>
-            <p>
-              <strong>Restaurant:</strong> restaurant@test.com / restaurant123
-            </p>
-          </div>
         </form>
 
         {/* Sign Up Link */}
