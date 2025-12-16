@@ -57,7 +57,7 @@ function Login() {
       } else if (user.role === "rider") {
         navigate("/rider-dashboard");
       } else if (user.role === "restaurant") {
-        navigate("/restaurant-dashboard");
+        navigate("/owner-dashboard");
       }
     } else {
       setError("Invalid email or password");
