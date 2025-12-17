@@ -7,6 +7,7 @@ function EditOwnerProfileModal({ isOpen, onClose, ownerData, onUpdate, onChangeP
     restaurant_owner_gender: ownerData?.gender || "",
     restaurant_owner_dob: ownerData?.dob || "",
     restaurant_owner_address: ownerData?.address || "",
+    profile_image: null,
   });
 
   const [errors, setErrors] = useState({});
@@ -57,9 +58,12 @@ function EditOwnerProfileModal({ isOpen, onClose, ownerData, onUpdate, onChangeP
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-      <div className="bg-white rounded-lg max-w-2xl w-full">
-        <div className="border-b px-6 py-4 flex justify-between items-center">
+    <div 
+      className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50"
+      onClick={onClose}
+    >
+      <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] flex flex-col" onClick={(e) => e.stopPropagation()}>
+        <div className="border-b px-6 py-4 flex justify-between items-center flex-shrink-0">
           <h2 className="text-2xl font-bold text-gray-900">Edit Owner Profile</h2>
           <button
             onClick={onClose}
@@ -76,7 +80,8 @@ function EditOwnerProfileModal({ isOpen, onClose, ownerData, onUpdate, onChangeP
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="p-6">
+        <form onSubmit={handleSubmit} className="flex flex-col flex-1 min-h-0">
+          <div className="p-6 overflow-y-auto flex-1">
           <div className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -95,6 +100,19 @@ function EditOwnerProfileModal({ isOpen, onClose, ownerData, onUpdate, onChangeP
               {errors.restaurant_owner_name && (
                 <p className="text-red-500 text-sm mt-1">{errors.restaurant_owner_name}</p>
               )}
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Profile Image
+              </label>
+              <input
+                type="file"
+                accept="image/*"
+                onChange={(e) => setFormData({ ...formData, profile_image: e.target.files[0] })}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+              />
+              <p className="text-sm text-gray-500 mt-1">Upload an image file (optional)</p>
             </div>
 
             <div>
@@ -220,8 +238,9 @@ function EditOwnerProfileModal({ isOpen, onClose, ownerData, onUpdate, onChangeP
               </div>
             </div>
           </div>
+          </div>
 
-          <div className="flex justify-end gap-3 mt-6">
+          <div className="border-t px-6 py-4 flex justify-end gap-3 flex-shrink-0 bg-white">
             <button
               type="button"
               onClick={onClose}

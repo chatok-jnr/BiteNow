@@ -24,7 +24,7 @@ function Login() {
     "restaurant@test.com": {
       password: "restaurant123",
       role: "restaurant",
-      name: "Sarah's Kitchen",
+      name: "Ramim",
     },
   };
 

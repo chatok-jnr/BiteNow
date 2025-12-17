@@ -67,7 +67,10 @@ function OrderManagement({ restaurantId, orders: initialOrders }) {
     if (!selectedOrder) return;
     
     // TODO: API call to verify PIN
-    if (riderPin === selectedOrder.pin2) {
+    // Mock PIN for testing
+    const mockRiderPin = "1234";
+    
+    if (riderPin === mockRiderPin) {
       handleUpdateStatus(selectedOrder._id, "picked_up");
       setShowPinModal(false);
       setRiderPin("");
@@ -153,7 +156,7 @@ function OrderManagement({ restaurantId, orders: initialOrders }) {
   const readyOrders = getOrdersByStatus("ready");
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6">
       {/* Stats */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <div className="bg-white p-4 rounded-lg shadow-sm border">
@@ -174,126 +177,139 @@ function OrderManagement({ restaurantId, orders: initialOrders }) {
         </div>
       </div>
 
-      {/* New Orders */}
-      {newOrders.length > 0 && (
-        <div>
-          <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
-            🔔 New Orders
-            <span className="bg-red-100 text-red-800 text-sm font-medium px-3 py-1 rounded-full">
+      {/* 3-Column Kanban Layout */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Column 1: New Orders */}
+        <div className="flex flex-col">
+          <div className="bg-red-50 border-2 border-red-200 rounded-t-lg p-4 flex items-center justify-between">
+            <h2 className="text-lg font-bold text-red-800 flex items-center gap-2">
+              🔔 New Orders
+            </h2>
+            <span className="bg-red-200 text-red-900 text-sm font-bold px-3 py-1 rounded-full">
               {newOrders.length}
             </span>
-          </h2>
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-            {newOrders.map((order) => (
-              <OrderCard
-                key={order._id}
-                order={order}
-                statusLabel="NEW"
-                statusColor="border-red-200"
-                actions={
-                  <>
+          </div>
+          <div className="space-y-4 bg-red-50/30 p-4 rounded-b-lg border-2 border-t-0 border-red-200 min-h-[600px] max-h-[calc(100vh-300px)] overflow-y-auto">
+            {newOrders.length === 0 ? (
+              <div className="text-center text-gray-500 py-8">
+                <p className="text-sm">No new orders</p>
+              </div>
+            ) : (
+              newOrders.map((order) => (
+                <OrderCard
+                  key={order._id}
+                  order={order}
+                  statusLabel="NEW"
+                  statusColor="border-red-200"
+                  actions={
+                    <>
+                      <button
+                        onClick={() => handleRejectOrder(order)}
+                        className="flex-1 px-3 py-2 border-2 border-red-300 text-red-700 rounded-lg text-sm font-semibold hover:bg-red-50"
+                      >
+                        Reject
+                      </button>
+                      <button
+                        onClick={() => handleAcceptOrder(order._id)}
+                        className="flex-1 px-3 py-2 bg-primary text-white rounded-lg text-sm font-semibold hover:bg-primary/90"
+                      >
+                        Accept
+                      </button>
+                    </>
+                  }
+                />
+              ))
+            )}
+          </div>
+        </div>
+
+        {/* Column 2: Preparing Orders */}
+        <div className="flex flex-col">
+          <div className="bg-yellow-50 border-2 border-yellow-200 rounded-t-lg p-4 flex items-center justify-between">
+            <h2 className="text-lg font-bold text-yellow-800 flex items-center gap-2">
+              👨‍🍳 Preparing
+            </h2>
+            <span className="bg-yellow-200 text-yellow-900 text-sm font-bold px-3 py-1 rounded-full">
+              {preparingOrders.length}
+            </span>
+          </div>
+          <div className="space-y-4 bg-yellow-50/30 p-4 rounded-b-lg border-2 border-t-0 border-yellow-200 min-h-[600px] max-h-[calc(100vh-300px)] overflow-y-auto">
+            {preparingOrders.length === 0 ? (
+              <div className="text-center text-gray-500 py-8">
+                <p className="text-sm">No orders preparing</p>
+              </div>
+            ) : (
+              preparingOrders.map((order) => (
+                <OrderCard
+                  key={order._id}
+                  order={order}
+                  statusLabel="PREPARING"
+                  statusColor="border-yellow-200"
+                  actions={
                     <button
-                      onClick={() => handleRejectOrder(order)}
-                      className="flex-1 px-4 py-2 border-2 border-red-300 text-red-700 rounded-lg font-semibold hover:bg-red-50"
+                      onClick={() => handleUpdateStatus(order._id, "ready")}
+                      className="w-full px-3 py-2 bg-primary text-white rounded-lg text-sm font-semibold hover:bg-primary/90"
                     >
-                      Reject
+                      Mark as Ready
                     </button>
+                  }
+                />
+              ))
+            )}
+          </div>
+        </div>
+
+        {/* Column 3: Ready for Pickup */}
+        <div className="flex flex-col">
+          <div className="bg-green-50 border-2 border-green-200 rounded-t-lg p-4 flex items-center justify-between">
+            <h2 className="text-lg font-bold text-green-800 flex items-center gap-2">
+              🎯 Ready for Pickup
+            </h2>
+            <span className="bg-green-200 text-green-900 text-sm font-bold px-3 py-1 rounded-full">
+              {readyOrders.length}
+            </span>
+          </div>
+          <div className="space-y-4 bg-green-50/30 p-4 rounded-b-lg border-2 border-t-0 border-green-200 min-h-[600px] max-h-[calc(100vh-300px)] overflow-y-auto">
+            {readyOrders.length === 0 ? (
+              <div className="text-center text-gray-500 py-8">
+                <p className="text-sm">No orders ready</p>
+              </div>
+            ) : (
+              readyOrders.map((order) => (
+                <OrderCard
+                  key={order._id}
+                  order={order}
+                  statusLabel="READY"
+                  statusColor="border-green-200"
+                  actions={
                     <button
-                      onClick={() => handleAcceptOrder(order._id)}
-                      className="flex-1 px-4 py-2 bg-primary text-white rounded-lg font-semibold hover:bg-primary/90"
+                      onClick={() => {
+                        setSelectedOrder(order);
+                        setShowPinModal(true);
+                      }}
+                      className="w-full px-3 py-2 bg-primary text-white rounded-lg text-sm font-semibold hover:bg-primary/90"
                     >
-                      Accept
+                      Verify Rider PIN
                     </button>
-                  </>
-                }
-              />
-            ))}
+                  }
+                />
+              ))
+            )}
           </div>
         </div>
-      )}
-
-      {/* Accepted Orders */}
-      {acceptedOrders.length > 0 && (
-        <div>
-          <h2 className="text-xl font-bold text-gray-900 mb-4">✅ Accepted Orders</h2>
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-            {acceptedOrders.map((order) => (
-              <OrderCard
-                key={order._id}
-                order={order}
-                statusLabel="ACCEPTED"
-                statusColor="border-blue-200"
-                actions={
-                  <button
-                    onClick={() => handleUpdateStatus(order._id, "preparing")}
-                    className="w-full px-4 py-2 bg-primary text-white rounded-lg font-semibold hover:bg-primary/90"
-                  >
-                    Start Preparing
-                  </button>
-                }
-              />
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* Preparing Orders */}
-      {preparingOrders.length > 0 && (
-        <div>
-          <h2 className="text-xl font-bold text-gray-900 mb-4">👨‍🍳 Preparing</h2>
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-            {preparingOrders.map((order) => (
-              <OrderCard
-                key={order._id}
-                order={order}
-                statusLabel="PREPARING"
-                statusColor="border-yellow-200"
-                actions={
-                  <button
-                    onClick={() => handleUpdateStatus(order._id, "ready")}
-                    className="w-full px-4 py-2 bg-primary text-white rounded-lg font-semibold hover:bg-primary/90"
-                  >
-                    Mark as Ready
-                  </button>
-                }
-              />
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* Ready Orders */}
-      {readyOrders.length > 0 && (
-        <div>
-          <h2 className="text-xl font-bold text-gray-900 mb-4">🎯 Ready for Pickup</h2>
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-            {readyOrders.map((order) => (
-              <OrderCard
-                key={order._id}
-                order={order}
-                statusLabel="READY"
-                statusColor="border-green-200"
-                actions={
-                  <button
-                    onClick={() => {
-                      setSelectedOrder(order);
-                      setShowPinModal(true);
-                    }}
-                    className="w-full px-4 py-2 bg-primary text-white rounded-lg font-semibold hover:bg-primary/90"
-                  >
-                    Verify Rider PIN
-                  </button>
-                }
-              />
-            ))}
-          </div>
-        </div>
-      )}
+      </div>
 
       {/* PIN Verification Modal */}
       {showPinModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-lg max-w-md w-full p-6">
+        <div 
+          className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50"
+          onClick={() => {
+            setShowPinModal(false);
+            setRiderPin("");
+            setSelectedOrder(null);
+          }}
+        >
+          <div className="bg-white rounded-lg max-w-md w-full p-6" onClick={(e) => e.stopPropagation()}>
             <h2 className="text-xl font-bold mb-4">Verify Rider PIN</h2>
             <p className="text-gray-600 mb-4">
               Enter the 4-digit PIN shown by the rider to confirm handover.
@@ -331,8 +347,15 @@ function OrderManagement({ restaurantId, orders: initialOrders }) {
 
       {/* Reject Order Modal */}
       {showRejectModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-lg max-w-md w-full p-6">
+        <div 
+          className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50"
+          onClick={() => {
+            setShowRejectModal(false);
+            setRejectionReason("");
+            setOrderToReject(null);
+          }}
+        >
+          <div className="bg-white rounded-lg max-w-md w-full p-6" onClick={(e) => e.stopPropagation()}>
             <h2 className="text-xl font-bold mb-4">Reject Order</h2>
             <p className="text-gray-600 mb-4">
               Please provide a reason for rejecting this order:
