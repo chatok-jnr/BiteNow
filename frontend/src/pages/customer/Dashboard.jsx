@@ -9,18 +9,7 @@ function Dashboard() {
   const [selectedCuisine, setSelectedCuisine] = useState("All");
   const [filteredRestaurants, setFilteredRestaurants] = useState(mockRestaurants);
 
-  useEffect(() => {
-    // Check authentication
-    const userData = localStorage.getItem("user");
-    if (!userData) {
-      navigate("/login");
-      return;
-    }
-    const parsedUser = JSON.parse(userData);
-    if (parsedUser.role !== "customer") {
-      navigate("/login");
-    }
-  }, [navigate]);
+  // No authentication required - guests can browse restaurants
 
   // Filter logic
   useEffect(() => {

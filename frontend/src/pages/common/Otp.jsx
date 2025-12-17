@@ -56,12 +56,34 @@ function Otp() {
 
     if (otp === MOCK_OTP) {
       setError("");
-      setMessage("OTP verified successfully! Redirecting to login...");
       
-      // Redirect to login after 1.5 seconds
-      setTimeout(() => {
-        navigate("/login");
-      }, 1500);
+      // Check if there's pending signup data
+      const pendingSignup = localStorage.getItem("pendingSignup");
+      const intendedDestination = localStorage.getItem("intendedDestination");
+      
+      if (pendingSignup) {
+        // Auto-login the user after OTP verification
+        const userData = JSON.parse(pendingSignup);
+        localStorage.setItem("user", JSON.stringify(userData));
+        localStorage.removeItem("pendingSignup");
+        
+        setMessage("OTP verified successfully! Redirecting...");
+        
+        setTimeout(() => {
+          if (intendedDestination) {
+            localStorage.removeItem("intendedDestination");
+            navigate(intendedDestination);
+          } else {
+            navigate("/customer-dashboard");
+          }
+        }, 1500);
+      } else {
+        // No pending signup, just redirect to login
+        setMessage("OTP verified successfully! Redirecting to login...");
+        setTimeout(() => {
+          navigate("/login");
+        }, 1500);
+      }
     } else {
       setError("Invalid OTP. Please try again.");
       setOtp("");

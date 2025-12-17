@@ -24,11 +24,13 @@ function Profile() {
     // Check authentication
     const userData = localStorage.getItem("user");
     if (!userData) {
+      localStorage.setItem("intendedDestination", "/customer-dashboard/profile");
       navigate("/login");
       return;
     }
     const parsedUser = JSON.parse(userData);
     if (parsedUser.role !== "customer") {
+      localStorage.setItem("intendedDestination", "/customer-dashboard/profile");
       navigate("/login");
     }
     

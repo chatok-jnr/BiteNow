@@ -159,6 +159,13 @@ function Signup() {
 
         // Mock signup validation for customer
         if (customerData.email && customerData.password.length >= 6) {
+          // Save signup data for OTP verification
+          localStorage.setItem("pendingSignup", JSON.stringify({
+            email: customerData.email,
+            password: customerData.password,
+            role: "customer",
+            name: customerData.fullName
+          }));
           // Simulate successful signup
           setIsLoading(false);
           // Redirect to OTP page

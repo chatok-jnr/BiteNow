@@ -13,11 +13,13 @@ function Orders() {
     // Check authentication
     const userData = localStorage.getItem("user");
     if (!userData) {
+      localStorage.setItem("intendedDestination", "/customer-dashboard/orders");
       navigate("/login");
       return;
     }
     const parsedUser = JSON.parse(userData);
     if (parsedUser.role !== "customer") {
+      localStorage.setItem("intendedDestination", "/customer-dashboard/orders");
       navigate("/login");
     }
 

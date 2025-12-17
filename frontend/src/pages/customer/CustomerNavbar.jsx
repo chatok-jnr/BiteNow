@@ -4,17 +4,34 @@ function CustomerNavbar() {
   const navigate = useNavigate();
   const location = useLocation();
   const user = JSON.parse(localStorage.getItem("user") || "{}");
+  const isAuthenticated = user && user.email;
 
   const handleLogout = () => {
     localStorage.removeItem("user");
+    navigate("/customer-dashboard");
+  };
+
+  const handleLoginClick = () => {
+    localStorage.setItem("intendedDestination", location.pathname);
     navigate("/login");
   };
 
-  const navLinks = [
+  const handleSignupClick = () => {
+    localStorage.setItem("intendedDestination", location.pathname);
+    navigate("/signup");
+  };
+
+  const guestNavLinks = [
+    { path: "/customer-dashboard", label: "Restaurants", icon: "🏠" },
+  ];
+
+  const authNavLinks = [
     { path: "/customer-dashboard", label: "Restaurants", icon: "🏠" },
     { path: "/customer-dashboard/orders", label: "Orders", icon: "📦" },
     { path: "/customer-dashboard/profile", label: "Profile", icon: "👤" },
   ];
+
+  const navLinks = isAuthenticated ? authNavLinks : guestNavLinks;
 
   const isActive = (path) => location.pathname === path;
 
@@ -50,15 +67,34 @@ function CustomerNavbar() {
 
           {/* User Menu */}
           <div className="flex items-center space-x-4">
-            <span className="hidden sm:block text-sm text-gray-600">
-              Hi, <span className="font-semibold text-gray-900">{user.name || "Customer"}</span>
-            </span>
-            <button
-              onClick={handleLogout}
-              className="px-4 py-2 rounded-lg font-medium text-gray-700 hover:bg-gray-100 transition-colors duration-200"
-            >
-              Logout
-            </button>
+            {isAuthenticated ? (
+              <>
+                <span className="hidden sm:block text-sm text-gray-600">
+                  Hi, <span className="font-semibold text-gray-900">{user.name || "Customer"}</span>
+                </span>
+                <button
+                  onClick={handleLogout}
+                  className="px-4 py-2 rounded-lg font-medium text-gray-700 hover:bg-gray-100 transition-colors duration-200"
+                >
+                  Logout
+                </button>
+              </>
+            ) : (
+              <>
+                <button
+                  onClick={handleLoginClick}
+                  className="px-4 py-2 rounded-lg font-medium text-gray-700 hover:bg-gray-100 transition-colors duration-200"
+                >
+                  Login
+                </button>
+                <button
+                  onClick={handleSignupClick}
+                  className="px-4 py-2 rounded-lg font-medium bg-primary text-white hover:bg-primary/90 transition-colors duration-200"
+                >
+                  Signup
+                </button>
+              </>
+            )}
           </div>
         </div>
 
