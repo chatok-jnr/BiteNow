@@ -18,15 +18,15 @@ function MenuManagement({ restaurantId, foodItems: initialFoodItems }) {
     food_quantity: "",
     discount_percentage: "",
     food_category: "Main Course",
-    food_image_url: "",
+    food_image_url: null,
   });
 
   const handleAddFood = async (e) => {
     e.preventDefault();
     
     // Validate required fields
-    if (!formData.food_image_url.trim()) {
-      alert("Food image URL is required");
+    if (!formData.food_image_url) {
+      alert("Food image file is required");
       return;
     }
     
@@ -55,8 +55,8 @@ function MenuManagement({ restaurantId, foodItems: initialFoodItems }) {
     e.preventDefault();
     
     // Validate required fields
-    if (!formData.food_image_url.trim()) {
-      alert("Food image URL is required");
+    if (!formData.food_image_url) {
+      alert("Food image file is required");
       return;
     }
     
@@ -129,7 +129,7 @@ function MenuManagement({ restaurantId, foodItems: initialFoodItems }) {
       food_quantity: "",
       discount_percentage: "",
       food_category: "Main Course",
-      food_image_url: "",
+      food_image_url: null,
     });
   };
 
@@ -142,7 +142,7 @@ function MenuManagement({ restaurantId, foodItems: initialFoodItems }) {
       food_quantity: food.food_quantity.toString(),
       discount_percentage: food.discount_percentage.toString(),
       food_category: food.food_category,
-      food_image_url: food.food_images?.[0] || "",
+      food_image_url: null,
     });
     setShowEditModal(true);
   };
@@ -328,8 +328,11 @@ function MenuManagement({ restaurantId, foodItems: initialFoodItems }) {
 
       {/* Add Food Modal */}
       {showAddModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-lg max-w-2xl w-full p-6 max-h-[90vh] overflow-y-auto">
+        <div 
+          className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50"
+          onClick={() => setShowAddModal(false)}
+        >
+          <div className="bg-white rounded-lg max-w-2xl w-full p-6 max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
             <h2 className="text-2xl font-bold mb-4">Add New Food Item</h2>
             <form onSubmit={handleAddFood} className="space-y-4">
               <div>
@@ -355,16 +358,20 @@ function MenuManagement({ restaurantId, foodItems: initialFoodItems }) {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Food Image URL *</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Food Image *</label>
                 <input
-                  type="url"
-                  value={formData.food_image_url}
-                  onChange={(e) => setFormData({ ...formData, food_image_url: e.target.value })}
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) => {
+                    const file = e.target.files[0];
+                    if (file) {
+                      setFormData({ ...formData, food_image_url: file });
+                    }
+                  }}
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary"
-                  placeholder="https://example.com/food-image.jpg"
                   required
                 />
-                <p className="text-xs text-gray-500 mt-1">Enter a valid image URL for the food item</p>
+                <p className="text-xs text-gray-500 mt-1">Upload an image file for the food item</p>
               </div>
 
               <div className="grid grid-cols-2 gap-4">
@@ -448,8 +455,11 @@ function MenuManagement({ restaurantId, foodItems: initialFoodItems }) {
 
       {/* Edit Food Modal */}
       {showEditModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-lg max-w-2xl w-full p-6 max-h-[90vh] overflow-y-auto">
+        <div 
+          className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50"
+          onClick={() => setShowEditModal(false)}
+        >
+          <div className="bg-white rounded-lg max-w-2xl w-full p-6 max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
             <h2 className="text-2xl font-bold mb-4">Edit Food Item</h2>
             <form onSubmit={handleEditFood} className="space-y-4">
               <div>
@@ -475,16 +485,20 @@ function MenuManagement({ restaurantId, foodItems: initialFoodItems }) {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Food Image URL *</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Food Image *</label>
                 <input
-                  type="url"
-                  value={formData.food_image_url}
-                  onChange={(e) => setFormData({ ...formData, food_image_url: e.target.value })}
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) => {
+                    const file = e.target.files[0];
+                    if (file) {
+                      setFormData({ ...formData, food_image_url: file });
+                    }
+                  }}
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary"
-                  placeholder="https://example.com/food-image.jpg"
                   required
                 />
-                <p className="text-xs text-gray-500 mt-1">Enter a valid image URL for the food item</p>
+                <p className="text-xs text-gray-500 mt-1">Upload an image file for the food item</p>
               </div>
 
               <div className="grid grid-cols-2 gap-4">

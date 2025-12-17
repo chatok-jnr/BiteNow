@@ -4,7 +4,7 @@ function AddRestaurantModal({ isOpen, onClose, onAdd }) {
   const [formData, setFormData] = useState({
     restaurant_name: "",
     restaurant_location: "",
-    restaurant_image_url: "",
+    restaurant_image_url: null,
     restaurant_address: {
       street: "",
       city: "",
@@ -96,7 +96,7 @@ function AddRestaurantModal({ isOpen, onClose, onAdd }) {
     const newErrors = {};
     if (!formData.restaurant_name.trim()) newErrors.restaurant_name = "Name is required";
     if (!formData.restaurant_location.trim()) newErrors.restaurant_location = "Location is required";
-    if (!formData.restaurant_image_url.trim()) newErrors.restaurant_image_url = "Image URL is required";
+    if (!formData.restaurant_image_url) newErrors.restaurant_image_url = "Image file is required";
     if (!formData.restaurant_address.street.trim()) newErrors.street = "Street is required";
     if (!formData.restaurant_address.city.trim()) newErrors.city = "City is required";
     if (!formData.restaurant_contact_info.phone.trim()) newErrors.phone = "Phone is required";
@@ -126,7 +126,7 @@ function AddRestaurantModal({ isOpen, onClose, onAdd }) {
       setFormData({
         restaurant_name: "",
         restaurant_location: "",
-        restaurant_image_url: "",
+        restaurant_image_url: null,
         restaurant_address: {
           street: "",
           city: "",
@@ -156,8 +156,11 @@ function AddRestaurantModal({ isOpen, onClose, onAdd }) {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50 overflow-y-auto">
-      <div className="bg-white rounded-lg max-w-4xl w-full my-8">
+    <div 
+      className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50 overflow-y-auto"
+      onClick={onClose}
+    >
+      <div className="bg-white rounded-lg max-w-4xl w-full my-8" onClick={(e) => e.stopPropagation()}>
         <div className="sticky top-0 bg-white border-b px-6 py-4 flex justify-between items-center rounded-t-lg z-10">
           <h2 className="text-2xl font-bold text-gray-900">Add New Restaurant</h2>
           <button
@@ -216,23 +219,28 @@ function AddRestaurantModal({ isOpen, onClose, onAdd }) {
 
                 <div className="md:col-span-2">
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Restaurant Image URL *
+                    Restaurant Image *
                   </label>
                   <input
-                    type="url"
+                    type="file"
                     name="restaurant_image_url"
-                    value={formData.restaurant_image_url}
-                    onChange={handleChange}
+                    accept="image/*"
+                    onChange={(e) => {
+                      const file = e.target.files[0];
+                      if (file) {
+                        setFormData({ ...formData, restaurant_image_url: file });
+                        setErrors({ ...errors, restaurant_image_url: "" });
+                      }
+                    }}
                     required
                     className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent ${
                       errors.restaurant_image_url ? "border-red-500" : "border-gray-300"
                     }`}
-                    placeholder="https://example.com/image.jpg"
                   />
                   {errors.restaurant_image_url && (
                     <p className="text-red-500 text-sm mt-1">{errors.restaurant_image_url}</p>
                   )}
-                  <p className="text-xs text-gray-500 mt-1">Enter a valid image URL for your restaurant</p>
+                  <p className="text-xs text-gray-500 mt-1">Upload an image file for your restaurant</p>
                 </div>
 
                 <div className="md:col-span-2">

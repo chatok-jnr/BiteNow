@@ -1,11 +1,11 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import OrderManagement from "../../components/OrderManagement";
-import MenuManagement from "../../components/MenuManagement";
-import Analytics from "../../components/Analytics";
-import Reviews from "../../components/Reviews";
-import RestaurantSettings from "../../components/RestaurantSettings";
-import OrderHistory from "../../components/OrderHistory";
+import OrderManagement from "./components/OrderManagement";
+import MenuManagement from "./components/MenuManagement";
+import Analytics from "./components/Analytics";
+import Reviews from "./components/Reviews";
+import RestaurantSettings from "./components/RestaurantSettings";
+import OrderHistory from "./components/OrderHistory";
 import { mockOrders, mockFoodItems, mockReviews } from "../../utils/mockData";
 
 function RestaurantManager() {
@@ -130,28 +130,29 @@ function RestaurantManager() {
               </div>
               
               {/* Operational Status Toggle */}
-              <div className="flex items-center gap-2 px-4 py-2 bg-gray-50 rounded-lg border">
-                <span className="text-sm font-medium text-gray-700">Status:</span>
-                <button
-                  onClick={() => {
-                    setRestaurant({ ...restaurant, is_currently_open: !restaurant.is_currently_open });
-                    alert(`Restaurant is now ${!restaurant.is_currently_open ? "OPEN" : "CLOSED"}`);
-                  }}
-                  className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 ${
-                    restaurant?.is_currently_open ? "bg-secondary" : "bg-gray-300"
-                  }`}
-                >
-                  <span
-                    className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                      restaurant?.is_currently_open ? "translate-x-6" : "translate-x-1"
+              <div className="flex items-start gap-2 px-4 py-2 bg-gray-50 rounded-lg border">
+                <span className="text-sm font-medium text-gray-700 mt-1">Status:</span>
+                <div className="flex flex-col items-end gap-1">
+                  <button
+                    onClick={() => {
+                      setRestaurant({ ...restaurant, is_currently_open: !restaurant.is_currently_open });
+                    }}
+                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 ${
+                      restaurant?.is_currently_open ? "bg-secondary" : "bg-gray-300"
                     }`}
-                  />
-                </button>
-                <span className={`text-sm font-medium ${
-                  restaurant?.is_currently_open ? "text-secondary" : "text-gray-500"
-                }`}>
-                  {restaurant?.is_currently_open ? "Open" : "Closed"}
-                </span>
+                  >
+                    <span
+                      className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                        restaurant?.is_currently_open ? "translate-x-6" : "translate-x-1"
+                      }`}
+                    />
+                  </button>
+                  <span className={`text-xs font-medium ${
+                    restaurant?.is_currently_open ? "text-secondary" : "text-gray-500"
+                  }`}>
+                    {restaurant?.is_currently_open ? "Open" : "Closed"}
+                  </span>
+                </div>
               </div>
             </div>
           </div>

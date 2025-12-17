@@ -73,9 +73,9 @@ function RestaurantSettings({ restaurant: initialRestaurant, onClose }) {
   };
 
   const handleSaveChanges = async () => {
-    // Validate image URL is provided
-    if (!formData.imageUrl.trim()) {
-      alert("Restaurant image URL is required");
+    // Validate image is provided
+    if (!formData.imageUrl) {
+      alert("Restaurant image is required");
       return;
     }
 
@@ -182,31 +182,23 @@ function RestaurantSettings({ restaurant: initialRestaurant, onClose }) {
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              Restaurant Image URL {isEditing && <span className="text-red-500">*</span>}
+              Restaurant Image {isEditing && <span className="text-red-500">*</span>}
             </label>
             <input
-              type="url"
+              type="file"
               name="imageUrl"
-              value={formData.imageUrl}
-              onChange={handleInputChange}
+              accept="image/*"
+              onChange={(e) => {
+                const file = e.target.files[0];
+                if (file) {
+                  setFormData((prev) => ({ ...prev, imageUrl: file }));
+                }
+              }}
               disabled={!isEditing}
-              placeholder="https://example.com/restaurant-image.jpg"
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary disabled:bg-gray-100"
             />
             {isEditing && (
-              <p className="text-xs text-gray-500 mt-1">Enter a valid image URL for your restaurant</p>
-            )}
-            {formData.imageUrl && (
-              <div className="mt-2">
-                <img
-                  src={formData.imageUrl}
-                  alt="Restaurant preview"
-                  className="h-32 w-48 object-cover rounded-lg border"
-                  onError={(e) => {
-                    e.target.src = "https://via.placeholder.com/300x200?text=Invalid+Image+URL";
-                  }}
-                />
-              </div>
+              <p className="text-xs text-gray-500 mt-1">Upload an image file for your restaurant</p>
             )}
           </div>
 
@@ -345,44 +337,6 @@ function RestaurantSettings({ restaurant: initialRestaurant, onClose }) {
               )}
             </div>
           ))}
-        </div>
-      </div>
-
-      {/* Restaurant Images */}
-      <div className="bg-white p-6 rounded-lg shadow-sm border">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">Restaurant Images</h3>
-        <div className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Restaurant Image URL {isEditing && <span className="text-red-500">*</span>}
-            </label>
-            <input
-              type="url"
-              name="imageUrl"
-              value={formData.imageUrl}
-              onChange={handleInputChange}
-              disabled={!isEditing}
-              placeholder="https://example.com/restaurant-image.jpg"
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary disabled:bg-gray-100"
-            />
-            {isEditing && (
-              <p className="text-xs text-gray-500 mt-1">Enter a valid image URL for your restaurant</p>
-            )}
-          </div>
-
-          {formData.imageUrl && (
-            <div>
-              <p className="text-sm font-medium text-gray-700 mb-2">Preview:</p>
-              <img
-                src={formData.imageUrl}
-                alt="Restaurant preview"
-                className="h-48 w-full max-w-md object-cover rounded-lg border"
-                onError={(e) => {
-                  e.target.src = "https://via.placeholder.com/400x300?text=Invalid+Image+URL";
-                }}
-              />
-            </div>
-          )}
         </div>
       </div>
 
