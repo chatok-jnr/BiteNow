@@ -6,7 +6,7 @@ import Analytics from "./components/Analytics";
 import Reviews from "./components/Reviews";
 import RestaurantSettings from "./components/RestaurantSettings";
 import OrderHistory from "./components/OrderHistory";
-import { mockOrders, mockFoodItems, mockReviews } from "../../utils/mockData";
+import { mockOrders, mockFoodItems, mockReviews } from "./mockData";
 
 function RestaurantManager() {
   const navigate = useNavigate();
