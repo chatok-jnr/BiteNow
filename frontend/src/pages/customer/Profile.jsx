@@ -6,6 +6,8 @@ function Profile() {
   const navigate = useNavigate();
   const [isEditing, setIsEditing] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [deletePassword, setDeletePassword] = useState("");
+  const [deleteError, setDeleteError] = useState("");
   const [user, setUser] = useState({
     name: "John Doe",
     email: "customer@test.com",
@@ -60,9 +62,26 @@ function Profile() {
   };
 
   const handleDeleteAccount = () => {
+    // Validate password (mock validation - checking against "customer123")
+    const storedUser = JSON.parse(localStorage.getItem("user") || "{}");
+    const correctPassword = storedUser.password || "customer123";
+    
+    if (deletePassword !== correctPassword) {
+      setDeleteError("Incorrect password. Please try again.");
+      return;
+    }
+    
+    // Password is correct, proceed with deletion
     localStorage.removeItem("user");
     localStorage.removeItem("customerOrders");
+    localStorage.removeItem("pendingCheckout");
     navigate("/login");
+  };
+
+  const handleCloseDeleteModal = () => {
+    setShowDeleteModal(false);
+    setDeletePassword("");
+    setDeleteError("");
   };
 
   return (
@@ -300,20 +319,44 @@ function Profile() {
             <h3 className="text-xl font-bold text-gray-900 mb-4">
               Delete Account?
             </h3>
-            <p className="text-gray-600 mb-6">
+            <p className="text-gray-600 mb-4">
               Are you sure you want to delete your account? This action cannot be
               undone and all your data will be permanently removed.
             </p>
+            
+            {/* Password Confirmation */}
+            <div className="mb-6">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Confirm your password to continue
+              </label>
+              <input
+                type="password"
+                value={deletePassword}
+                onChange={(e) => {
+                  setDeletePassword(e.target.value);
+                  setDeleteError("");
+                }}
+                placeholder="Enter your password"
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+              />
+              {deleteError && (
+                <p className="text-red-600 text-sm mt-2 flex items-center">
+                  <span className="mr-1">⚠️</span>
+                  {deleteError}
+                </p>
+              )}
+            </div>
+
             <div className="flex space-x-3">
               <button
-                onClick={() => setShowDeleteModal(false)}
+                onClick={handleCloseDeleteModal}
                 className="flex-1 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-100"
               >
                 Cancel
               </button>
               <button
                 onClick={handleDeleteAccount}
-                className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
+                className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 font-medium"
               >
                 Delete
               </button>
