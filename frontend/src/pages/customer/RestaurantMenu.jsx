@@ -12,6 +12,17 @@ function RestaurantMenu() {
   const [cart, setCart] = useState([]);
   const [showCart, setShowCart] = useState(false);
 
+  // Clear non-customer users from localStorage
+  useEffect(() => {
+    const userData = localStorage.getItem("user");
+    if (userData) {
+      const user = JSON.parse(userData);
+      if (user.role && user.role !== "customer") {
+        localStorage.removeItem("user");
+      }
+    }
+  }, []);
+
   useEffect(() => {
     const foundRestaurant = mockRestaurants.find((r) => r.id === parseInt(id));
     if (foundRestaurant) {

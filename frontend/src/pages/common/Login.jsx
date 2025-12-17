@@ -56,23 +56,23 @@ function Login() {
         })
       );
 
-      // Check for intended destination
-      const intendedDestination = localStorage.getItem("intendedDestination");
-      console.log("Intended destination:", intendedDestination);
-      
-      if (intendedDestination) {
-        // Clear the intended destination
+      // Always redirect restaurant and rider to their dashboards
+      if (user.role === "restaurant") {
         localStorage.removeItem("intendedDestination");
-        // Navigate to the saved location
-        navigate(intendedDestination);
-      } else {
-        // Navigate to appropriate dashboard based on role
-        if (user.role === "customer") {
+        navigate("/restaurant-dashboard");
+      } else if (user.role === "rider") {
+        localStorage.removeItem("intendedDestination");
+        navigate("/rider-dashboard");
+      } else if (user.role === "customer") {
+        // Only customers can use intendedDestination
+        const intendedDestination = localStorage.getItem("intendedDestination");
+        console.log("Intended destination:", intendedDestination);
+        
+        if (intendedDestination) {
+          localStorage.removeItem("intendedDestination");
+          navigate(intendedDestination);
+        } else {
           navigate("/customer-dashboard");
-        } else if (user.role === "rider") {
-          navigate("/rider-dashboard");
-        } else if (user.role === "restaurant") {
-          navigate("/restaurant-dashboard");
         }
       }
     } else {

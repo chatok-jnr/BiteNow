@@ -3,7 +3,20 @@ import { Link, useNavigate, useLocation } from "react-router-dom";
 function CustomerNavbar() {
   const navigate = useNavigate();
   const location = useLocation();
-  const user = JSON.parse(localStorage.getItem("user") || "{}");
+  
+  // Clear non-customer users from localStorage
+  const userData = localStorage.getItem("user");
+  let user = {};
+  if (userData) {
+    const parsedUser = JSON.parse(userData);
+    // Only keep customer users logged in, clear all other roles
+    if (parsedUser.role === "customer") {
+      user = parsedUser;
+    } else if (parsedUser.role && parsedUser.role !== "customer") {
+      localStorage.removeItem("user");
+    }
+  }
+  
   const isAuthenticated = user && user.email;
 
   const handleLogout = () => {
