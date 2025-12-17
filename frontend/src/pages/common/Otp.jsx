@@ -57,28 +57,16 @@ function Otp() {
     if (otp === MOCK_OTP) {
       setError("");
       
-      // Check if there's pending signup data
-      const pendingSignup = localStorage.getItem("pendingSignup");
+      // Check if there's an intended destination
       const intendedDestination = localStorage.getItem("intendedDestination");
       
-      if (pendingSignup) {
-        // Auto-login the user after OTP verification
-        const userData = JSON.parse(pendingSignup);
-        localStorage.setItem("user", JSON.stringify(userData));
-        localStorage.removeItem("pendingSignup");
-        
+      if (intendedDestination) {
         setMessage("OTP verified successfully! Redirecting...");
-        
+        // Redirect to login which will then redirect to intended destination
         setTimeout(() => {
-          if (intendedDestination) {
-            localStorage.removeItem("intendedDestination");
-            navigate(intendedDestination);
-          } else {
-            navigate("/customer-dashboard");
-          }
+          navigate("/login");
         }, 1500);
       } else {
-        // No pending signup, just redirect to login
         setMessage("OTP verified successfully! Redirecting to login...");
         setTimeout(() => {
           navigate("/login");
