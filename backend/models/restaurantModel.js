@@ -1,5 +1,4 @@
 const mongoose = require("mongoose");
-const RestaurantOwner = require("./restaurantOwnerModel");
 
 const restaurantSchema = new mongoose.Schema(
   {
@@ -201,7 +200,7 @@ restaurantSchema.virtual("fullAddress").get(function () {
 
 // Pre-save middleware to update timestamps
 restaurantSchema.pre("save", function (next) {
-  this.updated_at = Date.now();
+  this.restaurant_updated_at = Date.now();
   next();
 });
 

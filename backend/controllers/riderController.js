@@ -206,6 +206,12 @@ exports.deleteRider = async (req, res) => {
       await imageDeleteHelper(rider.rider_image.public_id);
     }
 
+    //remove all documents from cloudinary
+    if (rider.rider_documents && rider.rider_documents.length > 0) {
+      const publicIds = rider.rider_documents.map((doc) => doc.public_id);
+      await docsDeleteHelper(publicIds);
+    }
+
     //Delete rider data
     await Rider.findByIdAndDelete(riderID);
     res.status(200).json({
@@ -220,6 +226,7 @@ exports.deleteRider = async (req, res) => {
   }
 };
 
+//for image
 //upload rider profile picture
 exports.uploadRiderImage = async (req, res) => {
   try {
@@ -250,7 +257,7 @@ exports.uploadRiderImage = async (req, res) => {
 
     const newImage = imageUploadHelper(req.file, rider.rider_name);
 
-    //Add new images to existing images
+    //upload new image
     rider.rider_image = newImage;
     await rider.save();
 
@@ -418,7 +425,7 @@ exports.uploadRiderDocs = async (req, res) => {
 
     const newDocuments = docUploadHelper(req.files, rider.rider_name);
 
-    //Add new images to existing images
+    //Add new documents
     rider.rider_documents.push(...newDocuments);
     await rider.save();
 

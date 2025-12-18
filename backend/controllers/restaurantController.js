@@ -88,7 +88,6 @@ exports.getRestaurantById = async (req, res) => {
     }
 
     if (
-      // replace
       restaurant.restaurant_status !== "Accepted"
     ) {
       return res.status(403).json({
@@ -393,7 +392,7 @@ exports.uploadRestaurantImage = async (req, res) => {
 
     const newImage = imageUploadHelper(req.file, restaurant.restaurant_name);
 
-    //Add new images to existing images
+    //Add new image
     restaurant.restaurant_image = newImage;
     await restaurant.save();
 

@@ -37,7 +37,7 @@ router
   .route("/:id/docs")
   .post(
     restrictTo("rider"),
-    riderDocUploader.array("doc", 5),
+    riderDocUploader.array("docs", 5),
     riderController.uploadRiderDocs
   )
   .delete(restrictTo("rider"), riderController.deleteRiderDocs);
