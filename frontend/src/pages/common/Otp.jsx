@@ -1,8 +1,11 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 
 function Otp() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const redirectTo = searchParams.get("redirectTo"); // Get redirect parameter
+  
   const [otp, setOtp] = useState("");
   const [timeLeft, setTimeLeft] = useState(300); // 5 minutes in seconds
   const [error, setError] = useState("");
@@ -57,16 +60,14 @@ function Otp() {
     if (otp === MOCK_OTP) {
       setError("");
       
-      // Check if there's an intended destination
-      const intendedDestination = localStorage.getItem("intendedDestination");
-      
-      if (intendedDestination) {
-        setMessage("OTP verified successfully! Redirecting...");
-        // Redirect to login which will then redirect to intended destination
+      // Check where to redirect based on the redirectTo parameter
+      if (redirectTo === "owner-change-password") {
+        setMessage("OTP verified successfully! Redirecting to change password...");
         setTimeout(() => {
-          navigate("/login");
+          navigate("/owner-change-password");
         }, 1500);
       } else {
+        // Default: signup flow
         setMessage("OTP verified successfully! Redirecting to login...");
         setTimeout(() => {
           navigate("/login");
@@ -107,7 +108,11 @@ function Otp() {
         <div className="bg-green-50 border-2 border-green-300 rounded-lg p-4 text-center">
           <p className="text-sm font-semibold text-green-900 mb-1">🔑 Demo OTP Code:</p>
           <p className="text-3xl font-bold text-green-700 tracking-wider">1234</p>
-          <p className="text-xs text-green-600 mt-1">Enter this code to proceed to login</p>
+          <p className="text-xs text-green-600 mt-1">
+            {redirectTo === "owner-change-password" 
+              ? "Enter this code to proceed to change password" 
+              : "Enter this code to proceed to login"}
+          </p>
         </div>
 
         {/* Timer Display */}
@@ -192,13 +197,27 @@ function Otp() {
         {/* Back to Signup Link */}
         <div className="text-center">
           <p className="text-sm text-gray-600">
-            Didn't receive the code?{" "}
-            <button
-              onClick={() => navigate("/signup")}
-              className="text-primary font-medium hover:underline"
-            >
-              Go back to Signup
-            </button>
+            {redirectTo === "owner-change-password" ? (
+              <>
+                Changed your mind?{" "}
+                <button
+                  onClick={() => navigate("/owner-dashboard")}
+                  className="text-primary font-medium hover:underline"
+                >
+                  Back to Dashboard
+                </button>
+              </>
+            ) : (
+              <>
+                Didn't receive the code?{" "}
+                <button
+                  onClick={() => navigate("/signup")}
+                  className="text-primary font-medium hover:underline"
+                >
+                  Go back to Signup
+                </button>
+              </>
+            )}
           </p>
         </div>
       </div>

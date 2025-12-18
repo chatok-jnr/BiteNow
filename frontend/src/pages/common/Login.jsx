@@ -24,7 +24,7 @@ function Login() {
     "restaurant@test.com": {
       password: "restaurant123",
       role: "restaurant",
-      name: "Sarah's Kitchen",
+      name: "Ramim",
     },
   };
 
@@ -59,7 +59,7 @@ function Login() {
       // Always redirect restaurant and rider to their dashboards
       if (user.role === "restaurant") {
         localStorage.removeItem("intendedDestination");
-        navigate("/restaurant-dashboard");
+        navigate("/owner-dashboard");
       } else if (user.role === "rider") {
         localStorage.removeItem("intendedDestination");
         navigate("/rider-dashboard");
