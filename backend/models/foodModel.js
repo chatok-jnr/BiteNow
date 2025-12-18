@@ -80,11 +80,19 @@ foodSchema.methods.canBeOrdered = function(quantity) {
   return this.is_available && this.food_quantity >= quantity;
 }
 
+// Stock++
 foodSchema.methods.restock = function(quantity) {
   this.food_quantity += quantity;
   if(this.food_quantity > 0) this.is_available = true;
   return this.food_quantity;
 }; 
+
+// checking if this is the owner
+foodSchema.methods.amIAuthorized = async function(ownerId) {
+  const restaurant = await Restaurant.findById(this.restaurant_id);
+
+  return restaurant.owner_id.equals(ownerId);
+}
 
 // Update Quantitiy after order
 foodSchema.methods.updateQuantity = function(quantity) {
