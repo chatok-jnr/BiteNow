@@ -52,20 +52,36 @@ const riderSchema = new mongoose.Schema(
       enum: ["Pending", "Approved", "Rejected", "Suspended"],
       default: "Pending",
     },
-    role:{
-      type:String,
-      enum:['rider'],
-      default:'rider'
+    role: {
+      type: String,
+      enum: ["rider"],
+      default: "rider",
     },
-    rider_documents: {
-      nid_no: {
+    rider_image: {
+      url: {
         type: String,
-        required: [true, "The rider must have national validation"],
+        default: null,
       },
-      profile_photo: {
-        url: String,
+      altText: {
+        type: String,
+        default: "Rider image",
+      },
+      public_id: {
+        type: String,
+        default: null,
+      },
+      uploadedAt: {
+        type: Date,
+        default: null,
       },
     },
+    rider_documents: [
+      {
+        url: String,
+        public_id: String,
+        altText: String,
+      },
+    ],
     rider_contact_info: {
       emergency_contact: {
         type: String,
@@ -142,25 +158,25 @@ riderSchema.pre("save", function (next) {
 });
 
 // Password comparison method
-riderSchema.methods.comparePassword = async function(candidatePassword) {
+riderSchema.methods.comparePassword = async function (candidatePassword) {
   try {
     return await bcrypt.compare(candidatePassword, this.rider_password);
-  } catch(error) {
+  } catch (error) {
     throw error;
   }
-}
+};
 //Check if password was changed after token was issued
-riderSchema.methods.changedPasswordAfter = function(JWTTimestamps) {
+riderSchema.methods.changedPasswordAfter = function (JWTTimestamps) {
   if (this.rider_pass_change_at) {
     const changeTimestamps = parseInt(
-      this.rider_pass_change_at.getTime() / 1000, 
+      this.rider_pass_change_at.getTime() / 1000,
       10
     );
     // Return true if token was issued before password change
     return JWTTimestamps < changeTimestamps;
   }
   return false;
-}
+};
 
 //indexes
 riderSchema.index({

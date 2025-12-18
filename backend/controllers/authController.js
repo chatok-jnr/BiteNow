@@ -235,11 +235,9 @@ exports.createRider = async(req, res) => {
       "rider_address",
       "rider_password",
       "rider_date_of_birth",
-      "nid_no",
       "emergency_contact",
       "rider_email",
       "rider_gender",
-      "profile_photo",
     ];
 
     const missingFields = [];
@@ -260,9 +258,6 @@ exports.createRider = async(req, res) => {
       rider_name: req.body.rider_name,
       rider_address: req.body.rider_address,
       rider_status: "Pending",
-      rider_documents: {
-        nid_no: req.body.nid_no,
-      },
       rider_contact_info: {
         emergency_contact: req.body.emergency_contact,
         alternative_phone: req.body.alternative_phone || "",
@@ -273,12 +268,6 @@ exports.createRider = async(req, res) => {
       rider_gender: req.body.rider_gender,
       rider_is_verified: false,
     };
-
-    if(req.body.profile_photo) {
-      riderData.rider_documents.profile_photo = {
-        url: req.body.profile_photo
-      };
-    }
 
     const newRider = await Rider.create(riderData);
 

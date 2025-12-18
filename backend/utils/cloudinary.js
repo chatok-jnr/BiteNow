@@ -9,7 +9,7 @@ cloudinary.config({
   api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
-//config multer storage for rider, restaurant, restaurant owner, customer
+//config multer image storage for rider, restaurant, restaurant owner, customer
 const createStorage = (folderName, prefix) => {
   return new CloudinaryStorage({
     cloudinary: cloudinary,
@@ -23,13 +23,13 @@ const createStorage = (folderName, prefix) => {
     },
   });
 };
-//create storage
+//create image storage
 const restaurantStorage = createStorage("restaurant", "restaurant");
 const restaurantOwnerStorage = createStorage("restaurant-owner", "owner");
 const riderStorage = createStorage("rider", "rider");
 const customerStorage = createStorage("customer", "customer");
 
-//Create uploader for rider, restaurant, restaurant owner, customer
+//Create image uploader for rider, restaurant, restaurant owner, customer
 const createUpload = (storage) => {
   return multer({
     storage,
@@ -45,7 +45,7 @@ const createUpload = (storage) => {
     },
   });
 };
-//create uploader
+//create image uploader
 const restaurantUploader = createUpload(restaurantStorage);
 const restaurantOwnerUploader = createUpload(restaurantOwnerStorage);
 const riderUploader = createUpload(riderStorage);
@@ -81,13 +81,97 @@ const imageUpdationHelper = async (newFile, entityName, oldPublic_id) => {
   return imageUploadHelper(newFile, entityName);
 };
 
+//config multer document storage for rider, restaurant owner
+const createDocStorage = (folderName, prefix) => {
+  return new CloudinaryStorage({
+    cloudinary: cloudinary,
+    params: {
+      folder: `bitenow/${folderName}`,
+      allowed_formats: "pdf",
+      resource_type: "raw",
+      public_id: (req, file) => {
+        return `${prefix}-${Date.now()}-${Math.round(Math.random() * 1e9)}`;
+      },
+    },
+  });
+};
+
+//create document storage
+const restaurantOwnerDocStorage = createDocStorage(
+  "restaurant-owner-documents",
+  "owner-doc"
+);
+const riderDocStorage = createDocStorage("rider-documents", "rider-doc");
+
+//Create document uploader for rider, restaurant owner
+const createDocUpload = (storage) => {
+  return multer({
+    storage,
+    limits: {
+      filesize: 10 * 1024 * 1024, //10MB limit
+    },
+    fileFilter: (req, file, cb) => {
+      if (file.mimetype.startsWith("application/pdf")) {
+        cb(null, true);
+      } else {
+        cb(new Error("Only pdf files are allowed!"), false);
+      }
+    },
+  });
+};
+//create document uploader
+const restaurantOwnerDocUploader = createDocUpload(restaurantOwnerDocStorage);
+const riderDocUploader = createDocUpload(riderDocStorage);
+
+//helper function for documents
+//for document upload
+const docUploadHelper = (files, entityName) => {
+  return files.map((file) => ({
+    url: file.path,
+    altText: `${entityName} - Document`,
+    public_id: file.filename,
+  }));
+};
+
+//for delete document
+const docDeleteHelper = async (publicId) => {
+  if (publicId) {
+    try {
+      await cloudinary.uploader.destroy(publicId, {
+        resource_type: "raw",
+      });
+    } catch (err) {
+      throw err;
+    }
+  }
+};
+//for multiple documents delete
+const docsDeleteHelper = async (publicIds) => {
+  if (publicIds && publicIds.length > 0) {
+    try {
+      await Promise.all(
+        publicIds.map((id) =>
+          cloudinary.uploader.destroy(id, { resource_type: "raw" })
+        )
+      );
+    } catch (err) {
+      throw err;
+    }
+  }
+};
+
 module.exports = {
   cloudinary,
   restaurantUploader,
   restaurantOwnerUploader,
   riderUploader,
   customerUploader,
+  riderDocUploader,
+  restaurantOwnerDocUploader,
   imageUploadHelper,
   imageDeleteHelper,
   imageUpdationHelper,
+  docUploadHelper,
+  docDeleteHelper,
+  docsDeleteHelper,
 };
