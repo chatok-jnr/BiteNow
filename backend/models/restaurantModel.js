@@ -1,5 +1,5 @@
 const mongoose = require("mongoose");
-const RestaurantOwner = require('./restaurantOwnerModel');
+const RestaurantOwner = require("./restaurantOwnerModel");
 
 const restaurantSchema = new mongoose.Schema(
   {
@@ -111,13 +111,24 @@ const restaurantSchema = new mongoose.Schema(
       },
     },
 
-    restaurant_image: [
-      {
-        url: String,
-        altText: String,
-        public_id: String,
+    restaurant_image: {
+      url: {
+        type: String,
+        default: null,
       },
-    ],
+      altText: {
+        type: String,
+        default: "Restaurant image",
+      },
+      public_id: {
+        type: String,
+        default: null,
+      },
+      uploadedAt: {
+        type: Date,
+        default: null,
+      },
+    },
 
     restaurant_created_at: {
       type: Date,

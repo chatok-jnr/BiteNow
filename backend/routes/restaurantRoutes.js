@@ -1,8 +1,7 @@
 const express = require("express");
 const restaurantController = require("./../controllers/restaurantController");
 const { protect, restrictTo } = require("./../middleware/authMiddleware");
-const { upload } = require("./../utils/cloudinary");
-const RestaurantOwner = require("../models/restaurantOwnerModel");
+const { restaurantUploader } = require("./../utils/cloudinary");
 
 const router = express.Router();
 
@@ -32,28 +31,18 @@ router
     restaurantController.deleteRestaurant
   );
 
-//Image upload routes
-//upload image
+//Image routes
+//upload, update, and delete image
 router
   .route("/:id/image")
   .post(
     restrictTo("restaurant_owner"),
-    upload.single("image"),
+    restaurantUploader.single("image"),
     restaurantController.uploadRestaurantImage
-  );
-//delete specific image
-router
-  .route("/:id/image/:imgId")
-  .delete(
-    restrictTo("restaurant_owner"),
-    restaurantController.deleteRestaurantImage
-  );
-//update image
-router
-  .route("/:id/image/:imgId")
+  )
   .patch(
     restrictTo("restaurant_owner"),
-    upload.single("image"),
+    restaurantUploader.single("image"),
     restaurantController.updateRestaurantImage
   )
   .delete(
