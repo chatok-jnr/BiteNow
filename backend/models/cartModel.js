@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 const Food = require('./foodModel');
-const User_infos = require('./userModel');
+const Customer = require('./customerModel');
 const Restaurant = require('./restaurantModel');
 
 const cartItemSchema = new mongoose.Schema({

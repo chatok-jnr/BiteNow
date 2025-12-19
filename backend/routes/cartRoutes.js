@@ -1,29 +1,29 @@
 const express = require('express');
 const cartController = require('../controllers/cartController');
-const authMiddleware = require('../middleware/authMiddleware');
+const {protect, restrictTo} = require('../middleware/authMiddleware');
 
 const router = express.Router();
 
 // Protect all cart routes - user must be authenticated
-router.use(authMiddleware.protect);
+router.use(protect);
 
 // Get or create cart (for a specific restaurant)
 
 // Get active cart
 router
   .route('/')
-  .get(cartController.getCart)
-  .post(cartController.getOrCreateCart)
-  .delete(cartController.clearCart);
+  .get(restrictTo('customer'), cartController.getCart)
+  .post(restrictTo('customer'), cartController.getOrCreateCart)
+  .delete(restrictTo('customer'), cartController.clearCart);
 
 // Add item to cart
 router
   .route('/add')
-  .post(cartController.addToCart);
+  .post(restrictTo('customer'), cartController.addToCart);
 
 // Remove item from cart
 router
   .route('/remove')
-  .post(cartController.removeFromCart);
+  .post(restrictTo('customer'), cartController.removeFromCart);
 
 module.exports = router;
