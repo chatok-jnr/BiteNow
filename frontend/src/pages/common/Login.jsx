@@ -40,6 +40,10 @@ function Login() {
     e.preventDefault();
     const user = mockUsers[formData.email];
 
+    console.log("Login attempt - Email:", formData.email);
+    console.log("Login attempt - Password:", formData.password);
+    console.log("Found user:", user);
+
     if (user && user.password === formData.password) {
       // Store user info in localStorage
       localStorage.setItem(
@@ -48,18 +52,31 @@ function Login() {
           email: formData.email,
           role: user.role,
           name: user.name,
+          password: formData.password,
         })
       );
 
-      // Navigate to appropriate dashboard
-      if (user.role === "customer") {
-        navigate("/customer-dashboard");
-      } else if (user.role === "rider") {
-        navigate("/rider-dashboard");
-      } else if (user.role === "restaurant") {
+      // Always redirect restaurant and rider to their dashboards
+      if (user.role === "restaurant") {
+        localStorage.removeItem("intendedDestination");
         navigate("/owner-dashboard");
+      } else if (user.role === "rider") {
+        localStorage.removeItem("intendedDestination");
+        navigate("/rider-dashboard");
+      } else if (user.role === "customer") {
+        // Only customers can use intendedDestination
+        const intendedDestination = localStorage.getItem("intendedDestination");
+        console.log("Intended destination:", intendedDestination);
+        
+        if (intendedDestination) {
+          localStorage.removeItem("intendedDestination");
+          navigate(intendedDestination);
+        } else {
+          navigate("/customer-dashboard");
+        }
       }
     } else {
+      console.log("Login failed");
       setError("Invalid email or password");
     }
   };
