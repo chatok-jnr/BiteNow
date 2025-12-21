@@ -47,6 +47,17 @@ const riderSchema = new mongoose.Schema(
       trim: true,
       maxLength: [50, "Rider address cannot exceed 50 characters"],
     },
+    rider_location: {
+      type: {
+        type: String,
+        enum: ["Point"],
+        default: "Point",
+      },
+      coordinates: {
+        type: [Number], // [longitude, latitude]
+        default: undefined,
+      },
+    },
     rider_status: {
       type: String,
       enum: ["Pending", "Approved", "Rejected", "Suspended"],

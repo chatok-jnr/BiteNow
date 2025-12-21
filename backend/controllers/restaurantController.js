@@ -166,12 +166,12 @@ exports.searchRestaurants = async (req, res) => {
 exports.createRestaurant = async (req, res) => {
   try {
     //required field
-    const { owner_id, restaurant_name, restaurant_location } = req.body;
-    if (!owner_id || !restaurant_name || !restaurant_location) {
+    const { owner_id, restaurant_name, restaurant_address } = req.body;
+    if (!owner_id || !restaurant_name || !restaurant_address) {
       return res.status(400).json({
         status: "fail",
         message:
-          "Please provide owner_id, restaurant_name, and restaurant_location",
+          "Please provide owner_id, restaurant_name, and restaurant_address",
       });
     }
 
