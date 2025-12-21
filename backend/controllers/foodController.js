@@ -1,5 +1,6 @@
 const { mongo, default: mongoose } = require('mongoose');
 const Food = require('./../models/foodModel');
+const Restaurant = require('./../models/restaurantModel');
 
 // All Food
 exports.getAllFood = async (req, res) => {
@@ -102,6 +103,15 @@ exports.getFood = async (req, res) => {
 exports.createFood = async (req, res) => {
   try{
 
+    const restaurantInfo = await Restaurant.findById(req.body.restaurant_id);
+    const authorized = restaurantInfo.owner_id.equals(req.user._id)
+
+    if(!authorized) {
+      return res.status(403).json({
+        message:'You are not the owner of this restaurant'
+      });
+    }
+
     const newFood = await Food.create( {
       restaurant_id: req.body.restaurant_id,
       food_name: req.body.food_name,
@@ -130,6 +140,18 @@ exports.createFood = async (req, res) => {
 // Update Food
 exports.updateFood = async (req, res) => {
   try{
+
+    const targetFood = await Food.findById(req.params.id);
+    
+    const authorized = await targetFood.amIAuthorized(req.user._id);
+
+    if(!authorized) {
+      return res.status(400).json({
+        status:'failed',
+        message:'You are not Authorized to update this food'
+      });
+    }
+
     const food = await Food.findByIdAndUpdate(
       req.params.id,
       req.body,
@@ -163,6 +185,16 @@ exports.updateFood = async (req, res) => {
 // Delete Food
 exports.deleteFood = async (req, res) => {
   try{
+
+    const targetFood = await Food.findById(req.params.id);
+    const authorized = await targetFood.amIAuthorized(req.user._id);
+
+    if(!authorized) {
+      return res.status(403).json({
+        message:'This is not your product delete'
+      });
+    }
+
     const dltFood = await Food.findByIdAndDelete(req.params.id);
 
     if(!dltFood) {
@@ -187,8 +219,6 @@ exports.deleteFood = async (req, res) => {
 // Restock Food
 exports.restockFood  = async (req, res) => {
 
-  console.log(`ID = ${req.params.id}\nQuantity = ${req.body.quantity}`);
-
   try {
     const quantity = req.body.quantity;
     if(!quantity || quantity <= 0) {
@@ -205,6 +235,14 @@ exports.restockFood  = async (req, res) => {
         message:`Not found food with that id: ${req.params.id}`
       });
     };
+
+    const authorized = await food.amIAuthorized(req.user._id);
+
+    if(!authorized) {
+      return res.status(403).json({
+        message:'This is not your product restock'
+      });
+    }
 
     const newQuantity = food.restock(quantity);
     await food.save();

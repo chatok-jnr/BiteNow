@@ -1,441 +1,266 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import CustomerNavbar from "./CustomerNavbar";
+import { mockRestaurants, cuisineCategories } from "./mockData";
 
-function CustomerDashboard() {
+function Dashboard() {
   const navigate = useNavigate();
-  const [user, setUser] = useState(null);
-  const [activeTab, setActiveTab] = useState("browse");
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState("all");
-  const [cart, setCart] = useState([]);
-  const [showCart, setShowCart] = useState(false);
+  const [selectedCuisine, setSelectedCuisine] = useState("All");
+  const [filteredRestaurants, setFilteredRestaurants] = useState(mockRestaurants);
 
   useEffect(() => {
+    // Check authentication
     const userData = localStorage.getItem("user");
     if (!userData) {
-      navigate("/");
-    } else {
-      const parsedUser = JSON.parse(userData);
-      if (parsedUser.role !== "customer") {
-        navigate("/");
-      }
-      setUser(parsedUser);
+      navigate("/login");
+      return;
+    }
+    const parsedUser = JSON.parse(userData);
+    if (parsedUser.role !== "customer") {
+      navigate("/login");
     }
   }, [navigate]);
 
-  const handleLogout = () => {
-    localStorage.removeItem("user");
-    navigate("/");
+  // Filter logic
+  useEffect(() => {
+    let filtered = [...mockRestaurants];
+
+    // Search filter
+    if (searchQuery) {
+      filtered = filtered.filter(
+        (restaurant) =>
+          restaurant.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          restaurant.cuisine.toLowerCase().includes(searchQuery.toLowerCase())
+      );
+    }
+
+    // Cuisine filter
+    if (selectedCuisine !== "All") {
+      filtered = filtered.filter((r) => r.cuisine === selectedCuisine);
+    }
+
+    setFilteredRestaurants(filtered);
+  }, [searchQuery, selectedCuisine]);
+
+  // Get restaurants by category
+  const topDealsRestaurants = filteredRestaurants.filter(r => r.topDeal);
+  const bestDiscountRestaurants = filteredRestaurants.filter(r => r.discount > 0).sort((a, b) => b.discount - a.discount);
+  const fastDeliveryRestaurants = filteredRestaurants.filter(r => r.fastDelivery || parseInt(r.deliveryTime.split("-")[0]) <= 25);
+  const highlyRatedRestaurants = filteredRestaurants.filter(r => r.rating >= 4.7).sort((a, b) => b.rating - a.rating);
+
+  const handleRestaurantClick = (restaurantId) => {
+    navigate(`/customer-dashboard/restaurant/${restaurantId}`);
   };
 
-  const categories = [
-    { id: "all", name: "All", icon: "🍽️" },
-    { id: "pizza", name: "Pizza", icon: "🍕" },
-    { id: "burger", name: "Burgers", icon: "🍔" },
-    { id: "sushi", name: "Sushi", icon: "🍣" },
-    { id: "dessert", name: "Desserts", icon: "🍰" },
-  ];
+  const RestaurantCard = ({ restaurant }) => (
+    <div
+      onClick={() => handleRestaurantClick(restaurant.id)}
+      className="bg-white rounded-lg shadow-md hover:shadow-xl transition-shadow duration-300 cursor-pointer overflow-hidden flex-shrink-0 w-72"
+    >
+      {/* Restaurant Image/Icon */}
+      <div className="h-40 bg-gradient-to-br from-primary/10 to-secondary/10 flex items-center justify-center relative">
+        <span className="text-6xl">{restaurant.image}</span>
+        {restaurant.popular && (
+          <span className="absolute top-3 right-3 bg-secondary text-white px-2 py-1 rounded-full text-xs font-semibold">
+            Popular
+          </span>
+        )}
+        {restaurant.discount > 0 && (
+          <span className="absolute top-3 left-3 bg-primary text-white px-2 py-1 rounded-full text-xs font-semibold">
+            {restaurant.discount}% OFF
+          </span>
+        )}
+      </div>
 
-  const restaurants = [
-    {
-      id: 1,
-      name: "Pizza Palace",
-      category: "pizza",
-      rating: 4.8,
-      deliveryTime: "25-35 min",
-      image: "🍕",
-      popular: true,
-    },
-    {
-      id: 2,
-      name: "Burger House",
-      category: "burger",
-      rating: 4.6,
-      deliveryTime: "20-30 min",
-      image: "🍔",
-      popular: true,
-    },
-    {
-      id: 3,
-      name: "Sushi Master",
-      category: "sushi",
-      rating: 4.9,
-      deliveryTime: "30-40 min",
-      image: "🍣",
-      popular: false,
-    },
-    {
-      id: 4,
-      name: "Sweet Treats",
-      category: "dessert",
-      rating: 4.7,
-      deliveryTime: "15-25 min",
-      image: "🍰",
-      popular: true,
-    },
-    {
-      id: 5,
-      name: "Italian Corner",
-      category: "pizza",
-      rating: 4.5,
-      deliveryTime: "30-40 min",
-      image: "🍝",
-      popular: false,
-    },
-    {
-      id: 6,
-      name: "Taco Fiesta",
-      category: "burger",
-      rating: 4.4,
-      deliveryTime: "25-35 min",
-      image: "🌮",
-      popular: false,
-    },
-  ];
+      {/* Restaurant Details */}
+      <div className="p-4">
+        <h3 className="text-lg font-bold text-gray-900 mb-1 truncate">
+          {restaurant.name}
+        </h3>
 
-  const activeOrders = [
-    {
-      id: 1,
-      restaurant: "Pizza Palace",
-      items: ["Margherita Pizza", "Garlic Bread"],
-      status: "preparing",
-      estimatedTime: "15 min",
-    },
-  ];
+        <p className="text-sm text-gray-600 mb-2">{restaurant.cuisine}</p>
 
-  const filteredRestaurants = restaurants.filter((restaurant) => {
-    const matchesCategory =
-      selectedCategory === "all" || restaurant.category === selectedCategory;
-    const matchesSearch = restaurant.name
-      .toLowerCase()
-      .includes(searchQuery.toLowerCase());
-    return matchesCategory && matchesSearch;
-  });
+        <div className="space-y-2">
+          {/* Rating */}
+          <div className="flex items-center space-x-2">
+            <span className="text-yellow-500">⭐</span>
+            <span className="font-semibold text-gray-900">{restaurant.rating}</span>
+            <span className="text-gray-500 text-xs">
+              ({Math.floor(Math.random() * 500 + 100)}+)
+            </span>
+          </div>
 
-  const addToCart = (restaurant) => {
-    setCart([...cart, { ...restaurant, quantity: 1 }]);
-    // Animation effect
-    setTimeout(() => setShowCart(true), 100);
-    setTimeout(() => setShowCart(false), 2000);
-  };
-
-  if (!user) return null;
+          {/* Delivery Info */}
+          <div className="flex items-center justify-between text-xs">
+            <div className="flex items-center space-x-1">
+              <span>🕒</span>
+              <span className="text-gray-700">{restaurant.deliveryTime} min</span>
+            </div>
+            <div className="flex items-center space-x-1">
+              <span>💵</span>
+              <span className="text-gray-700">৳{restaurant.deliveryFee}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <header className="bg-white shadow-sm sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <h1 className="text-2xl font-bold text-primary">BiteNow</h1>
-              <div className="hidden md:block text-sm text-gray-600">
-                📍 Delivering to{" "}
-                <span className="font-semibold text-gray-900">Downtown</span>
-              </div>
-            </div>
-
-            <div className="flex items-center gap-4">
-              <button
-                onClick={() => setShowCart(!showCart)}
-                className="relative p-2 hover:bg-gray-100 rounded-lg transition-colors"
-              >
-                🛒
-                {cart.length > 0 && (
-                  <span className="absolute -top-1 -right-1 bg-primary text-white text-xs w-5 h-5 rounded-full flex items-center justify-center animate-bounce">
-                    {cart.length}
-                  </span>
-                )}
-              </button>
-              <div className="flex items-center gap-3">
-                <div className="text-right">
-                  <p className="text-sm font-semibold text-gray-900">
-                    {user.name}
-                  </p>
-                  <p className="text-xs text-gray-500">Customer</p>
-                </div>
-                <button
-                  onClick={handleLogout}
-                  className="px-4 py-2 text-sm text-primary hover:bg-primary/5 rounded-lg transition-colors"
-                >
-                  Logout
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      </header>
+      <CustomerNavbar />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Tabs */}
-        <div className="flex gap-4 mb-8 overflow-x-auto pb-2">
-          <button
-            onClick={() => setActiveTab("browse")}
-            className={`px-6 py-3 rounded-full font-semibold whitespace-nowrap transition-all duration-300 ${
-              activeTab === "browse"
-                ? "bg-primary text-white shadow-lg transform scale-105"
-                : "bg-white text-gray-700 hover:bg-gray-100"
-            }`}
-          >
-            🍽️ Browse
-          </button>
-          <button
-            onClick={() => setActiveTab("orders")}
-            className={`px-6 py-3 rounded-full font-semibold whitespace-nowrap transition-all duration-300 ${
-              activeTab === "orders"
-                ? "bg-primary text-white shadow-lg transform scale-105"
-                : "bg-white text-gray-700 hover:bg-gray-100"
-            }`}
-          >
-            📦 Orders
-          </button>
-          <button
-            onClick={() => setActiveTab("favorites")}
-            className={`px-6 py-3 rounded-full font-semibold whitespace-nowrap transition-all duration-300 ${
-              activeTab === "favorites"
-                ? "bg-primary text-white shadow-lg transform scale-105"
-                : "bg-white text-gray-700 hover:bg-gray-100"
-            }`}
-          >
-            ❤️ Favorites
-          </button>
+        {/* Header */}
+        <div className="mb-6">
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">
+            Discover Restaurants
+          </h1>
+          <p className="text-gray-600">Order from your favorite restaurants</p>
         </div>
 
-        {/* Browse Tab */}
-        {activeTab === "browse" && (
-          <div className="space-y-8 animate-fadeIn">
-            {/* Search Bar */}
-            <div className="bg-white rounded-2xl shadow-sm p-6">
-              <div className="relative">
-                <input
-                  type="text"
-                  placeholder="Search for restaurants or cuisines..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full px-6 py-4 pl-12 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
-                />
-                <span className="absolute left-4 top-1/2 transform -translate-y-1/2 text-xl">
-                  🔍
-                </span>
-              </div>
-            </div>
+        {/* Search Bar */}
+        <div className="mb-6">
+          <div className="relative">
+            <input
+              type="text"
+              placeholder="Search restaurants or cuisines..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full px-4 py-3 pl-12 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+            />
+            <span className="absolute left-4 top-3.5 text-gray-400 text-xl">
+              🔍
+            </span>
+          </div>
+        </div>
 
-            {/* Categories */}
-            <div className="flex gap-3 overflow-x-auto pb-2">
-              {categories.map((category) => (
-                <button
-                  key={category.id}
-                  onClick={() => setSelectedCategory(category.id)}
-                  className={`flex flex-col items-center gap-2 px-6 py-4 rounded-xl whitespace-nowrap transition-all duration-300 ${
-                    selectedCategory === category.id
-                      ? "bg-primary text-white shadow-lg transform scale-105"
-                      : "bg-white text-gray-700 hover:shadow-md hover:scale-105"
+        {/* Cuisines Section - Horizontal Scroll */}
+        <div className="mb-8">
+          <h2 className="text-xl font-bold text-gray-900 mb-4">Cuisines</h2>
+          <div className="flex space-x-4 overflow-x-auto py-4 px-2 scrollbar-hide">
+            {cuisineCategories.map((cuisine) => (
+              <div
+                key={cuisine.id}
+                onClick={() => setSelectedCuisine(cuisine.id)}
+                className={`flex-shrink-0 flex flex-col items-center cursor-pointer transition-all ${
+                  selectedCuisine === cuisine.id ? "transform scale-110" : ""
+                }`}
+              >
+                <div
+                  className={`w-20 h-20 rounded-full flex items-center justify-center text-3xl transition-all ${
+                    selectedCuisine === cuisine.id
+                      ? "bg-primary text-white ring-4 ring-primary/30"
+                      : "bg-white shadow-md hover:shadow-lg"
                   }`}
                 >
-                  <span className="text-2xl">{category.icon}</span>
-                  <span className="text-sm font-semibold">{category.name}</span>
-                </button>
-              ))}
-            </div>
-
-            {/* Active Orders Alert */}
-            {activeOrders.length > 0 && (
-              <div className="bg-secondary/10 border-2 border-secondary rounded-2xl p-6 animate-pulse">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h3 className="font-bold text-gray-900 mb-1">
-                      🚀 Order in Progress
-                    </h3>
-                    <p className="text-sm text-gray-600">
-                      Your order from {activeOrders[0].restaurant} is being
-                      prepared
-                    </p>
-                  </div>
-                  <button className="px-4 py-2 bg-primary text-white rounded-lg font-semibold hover:bg-primary/90 transition-colors">
-                    Track
-                  </button>
+                  {cuisine.icon}
                 </div>
-              </div>
-            )}
-
-            {/* Popular Restaurants */}
-            <div>
-              <h2 className="text-2xl font-bold text-gray-900 mb-4">
-                🔥 Popular Restaurants
-              </h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {filteredRestaurants
-                  .filter((r) => r.popular)
-                  .map((restaurant, index) => (
-                    <div
-                      key={restaurant.id}
-                      className="bg-white rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden group cursor-pointer transform hover:scale-105"
-                      style={{ animationDelay: `${index * 100}ms` }}
-                    >
-                      <div className="h-40 bg-gradient-to-br from-primary/10 to-secondary/10 flex items-center justify-center text-6xl">
-                        {restaurant.image}
-                      </div>
-                      <div className="p-6">
-                        <h3 className="font-bold text-xl text-gray-900 mb-2">
-                          {restaurant.name}
-                        </h3>
-                        <div className="flex items-center gap-4 text-sm text-gray-600 mb-4">
-                          <span className="flex items-center gap-1">
-                            ⭐ {restaurant.rating}
-                          </span>
-                          <span className="flex items-center gap-1">
-                            🕐 {restaurant.deliveryTime}
-                          </span>
-                        </div>
-                        <button
-                          onClick={() => addToCart(restaurant)}
-                          className="w-full bg-primary text-white py-3 rounded-xl font-semibold hover:bg-primary/90 transition-colors"
-                        >
-                          Order Now
-                        </button>
-                      </div>
-                    </div>
-                  ))}
-              </div>
-            </div>
-
-            {/* All Restaurants */}
-            <div>
-              <h2 className="text-2xl font-bold text-gray-900 mb-4">
-                🍴 All Restaurants
-              </h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {filteredRestaurants
-                  .filter((r) => !r.popular)
-                  .map((restaurant, index) => (
-                    <div
-                      key={restaurant.id}
-                      className="bg-white rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden group cursor-pointer transform hover:scale-105"
-                      style={{ animationDelay: `${index * 100}ms` }}
-                    >
-                      <div className="h-40 bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center text-6xl">
-                        {restaurant.image}
-                      </div>
-                      <div className="p-6">
-                        <h3 className="font-bold text-xl text-gray-900 mb-2">
-                          {restaurant.name}
-                        </h3>
-                        <div className="flex items-center gap-4 text-sm text-gray-600 mb-4">
-                          <span className="flex items-center gap-1">
-                            ⭐ {restaurant.rating}
-                          </span>
-                          <span className="flex items-center gap-1">
-                            🕐 {restaurant.deliveryTime}
-                          </span>
-                        </div>
-                        <button
-                          onClick={() => addToCart(restaurant)}
-                          className="w-full bg-primary text-white py-3 rounded-xl font-semibold hover:bg-primary/90 transition-colors"
-                        >
-                          Order Now
-                        </button>
-                      </div>
-                    </div>
-                  ))}
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Orders Tab */}
-        {activeTab === "orders" && (
-          <div className="space-y-6 animate-fadeIn">
-            <h2 className="text-2xl font-bold text-gray-900">Your Orders</h2>
-            {activeOrders.map((order) => (
-              <div
-                key={order.id}
-                className="bg-white rounded-2xl shadow-sm p-6 hover:shadow-md transition-shadow"
-              >
-                <div className="flex items-center justify-between mb-4">
-                  <div>
-                    <h3 className="font-bold text-lg text-gray-900">
-                      {order.restaurant}
-                    </h3>
-                    <p className="text-sm text-gray-600">Order #{order.id}</p>
-                  </div>
-                  <span className="px-4 py-2 bg-yellow-100 text-yellow-800 rounded-full text-sm font-semibold">
-                    {order.status}
-                  </span>
-                </div>
-                <div className="space-y-2 mb-4">
-                  {order.items.map((item, index) => (
-                    <p key={index} className="text-gray-700">
-                      • {item}
-                    </p>
-                  ))}
-                </div>
-                <div className="flex items-center justify-between pt-4 border-t">
-                  <span className="text-sm text-gray-600">
-                    Estimated: {order.estimatedTime}
-                  </span>
-                  <button className="px-6 py-2 bg-primary text-white rounded-lg font-semibold hover:bg-primary/90 transition-colors">
-                    Track Order
-                  </button>
-                </div>
+                <p
+                  className={`mt-2 text-sm font-medium ${
+                    selectedCuisine === cuisine.id
+                      ? "text-primary"
+                      : "text-gray-700"
+                  }`}
+                >
+                  {cuisine.name}
+                </p>
               </div>
             ))}
-            <div className="text-center text-gray-500 py-12">
-              <p className="text-4xl mb-4">📦</p>
-              <p>No past orders yet</p>
+          </div>
+        </div>
+
+        {/* Restaurant Sections */}
+        
+        {/* Top Deals Section */}
+        {topDealsRestaurants.length > 0 && (
+          <div className="mb-8">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-2xl font-bold text-gray-900">
+                🔥 Top Deals
+              </h2>
+            </div>
+            <div className="flex space-x-4 overflow-x-auto pb-4 scrollbar-hide">
+              {topDealsRestaurants.map((restaurant) => (
+                <RestaurantCard key={restaurant.id} restaurant={restaurant} />
+              ))}
             </div>
           </div>
         )}
 
-        {/* Favorites Tab */}
-        {activeTab === "favorites" && (
-          <div className="text-center py-20 animate-fadeIn">
-            <p className="text-6xl mb-4">❤️</p>
-            <h3 className="text-xl font-semibold text-gray-900 mb-2">
-              No Favorites Yet
-            </h3>
-            <p className="text-gray-600">
-              Start adding restaurants to your favorites!
+        {/* Best Discounts Section */}
+        {bestDiscountRestaurants.length > 0 && (
+          <div className="mb-8">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-2xl font-bold text-gray-900">
+                💰 Best Discounts
+              </h2>
+            </div>
+            <div className="flex space-x-4 overflow-x-auto pb-4 scrollbar-hide">
+              {bestDiscountRestaurants.map((restaurant) => (
+                <RestaurantCard key={restaurant.id} restaurant={restaurant} />
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Fast Delivery Section */}
+        {fastDeliveryRestaurants.length > 0 && (
+          <div className="mb-8">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-2xl font-bold text-gray-900">
+                ⚡ Fast Delivery
+              </h2>
+            </div>
+            <div className="flex space-x-4 overflow-x-auto pb-4 scrollbar-hide">
+              {fastDeliveryRestaurants.map((restaurant) => (
+                <RestaurantCard key={restaurant.id} restaurant={restaurant} />
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Highly Rated Section */}
+        {highlyRatedRestaurants.length > 0 && (
+          <div className="mb-8">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-2xl font-bold text-gray-900">
+                ⭐ Highly Rated
+              </h2>
+            </div>
+            <div className="flex space-x-4 overflow-x-auto pb-4 scrollbar-hide">
+              {highlyRatedRestaurants.map((restaurant) => (
+                <RestaurantCard key={restaurant.id} restaurant={restaurant} />
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* No Results */}
+        {filteredRestaurants.length === 0 && (
+          <div className="text-center py-12">
+            <p className="text-6xl mb-4">😔</p>
+            <p className="text-xl text-gray-600 mb-2">No restaurants found</p>
+            <p className="text-sm text-gray-500">
+              Try a different search or cuisine
             </p>
           </div>
         )}
       </div>
 
-      {/* Cart Notification */}
-      {showCart && (
-        <div className="fixed top-24 right-4 bg-secondary text-white px-6 py-4 rounded-xl shadow-xl animate-slideIn z-50">
-          <p className="font-semibold">✓ Added to cart!</p>
-        </div>
-      )}
-
-      {/* Add custom animations to index.css */}
+      {/* Custom Scrollbar Hide */}
       <style jsx>{`
-        @keyframes fadeIn {
-          from {
-            opacity: 0;
-            transform: translateY(20px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
+        .scrollbar-hide::-webkit-scrollbar {
+          display: none;
         }
-        @keyframes slideIn {
-          from {
-            transform: translateX(100%);
-          }
-          to {
-            transform: translateX(0);
-          }
-        }
-        .animate-fadeIn {
-          animation: fadeIn 0.5s ease-out;
-        }
-        .animate-slideIn {
-          animation: slideIn 0.3s ease-out;
+        .scrollbar-hide {
+          -ms-overflow-style: none;
+          scrollbar-width: none;
         }
       `}</style>
     </div>
   );
 }
 
-export default CustomerDashboard;
+export default Dashboard;
