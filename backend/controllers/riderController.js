@@ -1,5 +1,4 @@
 const mongoose = require("mongoose");
-const User_infos = require("./../models/userModel");
 const Rider = require("./../models/riderModel");
 
 //GetAll riders

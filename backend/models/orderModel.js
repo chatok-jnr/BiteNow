@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 
-const User = require('./../models/userModel');
+const Customer = require('./../models/customerModel');
 const Restaurant = require('./../models/restaurantModel');
 const Food = require('./../models/foodModel');
 
@@ -29,7 +29,7 @@ const orderSchema = new mongoose.Schema({
   },
   user_id:{
     type: mongoose.Schema.Types.ObjectId,
-    ref:'User',
+    ref:'Customer',
     required: true
   },
   restaurant_id:{
@@ -45,6 +45,28 @@ const orderSchema = new mongoose.Schema({
     type: Number,
     min:1000,
     max:9999
+  },
+  customer_location: {
+    type: {
+      type: String,
+      enum: ['Point'],
+      default: 'Point'
+    },
+    coordinates: {
+      type: [Number], // [longitude, latitude]
+      default: undefined
+    }
+  },
+  restaurant_location: {
+    type: {
+      type: String,
+      enum: ['Point'],
+      default: 'Point'
+    },
+    coordinates: {
+      type: [Number], // [longitude, latitude]
+      default: undefined
+    }
   },
   customer_pin:{
     type: Number,

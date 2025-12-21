@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 const Food = require('./foodModel');
-const User_infos = require('./userModel');
+const Customer = require('./customerModel');
 const Restaurant = require('./restaurantModel');
 
 const cartItemSchema = new mongoose.Schema({
@@ -36,7 +36,7 @@ const cartSchema = new mongoose.Schema({
   user_id:{
     type:mongoose.Schema.Types.ObjectId,
     required:true,
-    ref: 'User_infos'
+    ref: 'Customer'
   },
   restaurant_id:{
     type:mongoose.Schema.Types.ObjectId,
