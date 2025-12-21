@@ -162,7 +162,11 @@ exports.searchRestaurants = async (req, res) => {
     });
   }
 };
+<<<<<<< HEAD
 //restricted
+=======
+
+>>>>>>> 6d0f3892769340414689af4401e3dd260f11a16d
 exports.createRestaurant = async (req, res) => {
   try {
     //required field
@@ -194,10 +198,15 @@ exports.createRestaurant = async (req, res) => {
   } catch (err) {
     res.status(400).json({
       status: "fail",
+<<<<<<< HEAD
       message: err.message,
+=======
+      message: err.message
+>>>>>>> 6d0f3892769340414689af4401e3dd260f11a16d
     });
   }
 };
+
 exports.getMyRestaurants = async (req, res) => {
   try {
     const owner_id = req.user._id;

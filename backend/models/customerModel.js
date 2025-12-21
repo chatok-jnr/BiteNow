@@ -48,11 +48,39 @@ const customerSchema = new mongoose.Schema({
     minlength: [6, 'A password length must be 6 or more'], 
     select: false
   },
-  customer_photo:String,
   role:{
     type:String,
     enum:['customer'],
     default:'customer'
+  },
+  customer_location: {
+    type: {
+      type: String,
+      enum: ['Point'],
+      default: 'Point'
+    },
+    coordinates: {
+      type: [Number], // [longitude, latitude]
+      default: undefined
+    }
+  },
+  customer_image: {
+    url: {
+      type: String,
+      default: null,
+    },
+    altText: {
+      type: String,
+      default: "Rider image",
+    },
+    public_id: {
+      type: String,
+      default: null,
+    },
+    uploadedAt: {
+      type: Date,
+      default: null,
+    },
   },
   customer_is_verified:{
     type:Boolean,
