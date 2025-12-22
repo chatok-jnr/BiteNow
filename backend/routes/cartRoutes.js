@@ -4,8 +4,8 @@ const authMiddleware = require('../middleware/authMiddleware');
 
 const router = express.Router();
 
-// Protect all cart routes - user must be authenticated
-router.use(authMiddleware.protect);
+// Use optional protect for cart operations (allows both authenticated and guest users)
+router.use(authMiddleware.optionalProtect);
 
 // Get or create cart (for a specific restaurant)
 
@@ -25,5 +25,10 @@ router
 router
   .route('/remove')
   .post(cartController.removeFromCart);
+
+// Migrate guest cart to user account (requires authentication)
+router
+  .route('/migrate')
+  .post(authMiddleware.protect, cartController.migrateGuestCart);
 
 module.exports = router;
