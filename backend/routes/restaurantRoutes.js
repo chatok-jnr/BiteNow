@@ -17,8 +17,7 @@ router
 
 router
   .route('/my/list')
-  .get(restrictTo('admin', 'restaurant_owner'),restaurantController.getMyRestaurants
-);
+  .get(restrictTo('admin', 'restaurant_owner'), restaurantController.getMyRestaurants);
 
 router
   .route('/:id')  
