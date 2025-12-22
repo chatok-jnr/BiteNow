@@ -12,52 +12,54 @@ const sendEmail = require("./../utils/sendEmail");
 //Customer
 //Register
 exports.createCustomer = async (req, res) => {
-  const requiredFields = [
-    "customer_name",
-    "customer_email",
-    "customer_phone",
-    "customer_birth_date",
-    "customer_gender",
-    "customer_address",
-    "customer_password",
-  ];
+  try {
+    const requiredFields = [
+      "customer_name",
+      "customer_email",
+      "customer_phone",
+      "customer_birth_date",
+      "customer_gender",
+      "customer_address",
+      "customer_password",
+    ];
 
-  const missingFields = [];
-  requiredFields.forEach((el) => {
-    if (!req.body[el]) missingFields.push(el.replace("customer_", ""));
-  });
-
-  if (missingFields.length > 0) {
-    return res.status(400).json({
-      status: "failed",
-      message: `Missing Required Fields: ${missingFields.join(", ")}`,
+    const missingFields = [];
+    requiredFields.forEach((el) => {
+      if (!req.body[el]) missingFields.push(el.replace("customer_", ""));
     });
 
-  const customerData = {
-    customer_name: req.body.customer_name,
-    customer_email: req.body.customer_email,
-    customer_phone: req.body.customer_phone,
-    customer_birth_date: req.body.customer_birth_date,
-    customer_gender: req.body.customer_gender,
-    customer_address: req.body.customer_address,
-    customer_password: req.body.customer_password,
-    customer_photo: req.body.customer_photo ? req.body.customer_photo : "",
-    customer_location: {
-      type: "Point",
-      coordinates: req.body.coordinates,
-    },
-  };
+    if (missingFields.length > 0) {
+      return res.status(400).json({
+        status: "failed",
+        message: `Missing Required Fields: ${missingFields.join(", ")}`,
+      });
+    }
+
+    const customerData = {
+      customer_name: req.body.customer_name,
+      customer_email: req.body.customer_email,
+      customer_phone: req.body.customer_phone,
+      customer_birth_date: req.body.customer_birth_date,
+      customer_gender: req.body.customer_gender,
+      customer_address: req.body.customer_address,
+      customer_password: req.body.customer_password,
+      customer_photo: req.body.customer_photo ? req.body.customer_photo : "",
+      customer_location: {
+        type: "Point",
+        coordinates: req.body.coordinates,
+      },
+    };
 
     const newCustomer = await Customer.create(customerData);
 
-  //Send otp
-  const otp = Math.floor(1000 + Math.random() * 90000).toString();
-  await OTP.create({
-    email: req.body.customer_email,
-    user_type: "customer",
-    otp,
-    expiresAt: Date.now() + 5 * 60 * 1000,
-  });
+    //Send otp
+    const otp = Math.floor(1000 + Math.random() * 9000).toString();
+    await OTP.create({
+      email: req.body.customer_email,
+      user_type: "customer",
+      otp,
+      expiresAt: Date.now() + 5 * 60 * 1000,
+    });
 
     const htmlTemplate = `
     <h2>Your BiteNow Verification Code</h2>
@@ -67,14 +69,20 @@ exports.createCustomer = async (req, res) => {
   `;
     await sendEmail(req.body.customer_email, "Verify your account", htmlTemplate);
 
-  res.status(201).json({
-    status: "success",
-    message:
-      "To active your account please enter the verification code sent to you email address",
-    data: {
-      newCustomer,
-    },
-  });
+    res.status(201).json({
+      status: "success",
+      message:
+        "To active your account please enter the verification code sent to you email address",
+      data: {
+        newCustomer,
+      },
+    });
+  } catch (err) {
+    res.status(400).json({
+      status: "failed",
+      message: err.message,
+    });
+  }
 };
 //verify-account
 exports.verifyCustomerOtp = async (req, res) => {
@@ -559,6 +567,9 @@ exports.createRestaurantOwner = async (req, res) => {
 //Verify account
 exports.restaurantOwnerVerification = async (req, res) => {
   try {
+
+    console.log(`Debug = ${req.body.otp}`);
+
     const { email, user_type, otp } = req.body;
     if (!email || !user_type || !otp) {
       return res.status(404).json({
@@ -661,7 +672,7 @@ exports.loginRestaurantOwner = async (req, res) => {
     const token = jwt.sign(
       {
         id: restaurantOwner._id,
-        role: "reataurant_owner",
+        role: "restaurant_owner",
         email: req.body.restaurant_owner_email,
       },
       process.env.JWT_SECRET,
