@@ -9,6 +9,14 @@ function Checkout() {
   const user = JSON.parse(localStorage.getItem("user") || "{}");
 
   useEffect(() => {
+    // Check authentication first
+    const userData = localStorage.getItem("user");
+    if (!userData) {
+      localStorage.setItem("intendedDestination", "/customer-dashboard/checkout");
+      navigate("/login");
+      return;
+    }
+    
     // Get order data from localStorage
     const pendingOrder = JSON.parse(localStorage.getItem("pendingCheckout") || "null");
     

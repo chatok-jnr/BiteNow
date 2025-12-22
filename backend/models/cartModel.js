@@ -35,8 +35,14 @@ const cartItemSchema = new mongoose.Schema({
 const cartSchema = new mongoose.Schema({
   user_id:{
     type:mongoose.Schema.Types.ObjectId,
-    required:true,
-    ref: 'Customer'
+    required: false,
+    ref: 'Customer',
+    default: null
+  },
+  guest_session_id: {
+    type: String,
+    required: false,
+    default: null
   },
   restaurant_id:{
     type:mongoose.Schema.Types.ObjectId,
@@ -69,6 +75,14 @@ const cartSchema = new mongoose.Schema({
   timestamps: true
 });
 
+// Validation: Either user_id or guest_session_id must be present
+cartSchema.pre('validate', function(next) {
+  if (!this.user_id && !this.guest_session_id) {
+    next(new Error('Either user_id or guest_session_id is required'));
+  } else {
+    next();
+  }
+});
 
 
 //Methods
@@ -163,22 +177,48 @@ cartSchema.statics.findActiveByUser = function(userId) {
     .populate('restaurant_id', 'restaurant_name');
 };
 
-//Create Cart
-cartSchema.statics.findOrCreateCart = async function(userId, restaurantId) {
-  let cart = await this.findOne({
-    user_id: userId,
-    restaurant_id: restaurantId,
+cartSchema.statics.findActiveByGuest = function(guestSessionId) {
+  return this.findOne({
+    guest_session_id: guestSessionId,
     is_active: true,
     expires_at: { $gt: new Date() }
   })
     .populate('items.food_id', 'food_name food_price discount_percentage')
     .populate('restaurant_id', 'restaurant_name');
+};
+
+//Create Cart
+cartSchema.statics.findOrCreateCart = async function(userId, restaurantId, guestSessionId = null) {
+  const query = {
+    restaurant_id: restaurantId,
+    is_active: true,
+    expires_at: { $gt: new Date() }
+  };
+
+  if (userId) {
+    query.user_id = userId;
+  } else if (guestSessionId) {
+    query.guest_session_id = guestSessionId;
+  } else {
+    throw new Error('Either userId or guestSessionId is required');
+  }
+
+  let cart = await this.findOne(query)
+    .populate('items.food_id', 'food_name food_price discount_percentage')
+    .populate('restaurant_id', 'restaurant_name');
 
   if (!cart) {
-    cart = await this.create({
-      user_id: userId,
+    const cartData = {
       restaurant_id: restaurantId
-    });
+    };
+    
+    if (userId) {
+      cartData.user_id = userId;
+    } else {
+      cartData.guest_session_id = guestSessionId;
+    }
+
+    cart = await this.create(cartData);
     
     // Populate the newly created cart
     await cart.populate('items.food_id', 'food_name food_price discount_percentage');
@@ -186,6 +226,68 @@ cartSchema.statics.findOrCreateCart = async function(userId, restaurantId) {
   }
 
   return cart;
+};
+
+// Migrate guest cart to user account
+cartSchema.statics.migrateGuestCart = async function(guestSessionId, userId) {
+  const guestCart = await this.findOne({
+    guest_session_id: guestSessionId,
+    is_active: true,
+    expires_at: { $gt: new Date() }
+  });
+
+  if (!guestCart) {
+    return null; // No guest cart to migrate
+  }
+
+  // Check if user already has an active cart
+  const userCart = await this.findOne({
+    user_id: userId,
+    is_active: true,
+    expires_at: { $gt: new Date() }
+  });
+
+  if (userCart) {
+    // If user has a cart from a different restaurant, deactivate guest cart
+    if (userCart.restaurant_id.toString() !== guestCart.restaurant_id.toString()) {
+      guestCart.is_active = false;
+      await guestCart.save();
+      return userCart; // Keep user's existing cart
+    } else {
+      // Same restaurant, merge items
+      for (const guestItem of guestCart.items) {
+        const existingItemIndex = userCart.items.findIndex(item => 
+          item.food_id.toString() === guestItem.food_id.toString()
+        );
+
+        if (existingItemIndex > -1) {
+          // Add quantities
+          userCart.items[existingItemIndex].quantity += guestItem.quantity;
+          userCart.items[existingItemIndex].total_price = 
+            userCart.items[existingItemIndex].quantity * 
+            (userCart.items[existingItemIndex].price_at_time - 
+             (userCart.items[existingItemIndex].price_at_time * userCart.items[existingItemIndex].discount_at_time / 100));
+        } else {
+          // Add new item
+          userCart.items.push(guestItem);
+        }
+      }
+      userCart.calculateTotal();
+      await userCart.save();
+      
+      // Deactivate guest cart
+      guestCart.is_active = false;
+      await guestCart.save();
+      
+      return userCart;
+    }
+  } else {
+    // User has no cart, convert guest cart to user cart
+    guestCart.user_id = userId;
+    guestCart.guest_session_id = null;
+    await guestCart.save();
+    return guestCart;
+  }
 };
 
 const Cart = new mongoose.model('Cart', cartSchema);

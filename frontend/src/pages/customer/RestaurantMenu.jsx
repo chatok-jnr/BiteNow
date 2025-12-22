@@ -12,6 +12,17 @@ function RestaurantMenu() {
   const [cart, setCart] = useState([]);
   const [showCart, setShowCart] = useState(false);
 
+  // Clear non-customer users from localStorage
+  useEffect(() => {
+    const userData = localStorage.getItem("user");
+    if (userData) {
+      const user = JSON.parse(userData);
+      if (user.role && user.role !== "customer") {
+        localStorage.removeItem("user");
+      }
+    }
+  }, []);
+
   useEffect(() => {
     const foundRestaurant = mockRestaurants.find((r) => r.id === parseInt(id));
     if (foundRestaurant) {
@@ -100,7 +111,16 @@ function RestaurantMenu() {
     
     localStorage.setItem("pendingCheckout", JSON.stringify(checkoutData));
     
-    // Navigate to checkout page
+    // Check if user is authenticated
+    const userData = localStorage.getItem("user");
+    if (!userData) {
+      // Guest user - save intended destination and redirect to login
+      localStorage.setItem("intendedDestination", "/customer-dashboard/checkout");
+      navigate("/login");
+      return;
+    }
+    
+    // Authenticated user - proceed to checkout
     navigate("/customer-dashboard/checkout");
   };
 

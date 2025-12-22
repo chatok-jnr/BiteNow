@@ -13,10 +13,11 @@ exports.getOrCreateCart = async (req, res) => {
       });
     }
 
-    // Get user_id from auth middleware
-    const user_id = req.user._id;
+    // Get user_id from auth middleware (for authenticated users) or guest session
+    const user_id = req.user ? req.user._id : null;
+    const guest_session_id = req.guestSessionId || null;
     
-    const cart = await Cart.findOrCreateCart(user_id, restaurant_id);
+    const cart = await Cart.findOrCreateCart(user_id, restaurant_id, guest_session_id);
     
     res.status(200).json({
       status: 'success',
@@ -33,6 +34,9 @@ exports.getOrCreateCart = async (req, res) => {
 // Add to Cart
 exports.addToCart = async (req, res) => {
   try {
+
+    console.log()
+
     const { food_id, quantity = 1 } = req.body;
     
     if (!food_id) {
@@ -59,14 +63,25 @@ exports.addToCart = async (req, res) => {
       });
     }
 
-    // Get user_id from auth middleware
-    const user_id = req.user._id;
+    // Get user_id or guest_session_id
+    const user_id = req.user ? req.user._id : null;
+    const guest_session_id = req.guestSessionId || null;
     
-    // Check if user has ANY active cart first
-    let cart = await Cart.findOne({
-      user_id,
-      is_active: true
-    });
+    console.log(`Guest ID = ${guest_session_id}`);
+
+    // Check if user/guest has ANY active cart first
+    let cart;
+    if (user_id) {
+      cart = await Cart.findOne({
+        user_id,
+        is_active: true
+      });
+    } else {
+      cart = await Cart.findOne({
+        guest_session_id,
+        is_active: true
+      });
+    }
 
     // If cart exists, verify it's for the same restaurant
     if (cart && cart.restaurant_id.toString() !== food.restaurant_id.toString()) {
@@ -78,10 +93,17 @@ exports.addToCart = async (req, res) => {
 
     // Create new cart if none exists
     if (!cart) {
-      cart = await Cart.create({
-        user_id,
+      const cartData = {
         restaurant_id: food.restaurant_id
-      });
+      };
+      
+      if (user_id) {
+        cartData.user_id = user_id;
+      } else {
+        cartData.guest_session_id = guest_session_id;
+      }
+
+      cart = await Cart.create(cartData);
     }
 
     // Add item to cart
@@ -113,14 +135,24 @@ exports.removeFromCart = async (req, res) => {
       });
     }
 
-    // Get user_id from auth middleware
-    const user_id = req.user._id;
+    // Get user_id or guest_session_id
+    const user_id = req.user ? req.user._id : null;
+    const guest_session_id = req.guestSessionId || null;
     
-    const cart = await Cart.findOne({
-      user_id,
-      is_active: true,
-      expires_at: { $gt: new Date() }
-    });
+    let cart;
+    if (user_id) {
+      cart = await Cart.findOne({
+        user_id,
+        is_active: true,
+        expires_at: { $gt: new Date() }
+      });
+    } else {
+      cart = await Cart.findOne({
+        guest_session_id,
+        is_active: true,
+        expires_at: { $gt: new Date() }
+      });
+    }
 
     if (!cart) {
       return res.status(404).json({
@@ -148,10 +180,16 @@ exports.removeFromCart = async (req, res) => {
 // Get Cart
 exports.getCart = async (req, res) => {
   try {
-    // Get user_id from auth middleware
-    const user_id = req.user._id;
+    // Get user_id or guest_session_id
+    const user_id = req.user ? req.user._id : null;
+    const guest_session_id = req.guestSessionId || null;
     
-    const cart = await Cart.findActiveByUser(user_id);
+    let cart;
+    if (user_id) {
+      cart = await Cart.findActiveByUser(user_id);
+    } else {
+      cart = await Cart.findActiveByGuest(guest_session_id);
+    }
 
     if (!cart) {
       return res.status(404).json({
@@ -175,14 +213,24 @@ exports.getCart = async (req, res) => {
 // Clear Cart
 exports.clearCart = async (req, res) => {
   try {
-    // Get user_id from auth middleware
-    const user_id = req.user._id;
+    // Get user_id or guest_session_id
+    const user_id = req.user ? req.user._id : null;
+    const guest_session_id = req.guestSessionId || null;
     
-    const cart = await Cart.findOne({
-      user_id,
-      is_active: true,
-      expires_at: { $gt: new Date() }
-    });
+    let cart;
+    if (user_id) {
+      cart = await Cart.findOne({
+        user_id,
+        is_active: true,
+        expires_at: { $gt: new Date() }
+      });
+    } else {
+      cart = await Cart.findOne({
+        guest_session_id,
+        is_active: true,
+        expires_at: { $gt: new Date() }
+      });
+    }
 
     if (!cart) {
       return res.status(404).json({
@@ -198,6 +246,49 @@ exports.clearCart = async (req, res) => {
       status: 'success',
       message: 'Cart cleared',
       data: { cart }
+    });
+  } catch (err) {
+    res.status(400).json({
+      status: 'failed',
+      message: err.message
+    });
+  }
+};
+
+// Migrate guest cart to user account (called after login/register)
+exports.migrateGuestCart = async (req, res) => {
+  try {
+    const { guest_session_id } = req.body;
+    
+    if (!guest_session_id) {
+      return res.status(400).json({
+        status: 'failed',
+        message: 'Guest session ID is required'
+      });
+    }
+
+    if (!req.user) {
+      return res.status(401).json({
+        status: 'failed',
+        message: 'User must be authenticated to migrate cart'
+      });
+    }
+
+    const user_id = req.user._id;
+    const migratedCart = await Cart.migrateGuestCart(guest_session_id, user_id);
+
+    if (!migratedCart) {
+      return res.status(200).json({
+        status: 'success',
+        message: 'No guest cart to migrate',
+        data: { cart: null }
+      });
+    }
+
+    res.status(200).json({
+      status: 'success',
+      message: 'Guest cart migrated successfully',
+      data: { cart: migratedCart }
     });
   } catch (err) {
     res.status(400).json({

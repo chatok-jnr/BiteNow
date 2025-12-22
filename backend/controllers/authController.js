@@ -32,7 +32,6 @@ exports.createCustomer = async (req, res) => {
       status: "failed",
       message: `Missing Required Fields: ${missingFields.join(", ")}`,
     });
-  }
 
   const customerData = {
     customer_name: req.body.customer_name,
@@ -49,7 +48,7 @@ exports.createCustomer = async (req, res) => {
     },
   };
 
-  const newCustomer = await Customer.create(customerData);
+    const newCustomer = await Customer.create(customerData);
 
   //Send otp
   const otp = Math.floor(1000 + Math.random() * 90000).toString();
@@ -60,13 +59,13 @@ exports.createCustomer = async (req, res) => {
     expiresAt: Date.now() + 5 * 60 * 1000,
   });
 
-  const htmlTemplate = `
+    const htmlTemplate = `
     <h2>Your BiteNow Verification Code</h2>
     <p style = "font-size:22px>
     Your Customer account verification code is ${otp}</p>
     <p>This code will expires in 5 minutes</p>
   `;
-  await sendEmail(req.body.customer_email, "Verify your account", htmlTemplate);
+    await sendEmail(req.body.customer_email, "Verify your account", htmlTemplate);
 
   res.status(201).json({
     status: "success",
