@@ -12,14 +12,14 @@ const directionsService = mbxDirections(baseClient);
 //Calculate distance using Haversine formula
 const calculateDistance = (lat1, lon1, lat2, lon2) => {
   const R = 6371;
-  const dLat = toRed(lat2 - lat1);
-  const dLon = toRed(lon2 - lon1);
+  const dLat = toRad(lat2 - lat1);
+  const dLon = toRad(lon2 - lon1);
 
   //haversine formula
   const hav =
     Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-    Math.cos(toRed(lat1)) *
-      Math.cos(toRed(lat2)) *
+    Math.cos(toRad(lat1)) *
+      Math.cos(toRad(lat2)) *
       Math.sin(dLon / 2) *
       Math.sin(dLon / 2);
 
@@ -31,7 +31,7 @@ const calculateDistance = (lat1, lon1, lat2, lon2) => {
   return distance;
 };
 
-const toRed = (val) => {
+const toRad = (val) => {
   return (val * Math.PI) / 180;
 };
 
@@ -52,6 +52,7 @@ const geocodeAddress = async (address) => {
 
     throw new Error("Address not found");
   } catch (err) {
+    console.error("Geocoding error:", err);
     throw err;
   }
 };
@@ -70,6 +71,7 @@ const reverseGeocode = async (latitude, longitude) => {
 
     throw new Error("Location not found");
   } catch (err) {
+    console.error("Reverse geocoding error:", err);
     throw err;
   }
 };
@@ -92,7 +94,7 @@ const findNearestRestaurants = async (
 
     //calculate distance for each restaurant
     const restaurantsWithDistance = restaurants.map((restaurant) => {
-      const [restLat, restLon] = restaurant.restaurant_location.coordinates;
+      const [restLon, restLat] = restaurant.restaurant_location.coordinates;
       const distance = calculateDistance(
         customerLat,
         customerLon,
@@ -113,6 +115,81 @@ const findNearestRestaurants = async (
 
     return nearbyRestaurants;
   } catch (err) {
+    console.error("Error finding nearest restaurants:", err);
     throw err;
   }
+};
+
+//Calculate nearby orders from riders
+const findNearestOrders = async (riderLat, riderLon, maxDistance = 15) => {
+  try {
+    const Order = require("./../models/orderModel");
+
+    const orders = await Order.find({
+      order_status: "look_rider",
+      rider_id: null,
+    })
+      .populate("restaurant_id", "restaurant_location")
+      .populate("customer_id", "customer_location");
+
+    //calculate distance rider to restaurant and restaurant to customer
+    const ordersWithDistance = orders.map((order) => {
+      const [restLon, restLat] =
+        order.restaurant_id.restaurant_location.coordinates;
+      const [cusLat, cusLon] = order.customer_id.customer_location.coordinates;
+      const d1 = calculateDistance(riderLat, riderLon, restLat, restLon);
+      const d2 = calculateDistance(restLat, restLon, cusLat, cusLon);
+      const distance = d1 + d2;
+
+      return {
+        ...order.toObject(),
+        distanceFromRider: distance.toFixed(2),
+      };
+    });
+
+    //filter and sort
+    const nearbyOrders = ordersWithDistance
+      .filter((o) => o.distanceFromRider <= maxDistance)
+      .sort((a, b) => a.distanceFromRider - b.distanceFromRider);
+
+    return nearbyOrders;
+  } catch (err) {
+    console.error("Error finding nearest orders:", err);
+    throw err;
+  }
+};
+
+//finding best directions
+const getDirections = async (origin, destination) => {
+  try {
+    const res = await directionsService
+      .getDirections({
+        profile: "driving",
+        waypoints: [{ coordinates: origin }, { coordinates: destination }],
+        geometries: "geojson",
+      })
+      .send();
+
+    if (res.body.routes.length > 0) {
+      const route = res.body.routes[0];
+      return {
+        distance: (route.distance / 1000).toFixed(2), //convert meter to Km
+        duration: Math.round(route.duration / 60), //convert second to minute
+        geometry: route.geometry,
+      };
+    }
+    throw new Error("No route found");
+  } catch (err) {
+    console.error("Directions error:", err);
+    throw err;
+  }
+};
+
+module.exports = {
+  calculateDistance,
+  geocodeAddress,
+  reverseGeocode,
+  findNearestRestaurants,
+  findNearestOrders,
+  getDirections,
 };

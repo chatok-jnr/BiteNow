@@ -20,17 +20,21 @@ const restaurantSchema = new mongoose.Schema(
       trim: true,
     },
 
- restaurant_location: {
-    type: {
-      type: String,
-      enum: ['Point'],
-      default: 'Point'
+    restaurant_location: {
+      type: {
+        type: String,
+        enum: ["Point"],
+        default: "Point",
+      },
+      coordinates: {
+        type: [Number], // [longitude, latitude]
+        default: undefined,
+      },
     },
-    coordinates: {
-      type: [Number], // [longitude, latitude]
-      default: undefined
-    }
-  },
+    lastLocationUpdate: {
+      type: Date,
+      default: Date.now,
+    },
 
     restaurant_status: {
       type: String,
@@ -160,6 +164,7 @@ restaurantSchema.index({
 });
 restaurantSchema.index({ restaurant_category: 1 });
 restaurantSchema.index({ restaurant_created_at: -1 });
+
 
 // Virtual function for better user experience
 //formatted commission percentage

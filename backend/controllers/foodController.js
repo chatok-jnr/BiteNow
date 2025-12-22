@@ -118,6 +118,7 @@ exports.createFood = async (req, res) => {
       food_description: req.body.food_description,
       food_price: req.body.food_price,
       food_quantity: req.body.food_quantity || 0,
+      food_image: req.body.food_image,
       discount_percentage: req.body.discount_percentage || 0,
       tags: req.body.tags || []
     });

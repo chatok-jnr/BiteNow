@@ -58,6 +58,10 @@ const riderSchema = new mongoose.Schema(
         default: undefined,
       },
     },
+    lastLocationUpdate: {
+      type: Date,
+      default: Date.now,
+    },
     rider_status: {
       type: String,
       enum: ["Pending", "Approved", "Rejected", "Suspended"],
