@@ -34,6 +34,9 @@ exports.getOrCreateCart = async (req, res) => {
 // Add to Cart
 exports.addToCart = async (req, res) => {
   try {
+
+    console.log()
+
     const { food_id, quantity = 1 } = req.body;
     
     if (!food_id) {
@@ -64,6 +67,8 @@ exports.addToCart = async (req, res) => {
     const user_id = req.user ? req.user._id : null;
     const guest_session_id = req.guestSessionId || null;
     
+    console.log(`Guest ID = ${guest_session_id}`);
+
     // Check if user/guest has ANY active cart first
     let cart;
     if (user_id) {

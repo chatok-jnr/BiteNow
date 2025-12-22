@@ -5,8 +5,6 @@ const {protect, restrictTo} = require('./../middleware/authMiddleware');
 
 const router = express.Router();
 
-router.use(protect);
-
 router
   .route('/')
   .get(Food.getAllFood) // All Food in the platform
@@ -26,7 +24,7 @@ router
 
 router
   .route('/:id/restock')
-  .patch(restrictTo('restaurant_owner'), Food.restockFood); // Increase the curretn stock of a specifi food
+  .patch(protect, restrictTo('restaurant_owner'), Food.restockFood); // Increase the curretn stock of a specifi food
 
 router  
   .route('/:id')
