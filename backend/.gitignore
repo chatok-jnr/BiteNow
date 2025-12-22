@@ -24,5 +24,6 @@ coverage/
 Thumbs.db
 # Misc
 *.tgz
-
+*.md
+*.sh
 .git_backup/

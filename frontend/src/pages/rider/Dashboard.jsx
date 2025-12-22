@@ -1,12 +1,25 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import PendingDeliveries from "./components/PendingDeliveries";
+import ActiveDelivery from "./components/ActiveDelivery";
+import RiderProfile from "./components/RiderProfile";
+import DeliveryHistory from "./components/DeliveryHistory";
 
 function RiderDashboard() {
   const navigate = useNavigate();
   const [user, setUser] = useState(null);
   const [activeTab, setActiveTab] = useState("available");
   const [isOnline, setIsOnline] = useState(true);
-  const [acceptedOrder, setAcceptedOrder] = useState(null);
+  const [pendingRequests, setPendingRequests] = useState([]);
+  const [activeDeliveries, setActiveDeliveries] = useState([]);
+  const [completedDeliveries, setCompletedDeliveries] = useState([]);
+  const [deliverySteps, setDeliverySteps] = useState({}); // Track step for each delivery
+  const [riderStats, setRiderStats] = useState({
+    deliveries: 0,
+    earnings: 0,
+    hours: 0,
+    rating: 0,
+  });
 
   useEffect(() => {
     const userData = localStorage.getItem("user");
@@ -18,86 +31,138 @@ function RiderDashboard() {
         navigate("/");
       }
       setUser(parsedUser);
+      // Fetch initial data
+      fetchPendingRequests();
+      fetchRiderStats();
+      
+      // Add mock rider ID for profile visualization
+      if (!parsedUser.id && !parsedUser._id) {
+        parsedUser._id = "mock_rider_id_12345";
+        localStorage.setItem("user", JSON.stringify(parsedUser));
+      }
     }
   }, [navigate]);
 
-  const handleLogout = () => {
-    localStorage.removeItem("user");
-    navigate("/");
+  const fetchPendingRequests = async () => {
+    try {
+      // TODO: Replace with actual API endpoint for pending delivery requests
+      // const token = localStorage.getItem("token");
+      // const response = await fetch("http://localhost:5000/api/deliveries/pending", {
+      //   headers: {
+      //     Authorization: `Bearer ${token}`,
+      //   },
+      // });
+      // const data = await response.json();
+      // setPendingRequests(data.data.requests);
+
+      // Mock data for now
+      const mockRequests = [
+        {
+          id: "req1",
+          _id: "req1",
+          order_id: "ORD123456",
+          restaurant_name: "Pizza Palace",
+          restaurant_address: "123 Main St, Dhaka",
+          customer_name: "John Doe",
+          customer_address: "456 Oak Ave, Dhaka",
+          food_cost: 450,
+          delivery_charge: 50,
+          total_amount: 500,
+          pin1: "1234",
+          pin2: "5678",
+        },
+        {
+          id: "req2",
+          _id: "req2",
+          order_id: "ORD123457",
+          restaurant_name: "Burger House",
+          restaurant_address: "789 Park Rd, Dhaka",
+          customer_name: "Jane Smith",
+          customer_address: "321 Elm St, Dhaka",
+          food_cost: 350,
+          delivery_charge: 50,
+          total_amount: 400,
+          pin1: "2345",
+          pin2: "6789",
+        },
+      ];
+      setPendingRequests(mockRequests);
+    } catch (error) {
+      console.error("Error fetching pending requests:", error);
+    }
   };
 
-  const availableOrders = [
-    {
-      id: 1,
-      restaurant: "Pizza Palace",
-      customer: "John Smith",
-      pickup: "123 Main St",
-      dropoff: "456 Oak Ave",
-      distance: "2.3 km",
-      earning: "$8.50",
-      items: 3,
-    },
-    {
-      id: 2,
-      restaurant: "Burger House",
-      customer: "Emma Wilson",
-      pickup: "789 Park Rd",
-      dropoff: "321 Elm St",
-      distance: "1.8 km",
-      earning: "$6.75",
-      items: 2,
-    },
-    {
-      id: 3,
-      restaurant: "Sushi Master",
-      customer: "David Lee",
-      pickup: "555 Beach Blvd",
-      dropoff: "888 Hill Dr",
-      distance: "3.5 km",
-      earning: "$11.20",
-      items: 4,
-    },
-  ];
-
-  const completedDeliveries = [
-    {
-      id: 101,
-      restaurant: "Italian Corner",
-      earning: "$9.50",
-      time: "2:45 PM",
-      rating: 5,
-    },
-    {
-      id: 102,
-      restaurant: "Taco Fiesta",
-      earning: "$7.25",
-      time: "1:20 PM",
-      rating: 5,
-    },
-    {
-      id: 103,
-      restaurant: "Sweet Treats",
-      earning: "$5.80",
-      time: "12:10 PM",
-      rating: 4,
-    },
-  ];
-
-  const todayStats = {
-    deliveries: 8,
-    earnings: "$127.50",
-    hours: "6.5",
-    rating: "4.9",
+  const fetchRiderStats = async () => {
+    try {
+      // TODO: Replace with actual API to fetch rider stats
+      // This could come from the rider profile endpoint
+      const mockStats = {
+        deliveries: 8,
+        earnings: 400,
+        hours: 6.5,
+        rating: 4.9,
+      };
+      setRiderStats(mockStats);
+    } catch (error) {
+      console.error("Error fetching rider stats:", error);
+    }
   };
 
-  const acceptOrder = (order) => {
-    setAcceptedOrder(order);
+  const handleAcceptRequest = (request) => {
+    // TODO: Call API to accept delivery request
+    setActiveDeliveries([...activeDeliveries, request]);
+    setPendingRequests(pendingRequests.filter((r) => r.id !== request.id));
     setActiveTab("active");
   };
 
-  const completeDelivery = () => {
-    setAcceptedOrder(null);
-    setActiveTab("history");
+  const handleDropRequest = (request) => {
+    // TODO: Call API to drop delivery request
+    setActiveDeliveries(activeDeliveries.filter((d) => d.id !== request.id));
+    setPendingRequests([...pendingRequests, request]);
+    if (activeDeliveries.length <= 1) {
+      setActiveTab("available");
+    }
+  };
+
+  const handleCompleteDelivery = (delivery) => {
+    // TODO: Call API to mark delivery as complete
+    // Add completed timestamp and status
+    const completedDelivery = {
+      ...delivery,
+      status: "Completed",
+      completed_at: new Date().toISOString(),
+      rating: 5, // Mock rating, will come from customer in real implementation
+    };
+    
+    // Remove from active deliveries
+    setActiveDeliveries(activeDeliveries.filter((d) => d.id !== delivery.id));
+    
+    // Add to completed deliveries
+    setCompletedDeliveries([completedDelivery, ...completedDeliveries]);
+    
+    // Clean up delivery step for this delivery
+    const newDeliverySteps = { ...deliverySteps };
+    delete newDeliverySteps[delivery.id];
+    setDeliverySteps(newDeliverySteps);
+    
+    // Update stats
+    setRiderStats({
+      ...riderStats,
+      deliveries: riderStats.deliveries + 1,
+      earnings: riderStats.earnings + 50,
+    });
+    
+    fetchPendingRequests(); // Refresh pending requests
+    
+    if (activeDeliveries.length <= 1) {
+      setActiveTab("history");
+    }
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem("user");
+    localStorage.removeItem("token");
+    navigate("/");
   };
 
   if (!user) return null;
@@ -132,7 +197,7 @@ function RiderDashboard() {
                 <div className="text-center">
                   <p className="text-gray-600">Today&apos;s Earnings</p>
                   <p className="text-2xl font-bold text-secondary">
-                    {todayStats.earnings}
+                    ৳{riderStats.earnings}
                   </p>
                 </div>
               </div>
@@ -162,34 +227,34 @@ function RiderDashboard() {
             <div className="text-3xl mb-2">📦</div>
             <p className="text-gray-600 text-sm">Deliveries</p>
             <p className="text-3xl font-bold text-gray-900">
-              {todayStats.deliveries}
+              {riderStats.deliveries}
             </p>
           </div>
           <div className="bg-white rounded-2xl shadow-sm p-6 hover:shadow-lg transition-shadow transform hover:scale-105 duration-300">
             <div className="text-3xl mb-2">💰</div>
             <p className="text-gray-600 text-sm">Earnings</p>
             <p className="text-3xl font-bold text-secondary">
-              {todayStats.earnings}
+              ৳{riderStats.earnings}
             </p>
           </div>
           <div className="bg-white rounded-2xl shadow-sm p-6 hover:shadow-lg transition-shadow transform hover:scale-105 duration-300">
             <div className="text-3xl mb-2">⏱️</div>
             <p className="text-gray-600 text-sm">Hours</p>
             <p className="text-3xl font-bold text-gray-900">
-              {todayStats.hours}
+              {riderStats.hours}
             </p>
           </div>
           <div className="bg-white rounded-2xl shadow-sm p-6 hover:shadow-lg transition-shadow transform hover:scale-105 duration-300">
             <div className="text-3xl mb-2">⭐</div>
             <p className="text-gray-600 text-sm">Rating</p>
             <p className="text-3xl font-bold text-gray-900">
-              {todayStats.rating}
+              {riderStats.rating}
             </p>
           </div>
         </div>
 
         {/* Tabs */}
-        <div className="flex gap-4 mb-8 overflow-x-auto pb-2">
+        <div className="flex gap-4 mb-8 overflow-x-auto pb-2 px-2 pt-1">
           <button
             onClick={() => setActiveTab("available")}
             className={`px-6 py-3 rounded-full font-semibold whitespace-nowrap transition-all duration-300 ${
@@ -198,7 +263,7 @@ function RiderDashboard() {
                 : "bg-white text-gray-700 hover:bg-gray-100"
             }`}
           >
-            🎯 Available Orders
+            🎯 Available Requests
           </button>
           <button
             onClick={() => setActiveTab("active")}
@@ -209,9 +274,9 @@ function RiderDashboard() {
             }`}
           >
             🚀 Active Delivery
-            {acceptedOrder && (
+            {activeDeliveries.length > 0 && (
               <span className="ml-2 bg-secondary text-white text-xs px-2 py-1 rounded-full">
-                1
+                {activeDeliveries.length}
               </span>
             )}
           </button>
@@ -225,218 +290,49 @@ function RiderDashboard() {
           >
             📋 History
           </button>
+          <button
+            onClick={() => setActiveTab("profile")}
+            className={`px-6 py-3 rounded-full font-semibold whitespace-nowrap transition-all duration-300 ${
+              activeTab === "profile"
+                ? "bg-primary text-white shadow-lg transform scale-105"
+                : "bg-white text-gray-700 hover:bg-gray-100"
+            }`}
+          >
+            👤 Profile
+          </button>
         </div>
 
         {/* Available Orders Tab */}
         {activeTab === "available" && (
-          <div className="space-y-6 animate-fadeIn">
-            {!isOnline && (
-              <div className="bg-yellow-50 border-2 border-yellow-200 rounded-2xl p-6">
-                <p className="text-yellow-800 font-semibold">
-                  ⚠️ You&apos;re currently offline. Go online to see available
-                  orders.
-                </p>
-              </div>
-            )}
-            {isOnline &&
-              availableOrders.map((order, index) => (
-                <div
-                  key={order.id}
-                  className="bg-white rounded-2xl shadow-sm p-6 hover:shadow-xl transition-all duration-300 transform hover:scale-102"
-                  style={{ animationDelay: `${index * 100}ms` }}
-                >
-                  <div className="flex items-start justify-between mb-4">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-3 mb-2">
-                        <h3 className="font-bold text-xl text-gray-900">
-                          {order.restaurant}
-                        </h3>
-                        <span className="px-3 py-1 bg-secondary/20 text-secondary rounded-full text-sm font-semibold">
-                          {order.earning}
-                        </span>
-                      </div>
-                      <p className="text-gray-600">
-                        Customer: {order.customer}
-                      </p>
-                      <p className="text-sm text-gray-500">
-                        {order.items} items
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="space-y-3 mb-4 bg-gray-50 p-4 rounded-xl">
-                    <div className="flex items-start gap-3">
-                      <span className="text-2xl">📍</span>
-                      <div>
-                        <p className="text-sm text-gray-600">Pickup</p>
-                        <p className="font-semibold text-gray-900">
-                          {order.pickup}
-                        </p>
-                      </div>
-                    </div>
-                    <div className="border-l-2 border-gray-300 h-6 ml-3"></div>
-                    <div className="flex items-start gap-3">
-                      <span className="text-2xl">🏠</span>
-                      <div>
-                        <p className="text-sm text-gray-600">Dropoff</p>
-                        <p className="font-semibold text-gray-900">
-                          {order.dropoff}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2 text-gray-600">
-                      <span>🛣️</span>
-                      <span className="font-semibold">{order.distance}</span>
-                    </div>
-                    <button
-                      onClick={() => acceptOrder(order)}
-                      className="px-8 py-3 bg-primary text-white rounded-xl font-semibold hover:bg-primary/90 transition-all transform hover:scale-105"
-                    >
-                      Accept Order
-                    </button>
-                  </div>
-                </div>
-              ))}
-          </div>
+          <PendingDeliveries
+            requests={pendingRequests}
+            onAcceptRequest={handleAcceptRequest}
+            isOnline={isOnline}
+          />
         )}
 
         {/* Active Delivery Tab */}
         {activeTab === "active" && (
-          <div className="animate-fadeIn">
-            {acceptedOrder ? (
-              <div className="bg-white rounded-2xl shadow-sm p-8">
-                <div className="text-center mb-8">
-                  <div className="inline-block p-6 bg-secondary/10 rounded-full mb-4 animate-pulse">
-                    <span className="text-6xl">🚴</span>
-                  </div>
-                  <h2 className="text-2xl font-bold text-gray-900 mb-2">
-                    Delivery in Progress
-                  </h2>
-                  <p className="text-gray-600">Order #{acceptedOrder.id}</p>
-                </div>
-
-                <div className="space-y-6 mb-8">
-                  <div className="bg-gray-50 p-6 rounded-xl">
-                    <h3 className="font-bold text-lg mb-4">
-                      {acceptedOrder.restaurant}
-                    </h3>
-                    <div className="space-y-4">
-                      <div className="flex items-start gap-3">
-                        <span className="text-2xl">📍</span>
-                        <div className="flex-1">
-                          <p className="text-sm text-gray-600">
-                            Pickup Location
-                          </p>
-                          <p className="font-semibold text-gray-900">
-                            {acceptedOrder.pickup}
-                          </p>
-                        </div>
-                        <button className="px-4 py-2 bg-primary text-white rounded-lg text-sm font-semibold hover:bg-primary/90">
-                          Navigate
-                        </button>
-                      </div>
-                      <div className="border-l-2 border-primary h-8 ml-3 animate-pulse"></div>
-                      <div className="flex items-start gap-3">
-                        <span className="text-2xl">🏠</span>
-                        <div className="flex-1">
-                          <p className="text-sm text-gray-600">
-                            Delivery Location
-                          </p>
-                          <p className="font-semibold text-gray-900">
-                            {acceptedOrder.dropoff}
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-3 gap-4">
-                    <div className="text-center p-4 bg-gray-50 rounded-xl">
-                      <p className="text-sm text-gray-600 mb-1">Distance</p>
-                      <p className="text-xl font-bold text-gray-900">
-                        {acceptedOrder.distance}
-                      </p>
-                    </div>
-                    <div className="text-center p-4 bg-gray-50 rounded-xl">
-                      <p className="text-sm text-gray-600 mb-1">Items</p>
-                      <p className="text-xl font-bold text-gray-900">
-                        {acceptedOrder.items}
-                      </p>
-                    </div>
-                    <div className="text-center p-4 bg-secondary/10 rounded-xl">
-                      <p className="text-sm text-gray-600 mb-1">Earning</p>
-                      <p className="text-xl font-bold text-secondary">
-                        {acceptedOrder.earning}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="flex gap-4">
-                  <button className="flex-1 px-6 py-4 border-2 border-gray-300 text-gray-700 rounded-xl font-semibold hover:bg-gray-50 transition-colors">
-                    📞 Call Customer
-                  </button>
-                  <button
-                    onClick={completeDelivery}
-                    className="flex-1 px-6 py-4 bg-secondary text-white rounded-xl font-semibold hover:bg-secondary/90 transition-all transform hover:scale-105"
-                  >
-                    ✓ Complete Delivery
-                  </button>
-                </div>
-              </div>
-            ) : (
-              <div className="text-center py-20 bg-white rounded-2xl">
-                <p className="text-6xl mb-4">🚴</p>
-                <h3 className="text-xl font-semibold text-gray-900 mb-2">
-                  No Active Delivery
-                </h3>
-                <p className="text-gray-600">
-                  Accept an order to start delivering
-                </p>
-              </div>
-            )}
-          </div>
+          <ActiveDelivery
+            activeDeliveries={activeDeliveries}
+            deliverySteps={deliverySteps}
+            setDeliverySteps={setDeliverySteps}
+            onDropRequest={handleDropRequest}
+            onCompleteDelivery={handleCompleteDelivery}
+          />
         )}
 
         {/* History Tab */}
         {activeTab === "history" && (
-          <div className="space-y-4 animate-fadeIn">
-            <h2 className="text-2xl font-bold text-gray-900 mb-6">
-              Today&apos;s Deliveries
-            </h2>
-            {completedDeliveries.map((delivery, index) => (
-              <div
-                key={delivery.id}
-                className="bg-white rounded-2xl shadow-sm p-6 hover:shadow-md transition-shadow"
-                style={{ animationDelay: `${index * 100}ms` }}
-              >
-                <div className="flex items-center justify-between">
-                  <div className="flex-1">
-                    <h3 className="font-bold text-lg text-gray-900 mb-1">
-                      {delivery.restaurant}
-                    </h3>
-                    <p className="text-sm text-gray-600">
-                      Completed at {delivery.time}
-                    </p>
-                  </div>
-                  <div className="text-right">
-                    <p className="text-2xl font-bold text-secondary mb-1">
-                      {delivery.earning}
-                    </p>
-                    <div className="flex items-center gap-1">
-                      <span className="text-yellow-500">⭐</span>
-                      <span className="text-sm font-semibold text-gray-700">
-                        {delivery.rating}/5
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
+          <DeliveryHistory 
+            riderId={user?.id || user?._id} 
+            completedDeliveries={completedDeliveries}
+          />
+        )}
+
+        {/* Profile Tab */}
+        {activeTab === "profile" && (
+          <RiderProfile riderId={user?.id || user?._id} />
         )}
       </div>
 
