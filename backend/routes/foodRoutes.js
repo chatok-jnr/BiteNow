@@ -8,7 +8,7 @@ const router = express.Router();
 router
   .route('/')
   .get(Food.getAllFood) // All Food in the platform
-  .post(restrictTo('restaurant_owner'), Food.createFood); // Create a new food
+  .post(protect, restrictTo('restaurant_owner'), Food.createFood); // Create a new food
 
 router
   .route('/price')
@@ -29,7 +29,7 @@ router
 router  
   .route('/:id')
   .get(Food.getFood) // Get a specific food
-  .patch(restrictTo('restaurant_owner'), Food.updateFood) // update a specific food data
-  .delete(restrictTo('restaurant_owner'), Food.deleteFood); // delte a specific food
+  .patch(protect, restrictTo('restaurant_owner'), Food.updateFood) // update a specific food data
+  .delete(protect, restrictTo('restaurant_owner'), Food.deleteFood); // delte a specific food
   
 module.exports = router;

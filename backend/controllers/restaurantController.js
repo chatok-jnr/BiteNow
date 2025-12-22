@@ -167,6 +167,13 @@ exports.searchRestaurants = async (req, res) => {
 //restricted
 exports.createRestaurant = async (req, res) => {
   try {
+    // Debug logging
+    console.log('=== CREATE RESTAURANT DEBUG ===');
+    console.log('Headers:', req.headers);
+    console.log('Request body:', JSON.stringify(req.body, null, 2));
+    console.log('User from auth:', req.user);
+    console.log('================================');
+
     //required field
     const { owner_id, restaurant_name, restaurant_address } = req.body;
     if (!owner_id || !restaurant_name || !restaurant_address) {

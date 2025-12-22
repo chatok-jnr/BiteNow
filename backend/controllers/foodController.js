@@ -103,6 +103,8 @@ exports.getFood = async (req, res) => {
 exports.createFood = async (req, res) => {
   try{
 
+    console.log(`Debug = ${req.user._id}`);
+
     const restaurantInfo = await Restaurant.findById(req.body.restaurant_id);
     const authorized = restaurantInfo.owner_id.equals(req.user._id)
 

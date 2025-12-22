@@ -49,17 +49,26 @@ exports.protect = async (req, res, next) => {
 // Optional protect - allows both authenticated users and guests
 exports.optionalProtect = async (req, res, next) => {
   let token;
+  
+  console.log('🔐 optionalProtect middleware:', {
+    authHeader: req.headers.authorization || 'None',
+    guestHeader: req.headers['x-guest-session-id'] || 'None',
+    url: req.originalUrl
+  });
+  
   if(
     req.headers.authorization &&
     req.headers.authorization.startsWith('Bearer')
   ) {
     token = req.headers.authorization.split(' ')[1];
+    console.log('📝 Token found:', token ? `${token.substring(0, 20)}...` : 'Empty');
   }
 
   // If token exists, try to authenticate
   if(token) {
     try {
       const decode = jwt.verify(token, process.env.JWT_SECRET);
+      console.log('✅ Token decoded successfully:', { userId: decode.id });
 
       let user = 
         (await Customer.findById(decode.id)) ||
@@ -71,13 +80,19 @@ exports.optionalProtect = async (req, res, next) => {
         req.user = user;
         req.user.role = user.role;
         req.isAuthenticated = true;
+        console.log('✅ User authenticated:', { userId: user._id.toString(), role: user.role });
+      } else {
+        console.log('⚠️ Token valid but user not found');
+        req.isAuthenticated = false;
       }
     } catch(err) {
       // Token invalid, continue as guest
+      console.log('❌ Token verification failed:', err.message);
       req.isAuthenticated = false;
     }
   } else {
     // No token, check for guest session
+    console.log('ℹ️ No token provided');
     req.isAuthenticated = false;
   }
 
@@ -85,12 +100,16 @@ exports.optionalProtect = async (req, res, next) => {
   if (!req.isAuthenticated) {
     const guestSessionId = req.headers['x-guest-session-id'];
     
+    console.log('👤 Processing as guest, session ID:', guestSessionId || 'Will create new');
+    
     if (guestSessionId) {
       try {
         // Find or create guest session
         const guestSession = await GuestSession.findOrCreate(guestSessionId);
         req.guestSessionId = guestSession.session_id;
+        console.log('✅ Guest session set:', req.guestSessionId);
       } catch(err) {
+        console.log('❌ Guest session error:', err.message);
         return res.status(400).json({
           status: 'failed',
           message: 'Invalid guest session'

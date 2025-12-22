@@ -53,7 +53,7 @@ exports.createCustomer = async (req, res) => {
     const newCustomer = await Customer.create(customerData);
 
     //Send otp
-    const otp = Math.floor(1000 + Math.random() * 90000).toString();
+    const otp = Math.floor(1000 + Math.random() * 9000).toString();
     await OTP.create({
       email: req.body.customer_email,
       user_type: "customer",
@@ -567,6 +567,9 @@ exports.createRestaurantOwner = async (req, res) => {
 //Verify account
 exports.restaurantOwnerVerification = async (req, res) => {
   try {
+
+    console.log(`Debug = ${req.body.otp}`);
+
     const { email, user_type, otp } = req.body;
     if (!email || !user_type || !otp) {
       return res.status(404).json({
@@ -681,6 +684,7 @@ exports.loginRestaurantOwner = async (req, res) => {
     );
 
     const ownerResponse = {
+      id: restaurantOwner._id,
       restaurant_owner_name: restaurantOwner.restaurant_owner_name,
       restaurant_owner_phone: restaurantOwner.restaurant_owner_phone,
       restaurant_owner_email: restaurantOwner.restaurant_owner_email,
