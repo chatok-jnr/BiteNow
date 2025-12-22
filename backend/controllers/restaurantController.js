@@ -1,6 +1,11 @@
 const mongoose = require("mongoose");
 const RestaurantOwner = require("./../models/restaurantOwnerModel");
 const Restaurant = require("./../models/restaurantModel");
+const {
+  imageUploadHelper,
+  imageDeleteHelper,
+  imageUpdationHelper,
+} = require("./../utils/cloudinary");
 
 //public
 exports.getAllRestaurant = async (req, res) => {
@@ -35,7 +40,10 @@ exports.getAllRestaurant = async (req, res) => {
 
     //execute query
     const restaurants = await Restaurant.find(filter)
-      .populate("owner_id", "restaurant_owner_name restaurant_owner_phone restaurant_owner_email")
+      .populate(
+        "owner_id",
+        "restaurant_owner_name restaurant_owner_phone restaurant_owner_email"
+      )
       .sort(sort)
       .skip(skip)
       .limit(limit)
@@ -67,7 +75,10 @@ exports.getAllRestaurant = async (req, res) => {
 exports.getRestaurantById = async (req, res) => {
   try {
     const restaurant = await Restaurant.findById(req.params.id)
-      .populate("owner_id", "restaurant_owner_name restaurant_owner_email restaurant_owner_phone")
+      .populate(
+        "owner_id",
+        "restaurant_owner_name restaurant_owner_email restaurant_owner_phone"
+      )
       .select("-__v");
 
     if (!restaurant) {
@@ -77,7 +88,7 @@ exports.getRestaurantById = async (req, res) => {
       });
     }
 
-    if ( // replace
+    if (
       restaurant.restaurant_status !== "Accepted"
     ) {
       return res.status(403).json({
@@ -153,16 +164,16 @@ exports.searchRestaurants = async (req, res) => {
     });
   }
 };
-
+//restricted
 exports.createRestaurant = async (req, res) => {
   try {
     //required field
-    const { owner_id, restaurant_name, restaurant_location } = req.body;
-    if (!owner_id || !restaurant_name || !restaurant_location) {
+    const { owner_id, restaurant_name, restaurant_address } = req.body;
+    if (!owner_id || !restaurant_name || !restaurant_address) {
       return res.status(400).json({
         status: "fail",
         message:
-          "Please provide owner_id, restaurant_name, and restaurant_location",
+          "Please provide owner_id, restaurant_name, and restaurant_address",
       });
     }
 
@@ -175,7 +186,6 @@ exports.createRestaurant = async (req, res) => {
       });
     }
 
-    //create restaurant
     const newRestaurant = await Restaurant.create(req.body);
     res.status(201).json({
       status: "success",
@@ -186,7 +196,7 @@ exports.createRestaurant = async (req, res) => {
   } catch (err) {
     res.status(400).json({
       status: "fail",
-      message: err.message
+      message: err.message,
     });
   }
 };
@@ -241,9 +251,7 @@ exports.updateRestaurant = async (req, res) => {
     }
 
     //check for authorized user
-    if (
-      restaurant.owner_id.toString() !== ownerID.toString()
-    ) {
+    if (restaurant.owner_id.toString() !== ownerID.toString()) {
       return res.status(403).json({
         status: "fail",
         message: "You are not authorized to update this restaurant",
@@ -259,7 +267,7 @@ exports.updateRestaurant = async (req, res) => {
       "restaurant_contact_info",
       "restaurant_category",
       "restaurant_opening_hours",
-      "restaurant_images",
+      "restaurant_image",
     ];
 
     //filter out which field are not allowed for update
@@ -325,13 +333,16 @@ exports.deleteRestaurant = async (req, res) => {
     }
 
     //chech user is authorized or not
-    if (
-      restaurant.owner_id.toString() !== ownerID.toString()
-    ) {
+    if (restaurant.owner_id.toString() !== ownerID.toString()) {
       return res.status(403).json({
         status: "fail",
         message: "You are not authorized to delete this restaurant",
       });
+    }
+
+    //delete image from the cloudinary
+    if (restaurant.restaurant_image && restaurant.restaurant_image.url) {
+      await imageDeleteHelper(restaurant.restaurant_image.public_id);
     }
 
     //Delete restaurant
@@ -350,6 +361,181 @@ exports.deleteRestaurant = async (req, res) => {
     res.status(500).json({
       status: "fail",
       message: "Failed to delete restaurant",
+    });
+  }
+};
+//for image
+//upload image
+exports.uploadRestaurantImage = async (req, res) => {
+  try {
+    const restaurantId = req.params.id;
+    const ownerID = req.user._id;
+
+    const restaurant = await Restaurant.findById(restaurantId);
+    if (!restaurant) {
+      return res.status(404).json({
+        status: "error",
+        message: "Restaurant not found!",
+      });
+    }
+
+    if (restaurant.owner_id.toString() !== ownerID.toString()) {
+      return res.status(403).json({
+        status: "error",
+        message:
+          "You are not authorized to upload display picture for this restaurant",
+      });
+    }
+
+    if (!req.file) {
+      return res.status(400).json({
+        status: "error",
+        message: "Please upload an image",
+      });
+    }
+
+    const newImage = imageUploadHelper(req.file, restaurant.restaurant_name);
+
+    //Add new image
+    restaurant.restaurant_image = newImage;
+    await restaurant.save();
+
+    res.status(200).json({
+      status: "success",
+      message: "Display picture uploaded successfully",
+      data: {
+        images: newImage,
+      },
+    });
+  } catch (err) {
+    if (req.file) {
+      await imageDeleteHelper(req.file.filename);
+    }
+    res.status(500).json({
+      status: "error",
+      message: "Failed to upload display picture",
+      error: err.message,
+    });
+  }
+};
+//Delete restaurent image
+exports.deleteRestaurantImage = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const ownerID = req.user._id;
+    const restaurant = await Restaurant.findById(id);
+    if (!restaurant) {
+      return res.status(404).json({
+        status: "error",
+        message: "Restaurant not found!",
+      });
+    }
+
+    if (restaurant.owner_id.toString() !== ownerID.toString()) {
+      return res.status(403).json({
+        status: "error",
+        message:
+          "You are not authorized to delete display picture from this restaurant",
+      });
+    }
+
+    // Check if images array exists
+    if (
+      !restaurant.restaurant_image ||
+      !restaurant.restaurant_image.public_id
+    ) {
+      return res.status(400).json({
+        status: "error",
+        message: "No display picture found for this restaurant",
+      });
+    }
+
+    //delete image from cloudinary
+    await imageDeleteHelper(restaurant.restaurant_image.public_id);
+    //remove from database
+    restaurant.restaurant_image = undefined;
+
+    await restaurant.save();
+
+    res.status(200).json({
+      status: "success",
+      message: "Display picture deleted successfully",
+    });
+  } catch (err) {
+    res.status(500).json({
+      status: "error",
+      message: "Failed to delete display picture",
+      error: err.message,
+    });
+  }
+};
+//Update image
+exports.updateRestaurantImage = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const ownerID = req.user._id;
+
+    const restaurant = await Restaurant.findById(id);
+    if (!restaurant) {
+      return res.status(404).json({
+        status: "error",
+        message: "Restaurant not found!",
+      });
+    }
+
+    if (restaurant.owner_id.toString() !== ownerID.toString()) {
+      return res.status(403).json({
+        status: "error",
+        message:
+          "You are not authorized to update display picture for this restaurant",
+      });
+    }
+
+    if (!req.file) {
+      return res.status(400).json({
+        status: "error",
+        message: "Please upload an image",
+      });
+    }
+
+    if (
+      !restaurant.restaurant_image ||
+      !restaurant.restaurant_image.public_id
+    ) {
+      return res.status(400).json({
+        status: "error",
+        message: "No existing display picture to update. Use upload instead.",
+      });
+    }
+
+    const oldPublicId = restaurant.restaurant_image.public_id;
+
+    //update the image
+    const newImage = await imageUpdationHelper(
+      req.file,
+      restaurant.restaurant_name,
+      oldPublicId
+    );
+
+    //save image
+    restaurant.restaurant_image = newImage;
+    await restaurant.save();
+
+    res.status(200).json({
+      status: "success",
+      message: "Display picture updated successfully",
+      data: {
+        image: restaurant.restaurant_image,
+      },
+    });
+  } catch (err) {
+    if (req.file) {
+      await imageDeleteHelper(req.file.filename);
+    }
+    res.status(500).json({
+      status: "error",
+      message: "Failed to update display picture",
+      error: err.message,
     });
   }
 };

@@ -26,6 +26,31 @@ const restaurantOwnerSchema = new mongoose.Schema(
         message: "Please enter a valid email",
       },
     },
+    restaurant_owner_image: {
+      url: {
+        type: String,
+        default: null,
+      },
+      altText: {
+        type: String,
+        default: "Restaurant owner image",
+      },
+      public_id: {
+        type: String,
+        default: null,
+      },
+      uploadedAt: {
+        type: Date,
+        default: null,
+      },
+    },
+    restaurant_owner_documents: [
+      {
+        url: String,
+        public_id: String,
+        altText: String,
+      },
+    ],
     restaurant_owner_password: {
       type: String,
       required: true,
