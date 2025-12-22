@@ -71,6 +71,7 @@ exports.getAllRestaurant = async (req, res) => {
     });
   }
 };
+
 exports.getRestaurantById = async (req, res) => {
   try {
     const restaurant = await Restaurant.findById(req.params.id)
@@ -115,6 +116,7 @@ exports.getRestaurantById = async (req, res) => {
     });
   }
 };
+
 exports.searchRestaurants = async (req, res) => {
   try {
     const { q, city, category } = req.query;
@@ -170,12 +172,12 @@ exports.searchRestaurants = async (req, res) => {
 exports.createRestaurant = async (req, res) => {
   try {
     //required field
-    const { owner_id, restaurant_name, restaurant_location } = req.body;
-    if (!owner_id || !restaurant_name || !restaurant_location) {
+    const { owner_id, restaurant_name, restaurant_address } = req.body;
+    if (!owner_id || !restaurant_name || !restaurant_address) {
       return res.status(400).json({
         status: "fail",
         message:
-          "Please provide owner_id, restaurant_name, and restaurant_location",
+          "Please provide owner_id, restaurant_name, and restaurant_address",
       });
     }
 
@@ -223,13 +225,13 @@ exports.getMyRestaurants = async (req, res) => {
       .limit(limit)
       .select("-__v");
 
-    const total = await Restaurant.countDocuments({ owner_id });
+   const total = await Restaurant.countDocuments({ owner_id });
 
     res.status(200).json({
       status: "success",
       page,
       limit,
-      total,
+     total,
       results: restaurants.length,
       data: {
         restaurants,
@@ -242,6 +244,7 @@ exports.getMyRestaurants = async (req, res) => {
     });
   }
 };
+
 exports.updateRestaurant = async (req, res) => {
   try {
     const restaurantID = req.params.id;

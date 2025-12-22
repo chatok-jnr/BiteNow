@@ -9,18 +9,16 @@ function Dashboard() {
   const [selectedCuisine, setSelectedCuisine] = useState("All");
   const [filteredRestaurants, setFilteredRestaurants] = useState(mockRestaurants);
 
+  // Clear non-customer users from localStorage
   useEffect(() => {
-    // Check authentication
     const userData = localStorage.getItem("user");
-    if (!userData) {
-      navigate("/login");
-      return;
+    if (userData) {
+      const user = JSON.parse(userData);
+      if (user.role && user.role !== "customer") {
+        localStorage.removeItem("user");
+      }
     }
-    const parsedUser = JSON.parse(userData);
-    if (parsedUser.role !== "customer") {
-      navigate("/login");
-    }
-  }, [navigate]);
+  }, []);
 
   // Filter logic
   useEffect(() => {

@@ -14,22 +14,26 @@ const restaurantSchema = new mongoose.Schema(
       maxLength: [100, "Restaurant name cannot exceed 100 characters"],
     },
 
-    restaurant_location: {
+    restaurant_address: {
       type: String,
       required: [true, "A restaurant must have a location"],
       trim: true,
     },
 
-    restaurant_address: {
-      street: String,
-      city: String,
-      state: String,
-      country: String,
-      zipCode: String,
+    restaurant_location: {
+      type: {
+        type: String,
+        enum: ["Point"],
+        default: "Point",
+      },
       coordinates: {
         type: [Number], // [longitude, latitude]
-        index: "2dsphere", // For geospatial queries
+        default: undefined,
       },
+    },
+    lastLocationUpdate: {
+      type: Date,
+      default: Date.now,
     },
 
     restaurant_status: {
@@ -161,6 +165,7 @@ restaurantSchema.index({
 restaurantSchema.index({ restaurant_category: 1 });
 restaurantSchema.index({ restaurant_created_at: -1 });
 
+
 // Virtual function for better user experience
 //formatted commission percentage
 restaurantSchema.virtual("commissionPercentage").get(function () {
@@ -211,6 +216,6 @@ module.exports = Restaurant;
 {
   "owner_id": "6939c2dfd0c1a267ba3bf248",
   "restaurant_name": "TazaBazar Restora",
-  "restaurant_location": "Dhaka"
+  "restaurant_address": "Dhaka"
 }
 */
