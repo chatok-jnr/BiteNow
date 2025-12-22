@@ -1,32 +1,17 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import axiosInstance, { API_BASE_URL } from "../../utils/axios";
+import * as cartService from "../../utils/cartService";
 
 function Login() {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
     email: "",
     password: "",
+    role: "customer", // default role
   });
   const [error, setError] = useState("");
-
-  // Mock users
-  const mockUsers = {
-    "customer@test.com": {
-      password: "customer123",
-      role: "customer",
-      name: "John Doe",
-    },
-    "rider@test.com": {
-      password: "rider123",
-      role: "rider",
-      name: "Mike Wilson",
-    },
-    "restaurant@test.com": {
-      password: "restaurant123",
-      role: "restaurant",
-      name: "Ramim",
-    },
-  };
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleInputChange = (e) => {
     setFormData({
@@ -36,48 +21,106 @@ function Login() {
     setError("");
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    const user = mockUsers[formData.email];
+    setError("");
+    setIsLoading(true);
 
-    console.log("Login attempt - Email:", formData.email);
-    console.log("Login attempt - Password:", formData.password);
-    console.log("Found user:", user);
+    try {
+      let apiEndpoint = "";
+      let requestBody = {};
 
-    if (user && user.password === formData.password) {
-      // Store user info in localStorage
-      localStorage.setItem(
-        "user",
-        JSON.stringify({
-          email: formData.email,
-          role: user.role,
-          name: user.name,
-          password: formData.password,
-        })
-      );
-
-      // Always redirect restaurant and rider to their dashboards
-      if (user.role === "restaurant") {
-        localStorage.removeItem("intendedDestination");
-        navigate("/owner-dashboard");
-      } else if (user.role === "rider") {
-        localStorage.removeItem("intendedDestination");
-        navigate("/rider-dashboard");
-      } else if (user.role === "customer") {
-        // Only customers can use intendedDestination
-        const intendedDestination = localStorage.getItem("intendedDestination");
-        console.log("Intended destination:", intendedDestination);
-        
-        if (intendedDestination) {
-          localStorage.removeItem("intendedDestination");
-          navigate(intendedDestination);
-        } else {
-          navigate("/customer-dashboard");
-        }
+      // Determine API endpoint and request body based on role
+      if (formData.role === "customer") {
+        apiEndpoint = `${API_BASE_URL}/api/v1/auth/login/customer`;
+        requestBody = {
+          customer_email: formData.email,
+          customer_password: formData.password,
+        };
+      } else if (formData.role === "restaurant") {
+        apiEndpoint = `${API_BASE_URL}/api/v1/auth/login/restaurant-owner`;
+        requestBody = {
+          restaurant_owner_email: formData.email,
+          restaurant_owner_password: formData.password,
+        };
+      } else if (formData.role === "rider") {
+        apiEndpoint = `${API_BASE_URL}/api/v1/auth/login/rider`;
+        requestBody = {
+          rider_email: formData.email,
+          rider_password: formData.password,
+        };
       }
-    } else {
-      console.log("Login failed");
-      setError("Invalid email or password");
+
+      console.log("Login attempt - Role:", formData.role);
+      console.log("Login attempt - Email:", formData.email);
+      console.log("API Endpoint:", apiEndpoint);
+
+      const response = await axiosInstance.post(apiEndpoint, requestBody);
+
+      console.log("Login response:", response.data);
+
+      if (response.data.status === "success") {
+        // Store user info in localStorage
+        const userData = {
+          email: formData.email,
+          role: formData.role,
+          token: response.data.token,
+        };
+
+        // Handle different response structures for different roles
+        if (formData.role === "restaurant" && response.data.data.ownerResponse) {
+          Object.assign(userData, response.data.data.ownerResponse);
+        } else if (response.data.data) {
+          Object.assign(userData, response.data.data);
+        }
+
+        localStorage.setItem("user", JSON.stringify(userData));
+
+        // Store token separately for easy access
+        if (response.data.token) {
+          localStorage.setItem("token", response.data.token);
+        }
+
+        // Migrate guest cart to user account if customer
+        if (formData.role === "customer") {
+          try {
+            await cartService.migrateGuestCart();
+          } catch (migrationError) {
+            console.error("Cart migration failed:", migrationError);
+            // Don't block login if cart migration fails
+          }
+        }
+
+        // Redirect based on role
+        if (formData.role === "restaurant") {
+          localStorage.removeItem("intendedDestination");
+          navigate("/owner-dashboard");
+        } else if (formData.role === "rider") {
+          localStorage.removeItem("intendedDestination");
+          navigate("/rider-dashboard");
+        } else if (formData.role === "customer") {
+          const intendedDestination = localStorage.getItem("intendedDestination");
+          console.log("Intended destination:", intendedDestination);
+          
+          if (intendedDestination) {
+            localStorage.removeItem("intendedDestination");
+            navigate(intendedDestination);
+          } else {
+            navigate("/customer-dashboard");
+          }
+        }
+      } else {
+        setError(response.data.message || "Login failed");
+      }
+    } catch (err) {
+      console.error("Login error:", err);
+      setError(
+        err.response?.data?.message || 
+        err.response?.data?.error || 
+        "Invalid email or password. Please try again."
+      );
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -92,6 +135,27 @@ function Login() {
 
         {/* Login Form */}
         <form onSubmit={handleSubmit} className="space-y-4">
+          {/* Role Selection */}
+          <div>
+            <label
+              htmlFor="role"
+              className="block text-sm font-medium text-gray-700 mb-2"
+            >
+              I am a
+            </label>
+            <select
+              id="role"
+              name="role"
+              value={formData.role}
+              onChange={handleInputChange}
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+            >
+              <option value="customer">Customer</option>
+              <option value="restaurant">Restaurant Owner</option>
+              <option value="rider">Rider</option>
+            </select>
+          </div>
+
           <div>
             <label
               htmlFor="email"
@@ -146,7 +210,7 @@ function Login() {
             </a>
           </div>
 
-          {/* Demo credentials info */}
+          {/* Demo credentials info
           <div className="p-4 bg-green-50 border border-green-200 rounded-lg text-sm">
             <p className="font-semibold text-green-900 mb-2">
               ✅ Demo Credentials (Choose any):
@@ -162,7 +226,7 @@ function Login() {
                 <strong>Restaurant:</strong> restaurant@test.com / restaurant123
               </p>
             </div>
-          </div>
+          </div> */}
 
           {error && (
             <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-red-600 text-sm">
@@ -172,9 +236,10 @@ function Login() {
 
           <button
             type="submit"
-            className="w-full bg-primary text-white py-3 rounded-lg font-semibold hover:bg-primary/90 transition-colors duration-200"
+            disabled={isLoading}
+            className="w-full bg-primary text-white py-3 rounded-lg font-semibold hover:bg-primary/90 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            Log In
+            {isLoading ? "Logging in..." : "Log In"}
           </button>
         </form>
 

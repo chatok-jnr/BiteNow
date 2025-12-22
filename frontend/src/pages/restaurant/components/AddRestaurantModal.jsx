@@ -1,58 +1,54 @@
 import { useState } from "react";
 
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:8000";
+
 function AddRestaurantModal({ isOpen, onClose, onAdd }) {
   const [formData, setFormData] = useState({
     restaurant_name: "",
-    restaurant_location: "",
-    restaurant_image_url: null,
-    restaurant_address: {
-      street: "",
-      city: "",
-      state: "",
-      country: "Bangladesh",
-      zipCode: "",
-      coordinates: [90.4125, 23.8103], // Default Dhaka coordinates
+    restaurant_address: "",
+    restaurant_location: {
+      type: "Point",
+      coordinates: [90.4125, 23.8103], // [longitude, latitude] - Default Dhaka coordinates
     },
+    restaurant_category: [],
     restaurant_description: "",
     restaurant_contact_info: {
       phone: "",
-    },
-    restaurant_categories: [],
-    restaurant_opening_hours: {
-      monday: { open: "10:00", close: "22:00" },
-      tuesday: { open: "10:00", close: "22:00" },
-      wednesday: { open: "10:00", close: "22:00" },
-      thursday: { open: "10:00", close: "22:00" },
-      friday: { open: "10:00", close: "22:00" },
-      saturday: { open: "10:00", close: "22:00" },
-      sunday: { open: "10:00", close: "22:00" },
+      email: "",
     },
   });
 
   const [categoryInput, setCategoryInput] = useState("");
   const [errors, setErrors] = useState({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const availableCategories = [
     "Fast Food", "BBQ", "Grill", "Indian", "Chinese", "Thai", 
     "Italian", "Bangladeshi", "Pizza", "Burger", "Sushi", 
-    "Desserts", "Cafe", "Bakery", "Seafood", "Vegetarian"
+    "Desserts", "Cafe", "Bakery", "Seafood", "Vegetarian",
+    "Asian", "Noodles"
   ];
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    if (name.includes("address.")) {
-      const field = name.split(".")[1];
+    if (name === "phone" || name === "email") {
       setFormData({
         ...formData,
-        restaurant_address: {
-          ...formData.restaurant_address,
-          [field]: value,
+        restaurant_contact_info: {
+          ...formData.restaurant_contact_info,
+          [name]: value,
         },
       });
-    } else if (name === "phone") {
+    } else if (name === "longitude" || name === "latitude") {
+      const index = name === "longitude" ? 0 : 1;
+      const newCoordinates = [...formData.restaurant_location.coordinates];
+      newCoordinates[index] = parseFloat(value) || 0;
       setFormData({
         ...formData,
-        restaurant_contact_info: { phone: value },
+        restaurant_location: {
+          ...formData.restaurant_location,
+          coordinates: newCoordinates,
+        },
       });
     } else {
       setFormData({ ...formData, [name]: value });
@@ -60,24 +56,11 @@ function AddRestaurantModal({ isOpen, onClose, onAdd }) {
     setErrors({ ...errors, [name]: "" });
   };
 
-  const handleHoursChange = (day, type, value) => {
-    setFormData({
-      ...formData,
-      restaurant_opening_hours: {
-        ...formData.restaurant_opening_hours,
-        [day]: {
-          ...formData.restaurant_opening_hours[day],
-          [type]: value,
-        },
-      },
-    });
-  };
-
   const addCategory = (category) => {
-    if (category && !formData.restaurant_categories.includes(category)) {
+    if (category && !formData.restaurant_category.includes(category)) {
       setFormData({
         ...formData,
-        restaurant_categories: [...formData.restaurant_categories, category],
+        restaurant_category: [...formData.restaurant_category, category],
       });
     }
     setCategoryInput("");
@@ -86,7 +69,7 @@ function AddRestaurantModal({ isOpen, onClose, onAdd }) {
   const removeCategory = (category) => {
     setFormData({
       ...formData,
-      restaurant_categories: formData.restaurant_categories.filter(
+      restaurant_category: formData.restaurant_category.filter(
         (c) => c !== category
       ),
     });
@@ -95,12 +78,10 @@ function AddRestaurantModal({ isOpen, onClose, onAdd }) {
   const validate = () => {
     const newErrors = {};
     if (!formData.restaurant_name.trim()) newErrors.restaurant_name = "Name is required";
-    if (!formData.restaurant_location.trim()) newErrors.restaurant_location = "Location is required";
-    if (!formData.restaurant_image_url) newErrors.restaurant_image_url = "Image file is required";
-    if (!formData.restaurant_address.street.trim()) newErrors.street = "Street is required";
-    if (!formData.restaurant_address.city.trim()) newErrors.city = "City is required";
+    if (!formData.restaurant_address.trim()) newErrors.restaurant_address = "Address is required";
     if (!formData.restaurant_contact_info.phone.trim()) newErrors.phone = "Phone is required";
-    if (formData.restaurant_categories.length === 0) newErrors.categories = "At least one category is required";
+    if (!formData.restaurant_contact_info.email.trim()) newErrors.email = "Email is required";
+    if (formData.restaurant_category.length === 0) newErrors.categories = "At least one category is required";
     
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -110,46 +91,72 @@ function AddRestaurantModal({ isOpen, onClose, onAdd }) {
     e.preventDefault();
     if (!validate()) return;
 
+    setIsSubmitting(true);
     try {
-      // TODO: Replace with actual API call
-      // const response = await fetch('/api/restaurants', {
-      //   method: 'POST',
-      //   headers: { 'Content-Type': 'application/json' },
-      //   body: JSON.stringify({ ...formData, owner_id: user.id })
-      // });
+      const user = JSON.parse(localStorage.getItem("user"));
+      const token = localStorage.getItem("token");
       
-      // Mock success
-      onAdd(formData);
+      if (!user || !token) {
+        alert("Please login again");
+        return;
+      }
+
+      const requestBody = {
+        owner_id: user.id,
+        restaurant_name: formData.restaurant_name,
+        restaurant_address: formData.restaurant_address,
+        restaurant_location: formData.restaurant_location,
+        restaurant_category: formData.restaurant_category,
+        restaurant_description: formData.restaurant_description,
+        restaurant_contact_info: formData.restaurant_contact_info,
+      };
+
+      console.log('=== SENDING REQUEST ===');
+      console.log('URL:', `${API_BASE_URL}/api/v1/restaurants/register`);
+      console.log('Token:', token ? 'Present' : 'Missing');
+      console.log('User ID:', user.id);
+      console.log('Request Body:', JSON.stringify(requestBody, null, 2));
+      console.log('=======================');
+
+      const response = await fetch(`${API_BASE_URL}/api/v1/restaurants/register`, {
+        method: 'POST',
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(requestBody)
+      });
+
+      const data = await response.json();
+      
+      if (!response.ok) {
+        throw new Error(data.message || 'Failed to create restaurant');
+      }
+      
+      alert("Restaurant created successfully!");
+      onAdd(data.data.restaurant);
       onClose();
       
       // Reset form
       setFormData({
         restaurant_name: "",
-        restaurant_location: "",
-        restaurant_image_url: null,
-        restaurant_address: {
-          street: "",
-          city: "",
-          state: "",
-          country: "Bangladesh",
-          zipCode: "",
+        restaurant_address: "",
+        restaurant_location: {
+          type: "Point",
           coordinates: [90.4125, 23.8103],
         },
+        restaurant_category: [],
         restaurant_description: "",
-        restaurant_contact_info: { phone: "" },
-        restaurant_categories: [],
-        restaurant_opening_hours: {
-          monday: { open: "10:00", close: "22:00" },
-          tuesday: { open: "10:00", close: "22:00" },
-          wednesday: { open: "10:00", close: "22:00" },
-          thursday: { open: "10:00", close: "22:00" },
-          friday: { open: "10:00", close: "22:00" },
-          saturday: { open: "10:00", close: "22:00" },
-          sunday: { open: "10:00", close: "22:00" },
+        restaurant_contact_info: {
+          phone: "",
+          email: "",
         },
       });
     } catch (error) {
       console.error("Error adding restaurant:", error);
+      alert(error.message || "Failed to create restaurant. Please try again.");
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -191,7 +198,7 @@ function AddRestaurantModal({ isOpen, onClose, onAdd }) {
                     className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent ${
                       errors.restaurant_name ? "border-red-500" : "border-gray-300"
                     }`}
-                    placeholder="e.g., Dhaka Grill House"
+                    placeholder="e.g., Opu vai vat er hotel"
                   />
                   {errors.restaurant_name && (
                     <p className="text-red-500 text-sm mt-1">{errors.restaurant_name}</p>
@@ -200,47 +207,21 @@ function AddRestaurantModal({ isOpen, onClose, onAdd }) {
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Location/Area *
+                    Restaurant Address *
                   </label>
                   <input
                     type="text"
-                    name="restaurant_location"
-                    value={formData.restaurant_location}
+                    name="restaurant_address"
+                    value={formData.restaurant_address}
                     onChange={handleChange}
                     className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent ${
-                      errors.restaurant_location ? "border-red-500" : "border-gray-300"
+                      errors.restaurant_address ? "border-red-500" : "border-gray-300"
                     }`}
-                    placeholder="e.g., Gulshan, Banani"
+                    placeholder="e.g., Uttara, Dhaka"
                   />
-                  {errors.restaurant_location && (
-                    <p className="text-red-500 text-sm mt-1">{errors.restaurant_location}</p>
+                  {errors.restaurant_address && (
+                    <p className="text-red-500 text-sm mt-1">{errors.restaurant_address}</p>
                   )}
-                </div>
-
-                <div className="md:col-span-2">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Restaurant Image *
-                  </label>
-                  <input
-                    type="file"
-                    name="restaurant_image_url"
-                    accept="image/*"
-                    onChange={(e) => {
-                      const file = e.target.files[0];
-                      if (file) {
-                        setFormData({ ...formData, restaurant_image_url: file });
-                        setErrors({ ...errors, restaurant_image_url: "" });
-                      }
-                    }}
-                    required
-                    className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent ${
-                      errors.restaurant_image_url ? "border-red-500" : "border-gray-300"
-                    }`}
-                  />
-                  {errors.restaurant_image_url && (
-                    <p className="text-red-500 text-sm mt-1">{errors.restaurant_image_url}</p>
-                  )}
-                  <p className="text-xs text-gray-500 mt-1">Upload an image file for your restaurant</p>
                 </div>
 
                 <div className="md:col-span-2">
@@ -259,94 +240,85 @@ function AddRestaurantModal({ isOpen, onClose, onAdd }) {
               </div>
             </div>
 
-            {/* Address */}
+            {/* Location Coordinates */}
             <div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">Address Details</h3>
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">Location Coordinates</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="md:col-span-2">
+                <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Street Address *
+                    Longitude
                   </label>
                   <input
-                    type="text"
-                    name="address.street"
-                    value={formData.restaurant_address.street}
-                    onChange={handleChange}
-                    className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent ${
-                      errors.street ? "border-red-500" : "border-gray-300"
-                    }`}
-                    placeholder="House/Plot number, Road"
-                  />
-                  {errors.street && (
-                    <p className="text-red-500 text-sm mt-1">{errors.street}</p>
-                  )}
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">City *</label>
-                  <input
-                    type="text"
-                    name="address.city"
-                    value={formData.restaurant_address.city}
-                    onChange={handleChange}
-                    className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent ${
-                      errors.city ? "border-red-500" : "border-gray-300"
-                    }`}
-                    placeholder="e.g., Dhaka"
-                  />
-                  {errors.city && (
-                    <p className="text-red-500 text-sm mt-1">{errors.city}</p>
-                  )}
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">State</label>
-                  <input
-                    type="text"
-                    name="address.state"
-                    value={formData.restaurant_address.state}
+                    type="number"
+                    name="longitude"
+                    step="0.0001"
+                    value={formData.restaurant_location.coordinates[0]}
                     onChange={handleChange}
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
-                    placeholder="e.g., Dhaka Division"
+                    placeholder="e.g., 90.3915"
                   />
+                  <p className="text-xs text-gray-500 mt-1">Decimal degrees (e.g., 90.3915)</p>
                 </div>
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Zip Code
+                    Latitude
                   </label>
                   <input
-                    type="text"
-                    name="address.zipCode"
-                    value={formData.restaurant_address.zipCode}
+                    type="number"
+                    name="latitude"
+                    step="0.0001"
+                    value={formData.restaurant_location.coordinates[1]}
                     onChange={handleChange}
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
-                    placeholder="e.g., 1212"
+                    placeholder="e.g., 23.8766"
                   />
+                  <p className="text-xs text-gray-500 mt-1">Decimal degrees (e.g., 23.8766)</p>
                 </div>
               </div>
             </div>
 
-            {/* Contact */}
+            {/* Contact Information */}
             <div>
               <h3 className="text-lg font-semibold text-gray-900 mb-4">Contact Information</h3>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Phone Number *
-                </label>
-                <input
-                  type="tel"
-                  name="phone"
-                  value={formData.restaurant_contact_info.phone}
-                  onChange={handleChange}
-                  className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent ${
-                    errors.phone ? "border-red-500" : "border-gray-300"
-                  }`}
-                  placeholder="+8801XXXXXXXXX"
-                />
-                {errors.phone && (
-                  <p className="text-red-500 text-sm mt-1">{errors.phone}</p>
-                )}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Phone Number *
+                  </label>
+                  <input
+                    type="tel"
+                    name="phone"
+                    value={formData.restaurant_contact_info.phone}
+                    onChange={handleChange}
+                    className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent ${
+                      errors.phone ? "border-red-500" : "border-gray-300"
+                    }`}
+                    placeholder="e.g., 01971311958"
+                  />
+                  {errors.phone && (
+                    <p className="text-red-500 text-sm mt-1">{errors.phone}</p>
+                  )}
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Email *
+                  </label>
+                  <input
+                    type="email"
+                    name="email"
+                    value={formData.restaurant_contact_info.email}
+                    onChange={handleChange}
+                    className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent ${
+                      errors.email ? "border-red-500" : "border-gray-300"
+                    }`}
+                    placeholder="e.g., contact@restaurant.com"
+                  />
+                  {errors.email && (
+                    <p className="text-red-500 text-sm mt-1">{errors.email}</p>
+                  )}
+                </div>
               </div>
             </div>
 
@@ -354,7 +326,7 @@ function AddRestaurantModal({ isOpen, onClose, onAdd }) {
             <div>
               <h3 className="text-lg font-semibold text-gray-900 mb-4">Categories *</h3>
               <div className="flex flex-wrap gap-2 mb-3">
-                {formData.restaurant_categories.map((category) => (
+                {formData.restaurant_category.map((category) => (
                   <span
                     key={category}
                     className="px-3 py-1 bg-red-100 text-primary rounded-full text-sm flex items-center gap-2"
@@ -372,7 +344,7 @@ function AddRestaurantModal({ isOpen, onClose, onAdd }) {
               </div>
               <div className="flex flex-wrap gap-2">
                 {availableCategories
-                  .filter((cat) => !formData.restaurant_categories.includes(cat))
+                  .filter((cat) => !formData.restaurant_category.includes(cat))
                   .map((category) => (
                     <button
                       key={category}
@@ -388,33 +360,6 @@ function AddRestaurantModal({ isOpen, onClose, onAdd }) {
                 <p className="text-red-500 text-sm mt-2">{errors.categories}</p>
               )}
             </div>
-
-            {/* Opening Hours */}
-            <div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">Opening Hours</h3>
-              <div className="space-y-3">
-                {Object.keys(formData.restaurant_opening_hours).map((day) => (
-                  <div key={day} className="flex items-center gap-4">
-                    <span className="w-24 text-sm font-medium text-gray-700 capitalize">
-                      {day}
-                    </span>
-                    <input
-                      type="time"
-                      value={formData.restaurant_opening_hours[day].open}
-                      onChange={(e) => handleHoursChange(day, "open", e.target.value)}
-                      className="px-3 py-2 border border-gray-300 rounded-lg text-sm"
-                    />
-                    <span className="text-gray-500">to</span>
-                    <input
-                      type="time"
-                      value={formData.restaurant_opening_hours[day].close}
-                      onChange={(e) => handleHoursChange(day, "close", e.target.value)}
-                      className="px-3 py-2 border border-gray-300 rounded-lg text-sm"
-                    />
-                  </div>
-                ))}
-              </div>
-            </div>
           </div>
 
           {/* Form Actions */}
@@ -423,14 +368,16 @@ function AddRestaurantModal({ isOpen, onClose, onAdd }) {
               type="button"
               onClick={onClose}
               className="px-6 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50"
+              disabled={isSubmitting}
             >
               Cancel
             </button>
             <button
               type="submit"
-              className="px-6 py-2 bg-primary text-white rounded-lg hover:bg-primary/90"
+              className="px-6 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed"
+              disabled={isSubmitting}
             >
-              Add Restaurant
+              {isSubmitting ? "Creating..." : "Add Restaurant"}
             </button>
           </div>
         </form>

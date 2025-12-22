@@ -1,5 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
+import axiosInstance, { API_BASE_URL } from "../../utils/axios";
+import * as cartService from "../../utils/cartService";
 
 function Otp() {
   const navigate = useNavigate();
@@ -11,6 +13,11 @@ function Otp() {
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
   const [isResendDisabled, setIsResendDisabled] = useState(true);
+  const [isVerifying, setIsVerifying] = useState(false);
+  
+  // Get email and userType from sessionStorage
+  const registrationEmail = sessionStorage.getItem('registrationEmail');
+  const userType = sessionStorage.getItem('userType');
 
   // Mock OTP for testing
   const MOCK_OTP = "1234";
@@ -41,56 +48,164 @@ function Otp() {
 
   const handleInputChange = (e) => {
     const value = e.target.value;
-    // Only allow numbers and max 4 digits
-    if (/^\d{0,4}$/.test(value)) {
+    // Only allow numbers and max 5 digits
+    if (/^\d{0,5}$/.test(value)) {
       setOtp(value);
       setError("");
       setMessage("");
     }
   };
 
-  const handleVerifyOtp = (e) => {
+  const handleVerifyOtp = async (e) => {
     e.preventDefault();
 
-    if (otp.length !== 4) {
-      setError("Please enter a 4-digit OTP");
+    if (otp.length < 4) {
+      setError("Please enter at least a 4-digit OTP");
+      return;
+    }
+    if (otp.length > 5) {
+      setError("OTP cannot be more than 5 digits");
       return;
     }
 
-    if (otp === MOCK_OTP) {
-      setError("");
-      
-      // Check where to redirect based on the redirectTo parameter
+    setIsVerifying(true);
+    setError("");
+
+    try {
+      // Determine the API endpoint and request body
+      let apiEndpoint;
+      let requestBody;
+
       if (redirectTo === "owner-change-password") {
         setMessage("OTP verified successfully! Redirecting to change password...");
         setTimeout(() => {
           navigate("/owner-change-password");
         }, 1500);
+        return;
       } else {
-        // Default: signup flow
+        if (!registrationEmail || !userType) {
+          setError("Session expired. Please sign up again.");
+          setIsVerifying(false);
+          setTimeout(() => {
+            navigate("/signup");
+          }, 2000);
+          return;
+        }
+
+        // Special case for restaurant owner
+        if (userType === "restaurant_owner") {
+          apiEndpoint = `${API_BASE_URL}/api/v1/auth/verify-otp/restaurant-owner`;
+          requestBody = {
+            email: registrationEmail,
+            user_type: "restaurant_owner",
+            otp: otp
+          };
+        } else {
+          apiEndpoint = `${API_BASE_URL}/api/v1/auth/verify-otp/${userType}`;
+          requestBody = {
+            email: registrationEmail,
+            user_type: userType,
+            otp: otp
+          };
+        }
+      }
+
+      // Make API call to verify OTP
+      const response = await axiosInstance.post(apiEndpoint, requestBody);
+
+      if (response.data) {
+        setError("");
+        
+        // Store token if provided (for immediate login after verification)
+        if (response.data.token) {
+          localStorage.setItem("token", response.data.token);
+          
+          // Store user data
+          const userData = {
+            email: registrationEmail,
+            role: userType === "restaurant_owner" ? "restaurant" : userType,
+            token: response.data.token,
+          };
+          
+          if (response.data.data) {
+            Object.assign(userData, response.data.data);
+          }
+          
+          localStorage.setItem("user", JSON.stringify(userData));
+          
+          // Migrate guest cart if customer
+          if (userType === "customer") {
+            try {
+              await cartService.migrateGuestCart();
+            } catch (migrationError) {
+              console.error("Cart migration failed:", migrationError);
+              // Don't block login if cart migration fails
+            }
+          }
+        }
+        
         setMessage("OTP verified successfully! Redirecting to login...");
+        
+        // Clear sessionStorage
+        sessionStorage.removeItem('registrationEmail');
+        sessionStorage.removeItem('userType');
+        
         setTimeout(() => {
-          navigate("/login");
+          // If token was provided, redirect to dashboard instead of login
+          if (response.data.token && userType === "customer") {
+            const intendedDestination = localStorage.getItem("intendedDestination");
+            if (intendedDestination) {
+              localStorage.removeItem("intendedDestination");
+              navigate(intendedDestination);
+            } else {
+              navigate("/customer-dashboard");
+            }
+          } else {
+            navigate("/login");
+          }
         }, 1500);
       }
-    } else {
-      setError("Invalid OTP. Please try again.");
+    } catch (error) {
+      console.error("OTP verification error:", error);
+      const errorMsg = error.response?.data?.message || "Invalid OTP. Please try again.";
+      setError(errorMsg);
       setOtp("");
+    } finally {
+      setIsVerifying(false);
     }
   };
 
-  const handleResendOtp = () => {
-    // Reset timer and disable resend button
-    setTimeLeft(300);
-    setIsResendDisabled(true);
-    setMessage("OTP has been resent successfully!");
-    setError("");
-    setOtp("");
-    
-    // Clear success message after 3 seconds
-    setTimeout(() => {
-      setMessage("");
-    }, 3000);
+  const handleResendOtp = async () => {
+    try {
+      if (!registrationEmail || !userType) {
+        setError("Session expired. Please sign up again.");
+        setTimeout(() => {
+          navigate("/signup");
+        }, 2000);
+        return;
+      }
+
+      // Make API call to resend OTP (you may need to create this endpoint)
+      // For now, just reset the timer and show success message
+      setTimeLeft(300);
+      setIsResendDisabled(true);
+      setMessage("OTP has been resent successfully!");
+      setError("");
+      setOtp("");
+      
+      // You can add API call here if backend supports resend OTP
+      // await axios.post(`${API_BASE_URL}/api/v1/auth/resend-otp/${userType}`, {
+      //   email: registrationEmail
+      // });
+      
+      // Clear success message after 3 seconds
+      setTimeout(() => {
+        setMessage("");
+      }, 3000);
+    } catch (error) {
+      console.error("Resend OTP error:", error);
+      setError("Failed to resend OTP. Please try again.");
+    }
   };
 
   return (
@@ -140,13 +255,14 @@ function Otp() {
               name="otp"
               type="text"
               inputMode="numeric"
-              pattern="\d{4}"
-              maxLength="4"
+              pattern="\d{4,5}"
+              maxLength="5"
+              minLength="4"
               required
               value={otp}
               onChange={handleInputChange}
               className="w-full px-4 py-4 text-center text-2xl font-bold tracking-widest border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
-              placeholder="••••"
+              placeholder="•••••"
               autoComplete="off"
             />
           </div>
@@ -172,9 +288,10 @@ function Otp() {
           {/* Verify Button */}
           <button
             type="submit"
-            className="w-full bg-primary text-white py-3 px-4 rounded-lg font-semibold hover:bg-primary-dark transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
+            disabled={isVerifying}
+            className="w-full bg-primary text-white py-3 px-4 rounded-lg font-semibold hover:bg-primary-dark transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 disabled:bg-gray-400 disabled:cursor-not-allowed"
           >
-            Verify OTP
+            {isVerifying ? "Verifying..." : "Verify OTP"}
           </button>
 
           {/* Resend OTP Button */}

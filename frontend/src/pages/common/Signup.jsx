@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import axios from "axios";
+import axiosInstance, { API_BASE_URL } from "../../utils/axios";
+import * as cartService from "../../utils/cartService";
 
 function Signup() {
   const navigate = useNavigate();
@@ -145,11 +146,12 @@ function Signup() {
     setIsLoading(true);
     
     try {
-      let password, confirmPassword;
+      let password, confirmPassword, response, email;
 
       if (selectedRole === "customer") {
         password = customerData.password;
         confirmPassword = customerData.confirmPassword;
+        email = customerData.email;
         
         if (password !== confirmPassword) {
           setErrorMessage("Passwords do not match!");
@@ -157,17 +159,26 @@ function Signup() {
           return;
         }
 
-        // Mock signup validation for customer
-        if (customerData.email && customerData.password.length >= 6) {
-          // Simulate successful signup
-          setIsLoading(false);
-          // Redirect to OTP page
-          navigate("/otp");
-          return;
-        }
+        // API call for customer registration
+        const requestBody = {
+          customer_name: customerData.fullName,
+          customer_email: customerData.email,
+          customer_phone: customerData.phone,
+          customer_birth_date: customerData.birthDate,
+          customer_gender: customerData.gender,
+          customer_address: customerData.address,
+          customer_password: customerData.password
+        };
+
+        response = await axiosInstance.post(
+          `${API_BASE_URL}/api/v1/auth/register/customer`,
+          requestBody
+        );
+
       } else if (selectedRole === "restaurant") {
         password = restaurantOwnerData.restaurant_owner_password;
         confirmPassword = restaurantOwnerData.confirmPassword;
+        email = restaurantOwnerData.restaurant_owner_email;
         
         if (password !== confirmPassword) {
           setErrorMessage("Passwords do not match!");
@@ -175,17 +186,26 @@ function Signup() {
           return;
         }
 
-        // Mock signup validation for restaurant
-        if (restaurantOwnerData.restaurant_owner_email && restaurantOwnerData.restaurant_owner_password.length >= 6) {
-          // Simulate successful signup
-          setIsLoading(false);
-          // Redirect to OTP page
-          navigate("/otp");
-          return;
-        }
+        // API call for restaurant owner registration
+        const requestBody = {
+          restaurant_owner_name: restaurantOwnerData.restaurant_owner_name,
+          restaurant_owner_phone: restaurantOwnerData.restaurant_owner_phone,
+          restaurant_owner_email: restaurantOwnerData.restaurant_owner_email,
+          restaurant_owner_password: restaurantOwnerData.restaurant_owner_password,
+          restaurant_owner_gender: restaurantOwnerData.restaurant_owner_gender,
+          restaurant_owner_dob: restaurantOwnerData.restaurant_owner_dob,
+          restaurant_owner_address: restaurantOwnerData.restaurant_owner_address
+        };
+
+        response = await axiosInstance.post(
+          `${API_BASE_URL}/api/v1/auth/register/restaurant-owner`,
+          requestBody
+        );
+
       } else if (selectedRole === "rider") {
         password = riderData.rider_password;
         confirmPassword = riderData.confirmPassword;
+        email = riderData.rider_email;
         
         if (password !== confirmPassword) {
           setErrorMessage("Passwords do not match!");
@@ -193,22 +213,39 @@ function Signup() {
           return;
         }
 
-        // Mock signup validation for rider
-        if (riderData.rider_email && riderData.rider_password.length >= 6) {
-          // Simulate successful signup
-          setIsLoading(false);
-          // Redirect to OTP page
-          navigate("/otp");
-          return;
-        }
+        // API call for rider registration
+        const requestBody = {
+          rider_name: riderData.rider_name,
+          rider_address: riderData.rider_address,
+          nid_no: riderData.nid_no,
+          emergency_contact: riderData.emergency_contact,
+          rider_email: riderData.rider_email,
+          profile_photo: riderData.profile_photo ? riderData.profile_photo.name : "default.jpg",
+          rider_gender: riderData.rider_gender,
+          rider_password: riderData.rider_password,
+          rider_date_of_birth: riderData.rider_date_of_birth
+        };
+
+        response = await axiosInstance.post(
+          `${API_BASE_URL}/api/v1/auth/register/rider`,
+          requestBody
+        );
       }
 
-      // If validation fails
-      setErrorMessage("Please fill all required fields correctly.");
-      setIsLoading(false);
+      // If registration successful, store email and redirect to OTP page
+      if (response && response.data) {
+        // Store email in sessionStorage for OTP verification
+        sessionStorage.setItem('registrationEmail', email);
+        sessionStorage.setItem('userType', selectedRole === 'restaurant' ? 'restaurant_owner' : selectedRole);
+        
+        setIsLoading(false);
+        navigate("/otp");
+      }
+
     } catch (error) {
       console.error("Signup error:", error);
-      setErrorMessage("Registration failed. Please try again.");
+      const errorMsg = error.response?.data?.message || "Registration failed. Please try again.";
+      setErrorMessage(errorMsg);
       setIsLoading(false);
     }
   };
@@ -250,13 +287,13 @@ function Signup() {
         )}
 
         {/* Demo Info Banner */}
-        {!showSuccessMessage && (
+        {/* {!showSuccessMessage && (
           <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
             <h3 className="text-sm font-semibold text-blue-900 mb-2">📝 Demo Mode - No Backend Required</h3>
             <p className="text-xs text-blue-700 mb-2">Fill the form with any information (password min 6 characters). After signup, you'll be redirected to OTP verification.</p>
             <p className="text-xs text-blue-700">Use OTP: <span className="font-bold">1234</span> to verify, then login with credentials from Login page.</p>
           </div>
-        )}
+        )} */}
 
         {/* Main Signup Card */}
         {!showSuccessMessage && (

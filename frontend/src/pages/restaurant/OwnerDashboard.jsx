@@ -3,6 +3,8 @@ import { useNavigate } from "react-router-dom";
 import AddRestaurantModal from "./components/AddRestaurantModal";
 import EditOwnerProfileModal from "./components/EditOwnerProfileModal";
 
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:8000";
+
 function OwnerDashboard() {
   const navigate = useNavigate();
   const [user, setUser] = useState(null);
@@ -33,61 +35,59 @@ function OwnerDashboard() {
 
   const fetchRestaurants = async (ownerId) => {
     try {
-      // TODO: Replace with actual API call
-      // const response = await fetch(`/api/restaurants/owner/${ownerId}`);
-      // const data = await response.json();
+      const token = localStorage.getItem("token");
       
-      // Mock data for now
-      const mockRestaurants = [
-        {
-          _id: "1",
-          restaurant_name: "Dhaka Grill House",
-          restaurant_location: "Gulshan",
-          restaurant_rating: { average: 4.5, count: 120 },
-          restaurant_total_revenue: 45000.50,
-          restaurant_total_sales: 450,
-          restaurant_categories: ["BBQ", "Grill"],
-          is_currently_open: true,
-          restaurant_image_url: "https://images.unsplash.com/photo-1555939594-58d7cb561ad1?w=400&h=300&fit=crop",
-        },
-        {
-          _id: "2",
-          restaurant_name: "Spice Kitchen",
-          restaurant_location: "Banani",
-          restaurant_rating: { average: 4.2, count: 85 },
-          restaurant_total_revenue: 32000.25,
-          restaurant_total_sales: 320,
-          restaurant_categories: ["Indian", "Chinese"],
-          is_currently_open: false,
-          restaurant_image_url: "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=400&h=300&fit=crop",
-        },
-      ];
+      if (!token) {
+        console.error("No token found");
+        setLoading(false);
+        return;
+      }
+
+      const response = await fetch(`${API_BASE_URL}/api/v1/restaurants/my/list`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch restaurants');
+      }
+
+      const data = await response.json();
       
-      setRestaurants(mockRestaurants);
+      if (data.status === 'success' && data.data?.restaurants) {
+        setRestaurants(data.data.restaurants);
+      } else {
+        setRestaurants([]);
+      }
+      
       setLoading(false);
     } catch (error) {
       console.error("Error fetching restaurants:", error);
+      setRestaurants([]);
       setLoading(false);
     }
   };
 
   const handleLogout = () => {
     localStorage.removeItem("user");
+    localStorage.removeItem("token");
+    localStorage.removeItem("intendedDestination");
     navigate("/");
   };
 
   const handleAddRestaurant = (restaurantData) => {
-    // Mock adding restaurant
-    const newRestaurant = {
-      _id: Date.now().toString(),
-      ...restaurantData,
-      restaurant_rating: { average: 0, count: 0 },
-      restaurant_total_revenue: 0,
-      restaurant_total_sales: 0,
-      is_currently_open: false,
-    };
-    setRestaurants([...restaurants, newRestaurant]);
+    // Add the new restaurant to the list
+    setRestaurants([...restaurants, restaurantData]);
     setShowAddRestaurant(false);
+    // Optionally refetch to ensure data consistency
+    const userData = localStorage.getItem("user");
+    if (userData) {
+      const parsedUser = JSON.parse(userData);
+      fetchRestaurants(parsedUser.id);
+    }
   };
 
   const handleUpdateProfile = (profileData) => {
@@ -315,16 +315,18 @@ function OwnerDashboard() {
                       {/* Restaurant Image */}
                       <div className="relative h-48 overflow-hidden rounded-t-lg">
                         <img
-                          src={restaurant.restaurant_image_url || "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=400&h=300&fit=crop"}
+                          src={restaurant.restaurant_image?.url || "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=400&h=300&fit=crop"}
                           alt={restaurant.restaurant_name}
                           className="w-full h-full object-cover"
                         />
                         <span className={`absolute top-3 right-3 px-3 py-1 text-xs font-medium rounded-full backdrop-blur-sm ${
-                          restaurant.is_currently_open
+                          restaurant.restaurant_status === 'Active'
                             ? "bg-green-500/90 text-white"
+                            : restaurant.restaurant_status === 'Pending'
+                            ? "bg-orange-500/90 text-white"
                             : "bg-red-500/90 text-white"
                         }`}>
-                          {restaurant.is_currently_open ? "● Open" : "● Closed"}
+                          ● {restaurant.restaurant_status || 'Pending'}
                         </span>
                       </div>
 
@@ -338,12 +340,12 @@ function OwnerDashboard() {
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                             </svg>
-                            {restaurant.restaurant_location}
+                            {restaurant.restaurant_address}
                           </p>
                         </div>
 
                         <div className="flex flex-wrap gap-2 mb-3">
-                          {restaurant.restaurant_categories.map((category, idx) => (
+                          {restaurant.restaurant_category?.map((category, idx) => (
                             <span key={idx} className="px-2 py-1 text-xs bg-gray-100 text-gray-700 rounded-full">
                               {category}
                             </span>
