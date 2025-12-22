@@ -15,7 +15,7 @@ const foodSchema = new mongoose.Schema(
       },
       altText: {
         type: String,
-        default: "Rider image",
+        default: "Food image",
       },
       public_id: {
         type: String,

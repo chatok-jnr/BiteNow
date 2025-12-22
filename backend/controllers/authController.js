@@ -53,7 +53,7 @@ exports.createCustomer = async (req, res) => {
     const newCustomer = await Customer.create(customerData);
 
     //Send otp
-    const otp = Math.floor(1000 + Math.random() * 90000).toString();
+    const otp = Math.floor(1000 + Math.random() * 9000).toString();
     await OTP.create({
       email: req.body.customer_email,
       user_type: "customer",
@@ -567,6 +567,9 @@ exports.createRestaurantOwner = async (req, res) => {
 //Verify account
 exports.restaurantOwnerVerification = async (req, res) => {
   try {
+
+    console.log(`Debug = ${req.body.otp}`);
+
     const { email, user_type, otp } = req.body;
     if (!email || !user_type || !otp) {
       return res.status(404).json({
@@ -669,7 +672,7 @@ exports.loginRestaurantOwner = async (req, res) => {
     const token = jwt.sign(
       {
         id: restaurantOwner._id,
-        role: "reataurant_owner",
+        role: "restaurant_owner",
         email: req.body.restaurant_owner_email,
       },
       process.env.JWT_SECRET,
