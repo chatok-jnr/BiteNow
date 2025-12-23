@@ -1,19 +1,17 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import CustomerNavbar from "./CustomerNavbar";
-import LocationHeader from "./components/LocationHeader";
-import LocationPickerModal from "../../components/Map/LocationPickerModal";
-import { mockRestaurants, cuisineCategories } from "./mockData";
+import { cuisineCategories } from "./mockData";
+import axiosInstance from "../../utils/axios";
 
 function Dashboard() {
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCuisine, setSelectedCuisine] = useState("All");
-  const [filteredRestaurants, setFilteredRestaurants] = useState(mockRestaurants);
-  const [showLocationPicker, setShowLocationPicker] = useState(false);
-  const [customerLocation, setCustomerLocation] = useState(null);
-  const [locationLastUpdated, setLocationLastUpdated] = useState(null);
-  const [nearbyRestaurants, setNearbyRestaurants] = useState([]);
+  const [restaurants, setRestaurants] = useState([]);
+  const [filteredRestaurants, setFilteredRestaurants] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   // Clear non-customer users from localStorage
   useEffect(() => {
@@ -29,119 +27,57 @@ function Dashboard() {
     checkSavedLocation();
   }, []);
 
-  const checkSavedLocation = async () => {
-    try {
-      const token = localStorage.getItem("token");
-      if (!token) {
-        // No token, use mock data
-        setFilteredRestaurants(mockRestaurants);
-        return;
-      }
-
-      // Try to fetch customer profile to check for saved location
-      const response = await fetch('http://localhost:5000/api/customers/me', {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        if (data.data?.customer_location?.coordinates) {
-          const [lng, lat] = data.data.customer_location.coordinates;
-          setCustomerLocation({ lng, lat });
-          setLocationLastUpdated(data.data.lastLocationUpdate || new Date());
-          
-          // Fetch nearby restaurants
-          await fetchNearbyRestaurants();
-        } else {
-          // No location saved, show location picker
-          setShowLocationPicker(true);
-        }
-      } else {
-        // API failed, use mock data
-        setFilteredRestaurants(mockRestaurants);
-      }
-    } catch (error) {
-      console.error('Error checking location:', error);
-      // On error, use mock data
-      setFilteredRestaurants(mockRestaurants);
-    }
-  };
-
-  const fetchNearbyRestaurants = async () => {
-    try {
-      const token = localStorage.getItem("token");
-      const response = await fetch(
-        'http://localhost:5000/api/location/nearby-restaurants?maxDistance=10',
-        {
-          headers: { Authorization: `Bearer ${token}` }
-        }
-      );
-
-      if (response.ok) {
-        const data = await response.json();
-        if (data.status === 'success' && data.data && data.data.length > 0) {
-          setNearbyRestaurants(data.data);
-          // Mix nearby restaurants with mock data for now
-          setFilteredRestaurants([...data.data, ...mockRestaurants]);
-        } else {
-          // No nearby restaurants, use mock data
-          setFilteredRestaurants(mockRestaurants);
-        }
-      } else {
-        // API failed, use mock data
-        setFilteredRestaurants(mockRestaurants);
-      }
-    } catch (error) {
-      console.error('Error fetching nearby restaurants:', error);
-      setFilteredRestaurants(mockRestaurants);
-    }
-  };
-
-  const handleLocationChange = () => {
-    setShowLocationPicker(true);
-  };
-
-  const handleLocationConfirm = async (location) => {
-    try {
-      const token = localStorage.getItem("token");
-      
-      // Try to update customer location in backend (optional - works without backend)
+  // Fetch restaurants from API
+  useEffect(() => {
+    const fetchRestaurants = async () => {
       try {
-        const response = await fetch('http://localhost:5000/api/location/update', {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({
-            latitude: location.lat,
-            longitude: location.lng
-          })
-        });
+        setLoading(true);
+        const response = await axiosInstance.get("/api/v1/restaurants");
+        
+        if (response.data.status === "success") {
+          // Transform API data to match our component structure
+          const transformedRestaurants = response.data.data.restaurants.map((restaurant) => ({
+            id: restaurant._id,
+            name: restaurant.restaurant_name,
+            cuisine: restaurant.restaurant_category.join(", "),
+            rating: restaurant.restaurant_rating.average || 0,
+            deliveryTime: "25-35", // Default value since API doesn't provide this
+            deliveryFee: 30, // Default value
+            image: "🍽️", // Default emoji
+            discount: 0, // Default value
+            popular: restaurant.restaurant_rating.count > 50,
+            topDeal: restaurant.restaurant_commissionRate < 0.2,
+            fastDelivery: false,
+            address: restaurant.restaurant_address,
+            phone: restaurant.restaurant_contact_info.phone,
+            description: restaurant.restaurant_description,
+            status: restaurant.restaurant_status,
+            coordinates: restaurant.restaurant_location.coordinates,
+            restaurantImage: restaurant.restaurant_image.url,
+          }));
 
-        if (!response.ok) {
-          console.warn('Backend update failed, continuing with mock data');
+          // Filter only accepted restaurants
+          const acceptedRestaurants = transformedRestaurants.filter(
+            (r) => r.status === "Accepted"
+          );
+          
+          setRestaurants(acceptedRestaurants);
+          setFilteredRestaurants(acceptedRestaurants);
         }
-      } catch (apiError) {
-        console.warn('Backend not available, continuing with mock data:', apiError);
+      } catch (err) {
+        console.error("Error fetching restaurants:", err);
+        setError("Failed to load restaurants. Please try again later.");
+      } finally {
+        setLoading(false);
       }
+    };
 
-      // Always update local state (works with or without backend)
-      setCustomerLocation(location);
-      setLocationLastUpdated(new Date());
-      setShowLocationPicker(false);
-      
-      // Fetch nearby restaurants after location update
-      await fetchNearbyRestaurants();
-    } catch (error) {
-      console.error('Error updating location:', error);
-      alert('Failed to update location. Please try again.');
-    }
-  };
+    fetchRestaurants();
+  }, []);
 
   // Filter logic
   useEffect(() => {
-    let filtered = [...mockRestaurants];
+    let filtered = [...restaurants];
 
     // Search filter
     if (searchQuery) {
@@ -154,11 +90,13 @@ function Dashboard() {
 
     // Cuisine filter
     if (selectedCuisine !== "All") {
-      filtered = filtered.filter((r) => r.cuisine === selectedCuisine);
+      filtered = filtered.filter((r) => 
+        r.cuisine.toLowerCase().includes(selectedCuisine.toLowerCase())
+      );
     }
 
     setFilteredRestaurants(filtered);
-  }, [searchQuery, selectedCuisine]);
+  }, [searchQuery, selectedCuisine, restaurants]);
 
   // Get restaurants by category
   const topDealsRestaurants = filteredRestaurants.filter(r => r.topDeal);
@@ -177,7 +115,15 @@ function Dashboard() {
     >
       {/* Restaurant Image/Icon */}
       <div className="h-40 bg-gradient-to-br from-primary/10 to-secondary/10 flex items-center justify-center relative">
-        <span className="text-6xl">{restaurant.image}</span>
+        {restaurant.restaurantImage ? (
+          <img 
+            src={restaurant.restaurantImage} 
+            alt={restaurant.name}
+            className="w-full h-full object-cover"
+          />
+        ) : (
+          <span className="text-6xl">{restaurant.image}</span>
+        )}
         {restaurant.popular && (
           <span className="absolute top-3 right-3 bg-secondary text-white px-2 py-1 rounded-full text-xs font-semibold">
             Popular
@@ -202,7 +148,7 @@ function Dashboard() {
           {/* Rating */}
           <div className="flex items-center space-x-2">
             <span className="text-yellow-500">⭐</span>
-            <span className="font-semibold text-gray-900">{restaurant.rating}</span>
+            <span className="font-semibold text-gray-900">{restaurant.rating.toFixed(1)}</span>
             <span className="text-gray-500 text-xs">
               ({Math.floor(Math.random() * 500 + 100)}+)
             </span>
@@ -223,6 +169,47 @@ function Dashboard() {
       </div>
     </div>
   );
+
+  // Loading state
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <CustomerNavbar />
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <div className="flex items-center justify-center h-64">
+            <div className="text-center">
+              <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-primary mx-auto mb-4"></div>
+              <p className="text-gray-600">Loading restaurants...</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Error state
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <CustomerNavbar />
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <div className="flex items-center justify-center h-64">
+            <div className="text-center">
+              <p className="text-6xl mb-4">😕</p>
+              <p className="text-xl text-gray-900 font-semibold mb-2">Oops!</p>
+              <p className="text-gray-600">{error}</p>
+              <button
+                onClick={() => window.location.reload()}
+                className="mt-4 bg-primary text-white px-6 py-2 rounded-lg hover:bg-primary/90 transition-colors"
+              >
+                Try Again
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -372,32 +359,6 @@ function Dashboard() {
           </div>
         )}
       </div>
-
-      {/* Location Picker Modal */}
-      <LocationPickerModal
-        isOpen={showLocationPicker}
-        onClose={() => {
-          // Allow closing if location is already set
-          if (customerLocation) {
-            setShowLocationPicker(false);
-          }
-        }}
-        onLocationSelect={handleLocationConfirm}
-        initialLocation={customerLocation}
-        title="Select Delivery Location"
-        isMandatory={!customerLocation}
-      />
-
-      {/* Custom Scrollbar Hide */}
-      <style>{`
-        .scrollbar-hide::-webkit-scrollbar {
-          display: none;
-        }
-        .scrollbar-hide {
-          -ms-overflow-style: none;
-          scrollbar-width: none;
-        }
-      `}</style>
     </div>
   );
 }

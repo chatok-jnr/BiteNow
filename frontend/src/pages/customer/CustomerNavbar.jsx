@@ -20,8 +20,29 @@ function CustomerNavbar() {
   const isAuthenticated = user && user.email;
 
   const handleLogout = () => {
+    console.log('🚪 Logging out...');
+    console.log('Before logout - localStorage:', {
+      hasUser: !!localStorage.getItem('user'),
+      hasToken: !!localStorage.getItem('token'),
+      hasGuestSession: !!localStorage.getItem('guest_session_id')
+    });
+    
+    // Clear all authentication data
     localStorage.removeItem("user");
-    navigate("/customer-dashboard");
+    localStorage.removeItem("token");
+    localStorage.removeItem("intendedDestination");
+    
+    // Also clear guest session to force a fresh start
+    localStorage.removeItem("guest_session_id");
+    
+    console.log('After logout - localStorage:', {
+      hasUser: !!localStorage.getItem('user'),
+      hasToken: !!localStorage.getItem('token'),
+      hasGuestSession: !!localStorage.getItem('guest_session_id')
+    });
+    
+    // Reload to clear any cached state and ensure guest session is used
+    window.location.href = "/customer-dashboard";
   };
 
   const handleLoginClick = () => {

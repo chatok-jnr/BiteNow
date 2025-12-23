@@ -167,6 +167,13 @@ exports.searchRestaurants = async (req, res) => {
 //restricted
 exports.createRestaurant = async (req, res) => {
   try {
+    // Debug logging
+    console.log('=== CREATE RESTAURANT DEBUG ===');
+    console.log('Headers:', req.headers);
+    console.log('Request body:', JSON.stringify(req.body, null, 2));
+    console.log('User from auth:', req.user);
+    console.log('================================');
+
     //required field
     const { owner_id, restaurant_name, restaurant_address } = req.body;
     if (!owner_id || !restaurant_name || !restaurant_address) {
@@ -233,6 +240,48 @@ exports.getMyRestaurants = async (req, res) => {
     res.status(500).json({
       status: "error",
       message: "Failed to fetch your restaurants",
+    });
+  }
+};
+
+exports.getMyRestaurantById = async (req, res) => {
+  try {
+    const owner_id = req.user._id;
+    const restaurant_id = req.params.id;
+
+    const restaurant = await Restaurant.findOne({ 
+      _id: restaurant_id,
+      owner_id: owner_id 
+    })
+      .populate(
+        "owner_id",
+        "restaurant_owner_name restaurant_owner_email restaurant_owner_phone"
+      )
+      .select("-__v");
+
+    if (!restaurant) {
+      return res.status(404).json({
+        status: "fail",
+        message: "Restaurant not found or you don't have permission to view it",
+      });
+    }
+
+    res.status(200).json({
+      status: "success",
+      data: {
+        restaurant,
+      },
+    });
+  } catch (err) {
+    if (err.name === "CastError") {
+      return res.status(400).json({
+        status: "fail",
+        message: "Invalid restaurant ID",
+      });
+    }
+    res.status(500).json({
+      status: "error",
+      message: "Failed to fetch restaurant details",
     });
   }
 };

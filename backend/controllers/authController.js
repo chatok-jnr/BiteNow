@@ -568,8 +568,6 @@ exports.createRestaurantOwner = async (req, res) => {
 exports.restaurantOwnerVerification = async (req, res) => {
   try {
 
-    console.log(`Debug = ${req.body.otp}`);
-
     const { email, user_type, otp } = req.body;
     if (!email || !user_type || !otp) {
       return res.status(404).json({
@@ -684,6 +682,7 @@ exports.loginRestaurantOwner = async (req, res) => {
     );
 
     const ownerResponse = {
+      id: restaurantOwner._id,
       restaurant_owner_name: restaurantOwner.restaurant_owner_name,
       restaurant_owner_phone: restaurantOwner.restaurant_owner_phone,
       restaurant_owner_email: restaurantOwner.restaurant_owner_email,

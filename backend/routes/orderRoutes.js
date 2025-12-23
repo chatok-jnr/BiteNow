@@ -12,7 +12,7 @@ router.use(authMiddleware.protect);
 //Routes for REstauratn
 router
   .route('/restaurant/:restaurantId')
-  .get(orderController.getOrderByRestaurant)
+  .get(authMiddleware.restrictTo('restaurant_owner'), orderController.getOrderByRestaurant);
 router
   .route('/restaurant/:orderId')
   .patch(orderController.updateOrderStatusByRestaurant);

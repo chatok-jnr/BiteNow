@@ -27,10 +27,6 @@ const orderItemSchema = new mongoose.Schema(
 
 const orderSchema = new mongoose.Schema(
   {
-    order_id: {
-      type: String,
-      unique: true,
-    },
     customer_id: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Customer",
@@ -43,7 +39,7 @@ const orderSchema = new mongoose.Schema(
     },
     rider_id: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
+      ref: "Rider",
     },
     rider_pin: {
       type: Number,
@@ -102,6 +98,7 @@ const orderSchema = new mongoose.Schema(
         "out_for_delivery",
         "delivered",
         "cancelled",
+        "ready_for_pickup"
       ],
       default: "pending",
     },

@@ -1,95 +1,159 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import CustomerNavbar from "./CustomerNavbar";
-import LocationPickerModal from "../../components/Map/LocationPickerModal";
+import * as cartService from "../../utils/cartService";
+import axiosInstance from "../../utils/axios";
 
 function Checkout() {
   const navigate = useNavigate();
-  const [deliveryAddress, setDeliveryAddress] = useState("");
-  const [deliveryLocation, setDeliveryLocation] = useState(null);
-  const [showLocationPicker, setShowLocationPicker] = useState(false);
-  const [orderData, setOrderData] = useState(null);
+  const [deliveryAddress, setDeliveryAddress] = useState({
+    street: "",
+    city: "",
+    state: "",
+    zip_code: "",
+    country: ""
+  });
+  const [specialInstructions, setSpecialInstructions] = useState("");
+  const [cart, setCart] = useState(null);
+  const [restaurant, setRestaurant] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
   const user = JSON.parse(localStorage.getItem("user") || "{}");
 
   useEffect(() => {
-    // Check authentication first
-    const userData = localStorage.getItem("user");
-    if (!userData) {
-      localStorage.setItem("intendedDestination", "/customer-dashboard/checkout");
-      navigate("/login");
-      return;
-    }
-    
-    // Get order data from localStorage
-    const pendingOrder = JSON.parse(localStorage.getItem("pendingCheckout") || "null");
-    
-    if (!pendingOrder) {
-      navigate("/customer-dashboard");
-      return;
-    }
-    
-    setOrderData(pendingOrder);
-  }, [navigate]);
-
-  const handleLocationSelect = (location) => {
-    setDeliveryLocation(location);
-    setShowLocationPicker(false);
-    
-    // Try to update backend with delivery location (optional - works without backend)
-    const token = localStorage.getItem("token");
-    if (token) {
-      fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/location/update`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({
-          latitude: location.lat,
-          longitude: location.lng
-        })
-      }).catch(err => console.warn('Backend not available, continuing with mock data:', err));
-    }
-  };
-
-  const handleConfirmOrder = () => {
-    if (!deliveryAddress.trim()) {
-      alert("Please enter your delivery address");
-      return;
-    }
-
-    if (!deliveryLocation) {
-      alert("Please select your delivery location on the map");
-      return;
-    }
-
-    // Create final order with delivery address and location
-    const newOrder = {
-      ...orderData,
-      deliveryAddress,
-      deliveryLocation: {
-        type: 'Point',
-        coordinates: [deliveryLocation.lng, deliveryLocation.lat]
-      },
-      id: `ORD${Date.now()}`,
-      status: "pending",
-      orderTime: new Date().toLocaleString(),
-      isActive: true,
+    const fetchCheckoutData = async () => {
+      try {
+        setLoading(true);
+        
+        // Check authentication first
+        const userData = localStorage.getItem("user");
+        if (!userData) {
+          localStorage.setItem("intendedDestination", "/customer-dashboard/checkout");
+          navigate("/login");
+          return;
+        }
+        
+        // Fetch cart from backend
+        const cartData = await cartService.getCart();
+        
+        console.log("Cart data received:", cartData);
+        
+        if (!cartData || !cartData.items || cartData.items.length === 0) {
+          // No cart or empty cart - redirect to dashboard
+          alert("Your cart is empty. Please add items before checking out.");
+          navigate("/customer-dashboard");
+          return;
+        }
+        
+        setCart(cartData);
+        
+        // Fetch restaurant details if restaurant_id exists
+        if (cartData.restaurant_id) {
+          try {
+            const restaurantResponse = await axiosInstance.get("/api/v1/restaurants");
+            if (restaurantResponse.data.status === "success") {
+              const foundRestaurant = restaurantResponse.data.data.restaurants.find(
+                (r) => r._id === cartData.restaurant_id
+              );
+              
+              if (foundRestaurant) {
+                setRestaurant({
+                  id: foundRestaurant._id,
+                  name: foundRestaurant.restaurant_name,
+                });
+              }
+            }
+          } catch (restError) {
+            console.error("Error fetching restaurant:", restError);
+            // Continue even if restaurant fetch fails
+          }
+        }
+      } catch (error) {
+        console.error("Error fetching checkout data:", error);
+        alert("Failed to load checkout data. Please try again.");
+        navigate("/customer-dashboard");
+      } finally {
+        setLoading(false);
+      }
     };
 
-    // Save to orders
-    const existingOrders = JSON.parse(localStorage.getItem("customerOrders") || "[]");
-    localStorage.setItem("customerOrders", JSON.stringify([newOrder, ...existingOrders]));
-    
-    // Clear pending checkout
-    localStorage.removeItem("pendingCheckout");
-    
-    // Navigate to orders page
-    navigate("/customer-dashboard/orders");
+    fetchCheckoutData();
+  }, [navigate]);
+
+  const handleConfirmOrder = async () => {
+    // Validate delivery address fields
+    if (!deliveryAddress.street.trim() || !deliveryAddress.city.trim() || 
+        !deliveryAddress.state.trim() || !deliveryAddress.zip_code.trim() || 
+        !deliveryAddress.country.trim()) {
+      alert("Please fill in all delivery address fields");
+      return;
+    }
+
+    try {
+      setSubmitting(true);
+      
+      // Create order from cart via backend API
+      const orderPayload = {
+        delivery_address: {
+          street: deliveryAddress.street,
+          city: deliveryAddress.city,
+          state: deliveryAddress.state,
+          zip_code: deliveryAddress.zip_code,
+          country: deliveryAddress.country
+        },
+        payment_method: "cash",
+        special_instructions: specialInstructions || undefined
+      };
+      
+      const response = await axiosInstance.post("/api/v1/order/", orderPayload);
+      
+      if (response.data.status === "success") {
+        // Show success message
+        alert("Order placed successfully!");
+        
+        // Navigate to orders page
+        navigate("/customer-dashboard/orders");
+      }
+    } catch (error) {
+      console.error("Error placing order:", error);
+      
+      if (error.response?.data?.message) {
+        alert(`Failed to place order: ${error.response.data.message}`);
+      } else {
+        alert("Failed to place order. Please try again.");
+      }
+    } finally {
+      setSubmitting(false);
+    }
   };
 
-  if (!orderData) {
-    return <div>Loading...</div>;
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <CustomerNavbar />
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <div className="flex items-center justify-center h-64">
+            <div className="text-center">
+              <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-primary mx-auto mb-4"></div>
+              <p className="text-gray-600">Loading checkout...</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (!cart || !cart.items || cart.items.length === 0) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <CustomerNavbar />
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <div className="text-center py-12">
+            <p className="text-gray-600">Your cart is empty</p>
+          </div>
+        </div>
+      </div>
+    );
   }
 
   return (
@@ -107,39 +171,84 @@ function Checkout() {
               <h2 className="text-xl font-bold text-gray-900 mb-4">
                 📍 Delivery Location & Address
               </h2>
-              
-              {/* Map Location Picker Button */}
-              <div className="mb-4">
-                <button
-                  onClick={() => setShowLocationPicker(true)}
-                  className={`w-full px-4 py-3 rounded-lg font-medium transition-colors ${
-                    deliveryLocation
-                      ? 'bg-secondary/10 text-secondary border-2 border-secondary'
-                      : 'bg-primary text-white hover:bg-primary/90'
-                  }`}
-                >
-                  {deliveryLocation ? (
-                    <span className="flex items-center justify-center gap-2">
-                      ✓ Location Selected ({deliveryLocation.lat.toFixed(4)}, {deliveryLocation.lng.toFixed(4)})
-                    </span>
-                  ) : (
-                    <span className="flex items-center justify-center gap-2">
-                      📍 Select Delivery Location on Map
-                    </span>
-                  )}
-                </button>
-                {deliveryLocation && (
-                  <p className="text-sm text-gray-600 mt-2">
-                    Click to change location
-                  </p>
-                )}
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Street Address
+                  </label>
+                  <input
+                    type="text"
+                    value={deliveryAddress.street}
+                    onChange={(e) => setDeliveryAddress({...deliveryAddress, street: e.target.value})}
+                    placeholder="e.g., 123 Main Street, Apt 4B"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+                  />
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      City
+                    </label>
+                    <input
+                      type="text"
+                      value={deliveryAddress.city}
+                      onChange={(e) => setDeliveryAddress({...deliveryAddress, city: e.target.value})}
+                      placeholder="e.g., New York"
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      State/Province
+                    </label>
+                    <input
+                      type="text"
+                      value={deliveryAddress.state}
+                      onChange={(e) => setDeliveryAddress({...deliveryAddress, state: e.target.value})}
+                      placeholder="e.g., NY"
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+                    />
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      ZIP/Postal Code
+                    </label>
+                    <input
+                      type="text"
+                      value={deliveryAddress.zip_code}
+                      onChange={(e) => setDeliveryAddress({...deliveryAddress, zip_code: e.target.value})}
+                      placeholder="e.g., 10001"
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Country
+                    </label>
+                    <input
+                      type="text"
+                      value={deliveryAddress.country}
+                      onChange={(e) => setDeliveryAddress({...deliveryAddress, country: e.target.value})}
+                      placeholder="e.g., USA"
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+                    />
+                  </div>
+                </div>
               </div>
+            </div>
 
+            {/* Special Instructions */}
+            <div className="bg-white rounded-lg shadow-md p-6">
+              <h2 className="text-xl font-bold text-gray-900 mb-4">
+                📝 Special Instructions
+              </h2>
               <textarea
-                value={deliveryAddress}
-                onChange={(e) => setDeliveryAddress(e.target.value)}
-                placeholder="Enter your complete delivery address (House/Flat, Street, Area, City)"
-                rows="4"
+                value={specialInstructions}
+                onChange={(e) => setSpecialInstructions(e.target.value)}
+                placeholder="Any special delivery instructions? (e.g., Please ring the doorbell twice)"
+                rows="3"
                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent resize-none"
               />
             </div>
@@ -187,19 +296,23 @@ function Checkout() {
                 Your order from
               </h2>
               <p className="text-lg font-semibold text-primary mb-6">
-                {orderData.restaurantName}
+                {restaurant?.name || "Restaurant"}
               </p>
 
               {/* Items List */}
               <div className="space-y-3 mb-4 border-b border-gray-200 pb-4">
-                {orderData.items.map((item, index) => (
+                {cart && cart.items && cart.items.map((item, index) => (
                   <div key={index} className="flex justify-between items-start">
                     <div className="flex-1">
                       <span className="text-sm text-gray-600">{item.quantity} x </span>
-                      <span className="text-sm text-gray-900">{item.name}</span>
+                      <span className="text-sm text-gray-900">
+                        {item.food_id && typeof item.food_id === 'string' 
+                          ? `Item #${item.food_id.slice(-6)}`
+                          : 'Item'}
+                      </span>
                     </div>
                     <span className="text-sm font-medium text-gray-900">
-                      ৳{item.price * item.quantity}
+                      ৳{item.total_price || 0}
                     </span>
                   </div>
                 ))}
@@ -209,24 +322,29 @@ function Checkout() {
               <div className="space-y-2 mb-6">
                 <div className="flex justify-between text-sm">
                   <span className="text-gray-600">Subtotal</span>
-                  <span className="font-medium">৳{orderData.subtotal}</span>
+                  <span className="font-medium">৳{cart?.subtotal || 0}</span>
                 </div>
                 <div className="flex justify-between text-sm">
                   <span className="text-gray-600">Delivery Fee</span>
-                  <span className="font-medium">৳{orderData.deliveryFee}</span>
+                  <span className="font-medium">৳{cart?.delivery_charge || 0}</span>
                 </div>
                 <div className="flex justify-between text-lg font-bold pt-2 border-t border-gray-300">
                   <span>Total</span>
-                  <span className="text-primary">৳{orderData.total}</span>
+                  <span className="text-primary">৳{cart?.total_amount || 0}</span>
                 </div>
               </div>
 
               {/* Confirm Button */}
               <button
                 onClick={handleConfirmOrder}
-                className="w-full bg-secondary text-white py-3 rounded-lg font-semibold hover:bg-secondary/90 transition-colors"
+                disabled={submitting}
+                className={`w-full py-3 rounded-lg font-semibold transition-colors ${
+                  submitting
+                    ? "bg-gray-400 text-white cursor-not-allowed"
+                    : "bg-secondary text-white hover:bg-secondary/90"
+                }`}
               >
-                Confirm Order
+                {submitting ? "Placing Order..." : "Confirm Order"}
               </button>
             </div>
           </div>

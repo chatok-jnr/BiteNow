@@ -1,4 +1,5 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import PrivateRoute from "./components/PrivateRoute";
 import Login from "./pages/common/Login";
 import Signup from "./pages/common/Signup";
 import Otp from "./pages/common/Otp";
@@ -21,15 +22,64 @@ function App() {
         <Route path="/signup" element={<Signup />} />
         <Route path="/otp" element={<Otp />} />
         <Route path="/owner-change-password" element={<ChangePassword />} />
+        
+        {/* Customer Routes - Public access for browsing */}
         <Route path="/customer-dashboard" element={<CustomerDashboard />} />
         <Route path="/customer-dashboard/restaurant/:id" element={<RestaurantMenu />} />
-        <Route path="/customer-dashboard/checkout" element={<Checkout />} />
-        <Route path="/customer-dashboard/profile" element={<CustomerProfile />} />
-        <Route path="/customer-dashboard/orders" element={<CustomerOrders />} />
-        <Route path="/rider-dashboard" element={<RiderDashboard />} />
-        {/* Restaurant Owner Routes */}
-        <Route path="/owner-dashboard" element={<OwnerDashboard />} />
-        <Route path="/restaurant-manager/:restaurantId" element={<RestaurantManager />} />
+        
+        {/* Customer Routes - Protected (require login) */}
+        <Route 
+          path="/customer-dashboard/checkout" 
+          element={
+            <PrivateRoute allowedRoles={['customer']}>
+              <Checkout />
+            </PrivateRoute>
+          } 
+        />
+        <Route 
+          path="/customer-dashboard/profile" 
+          element={
+            <PrivateRoute allowedRoles={['customer']}>
+              <CustomerProfile />
+            </PrivateRoute>
+          } 
+        />
+        <Route 
+          path="/customer-dashboard/orders" 
+          element={
+            <PrivateRoute allowedRoles={['customer']}>
+              <CustomerOrders />
+            </PrivateRoute>
+          } 
+        />
+        
+        {/* Rider Routes - Protected */}
+        <Route 
+          path="/rider-dashboard" 
+          element={
+            <PrivateRoute allowedRoles={['rider']}>
+              <RiderDashboard />
+            </PrivateRoute>
+          } 
+        />
+        
+        {/* Restaurant Owner Routes - Protected */}
+        <Route 
+          path="/owner-dashboard" 
+          element={
+            <PrivateRoute allowedRoles={['restaurant']}>
+              <OwnerDashboard />
+            </PrivateRoute>
+          } 
+        />
+        <Route 
+          path="/restaurant-manager/:restaurantId" 
+          element={
+            <PrivateRoute allowedRoles={['restaurant']}>
+              <RestaurantManager />
+            </PrivateRoute>
+          } 
+        />
       </Routes>
     </Router>
   );

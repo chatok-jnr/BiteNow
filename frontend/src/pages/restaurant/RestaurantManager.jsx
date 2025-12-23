@@ -6,7 +6,8 @@ import Analytics from "./components/Analytics";
 import Reviews from "./components/Reviews";
 import RestaurantSettings from "./components/RestaurantSettings";
 import OrderHistory from "./components/OrderHistory";
-import { mockOrders, mockFoodItems, mockReviews } from "./mockData";
+
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:8000";
 
 function RestaurantManager() {
   const navigate = useNavigate();
@@ -37,50 +38,96 @@ function RestaurantManager() {
 
   const fetchRestaurantDetails = async (id) => {
     try {
-      // TODO: Replace with actual API call
-      // const response = await fetch(`/api/restaurants/${id}`);
-      // const data = await response.json();
+      const token = localStorage.getItem("token");
       
-      // Mock data
-      const mockRestaurant = {
-        restaurant_id: id,
-        restaurant_name: "The Golden Spoon",
-        restaurant_description: "Experience fine dining with our exquisite collection of international cuisines crafted by award-winning chefs.",
-        restaurant_location: "Gulshan",
-        restaurant_address: {
-          street: "123 Main Street",
-          city: "Dhaka",
-          state: "Dhaka Division",
-          country: "Bangladesh",
-          zipCode: "1212"
-        },
-        restaurant_contact_phone: "+8801712345678",
-        restaurant_contact_email: "contact@goldenspoon.com",
-        restaurant_categories: ["Fine Dining", "Italian", "Seafood"],
-        restaurant_rating: { average: 4.5, count: 250 },
-        restaurant_opening_hours: {
-          Monday: { open: "09:00", close: "22:00", closed: false },
-          Tuesday: { open: "09:00", close: "22:00", closed: false },
-          Wednesday: { open: "09:00", close: "22:00", closed: false },
-          Thursday: { open: "09:00", close: "22:00", closed: false },
-          Friday: { open: "09:00", close: "23:00", closed: false },
-          Saturday: { open: "10:00", close: "23:00", closed: false },
-          Sunday: { open: "10:00", close: "22:00", closed: false },
-        },
-        restaurant_total_revenue: 45000.50,
-        restaurant_total_sales: 450,
-        is_currently_open: true,
-      };
+      if (!token) {
+        console.error("No token found");
+        setLoading(false);
+        navigate("/");
+        return;
+      }
+
+      // Fetch restaurant details using the owner-specific endpoint
+      const restaurantResponse = await fetch(`${API_BASE_URL}/api/v1/restaurants/my/${id}`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (!restaurantResponse.ok) {
+        throw new Error('Failed to fetch restaurant details');
+      }
+
+      const restaurantData = await restaurantResponse.json();
       
-      // Load mock data
-      setRestaurant(mockRestaurant);
-      setOrders(mockOrders);
-      setFoodItems(mockFoodItems);
-      setReviews(mockReviews);
+      if (restaurantData.status === 'success' && restaurantData.data?.restaurant) {
+        const restaurantInfo = restaurantData.data.restaurant;
+        
+        // Set restaurant data with default values
+        setRestaurant({
+          ...restaurantInfo,
+          restaurant_id: restaurantInfo._id,
+          restaurant_rating: restaurantInfo.restaurant_rating || { average: 0, count: 0 },
+          is_currently_open: restaurantInfo.is_currently_open !== undefined ? restaurantInfo.is_currently_open : true,
+        });
+
+        // Fetch orders for this restaurant
+        try {
+          const ordersResponse = await fetch(`${API_BASE_URL}/api/v1/order/restaurant/${id}`, {
+            method: 'GET',
+            headers: {
+              'Authorization': `Bearer ${token}`,
+              'Content-Type': 'application/json'
+            }
+          });
+
+          if (ordersResponse.ok) {
+            const ordersData = await ordersResponse.json();
+            if (ordersData.status === 'success' && ordersData.data?.myOrder) {
+              setOrders(ordersData.data.myOrder);
+            }
+          }
+        } catch (orderError) {
+          console.error("Error fetching orders:", orderError);
+          setOrders([]);
+        }
+
+        // Fetch food items for this restaurant
+        try {
+          const foodResponse = await fetch(`${API_BASE_URL}/api/v1/food/restaurant/${id}`, {
+            method: 'GET',
+            headers: {
+              'Authorization': `Bearer ${token}`,
+              'Content-Type': 'application/json'
+            }
+          });
+
+          if (foodResponse.ok) {
+            const foodData = await foodResponse.json();
+            if (foodData.status === 'success' && foodData.data?.foods) {
+              setFoodItems(foodData.data.foods);
+            }
+          }
+        } catch (foodError) {
+          console.error("Error fetching food items:", foodError);
+          setFoodItems([]);
+        }
+
+        // For reviews, use empty array for now (can be implemented later)
+        setReviews([]);
+        
+      } else {
+        throw new Error('Invalid restaurant data');
+      }
+      
       setLoading(false);
     } catch (error) {
       console.error("Error fetching restaurant:", error);
+      alert("Failed to load restaurant details. Please try again.");
       setLoading(false);
+      navigate("/owner-dashboard");
     }
   };
 
@@ -118,15 +165,15 @@ function RestaurantManager() {
               <div>
                 <h1 className="text-2xl font-bold text-gray-900">{restaurant?.restaurant_name}</h1>
                 <p className="text-sm text-gray-500">
-                  {restaurant?.restaurant_address.street}, {restaurant?.restaurant_address.city}
+                  {restaurant?.restaurant_address || restaurant?.restaurant_location || 'Location not set'}
                 </p>
               </div>
             </div>
             <div className="flex items-center gap-4">
               <div className="flex items-center gap-2">
                 <span className="text-yellow-500 text-lg">⭐</span>
-                <span className="font-semibold text-gray-900">{restaurant?.restaurant_rating.average}</span>
-                <span className="text-gray-500">({restaurant?.restaurant_rating.count} reviews)</span>
+                <span className="font-semibold text-gray-900">{restaurant?.restaurant_rating?.average || 0}</span>
+                <span className="text-gray-500">({restaurant?.restaurant_rating?.count || 0} reviews)</span>
               </div>
               
               {/* Operational Status Toggle */}
@@ -188,8 +235,8 @@ function RestaurantManager() {
 
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {activeTab === "orders" && <OrderManagement orders={orders} />}
-        {activeTab === "menu" && <MenuManagement foodItems={foodItems} />}
+        {activeTab === "orders" && <OrderManagement restaurantId={restaurantId} orders={orders} />}
+        {activeTab === "menu" && <MenuManagement restaurantId={restaurantId} foodItems={foodItems} />}
         {activeTab === "analytics" && (
           <Analytics restaurant={restaurant} foodItems={foodItems} orders={orders} />
         )}

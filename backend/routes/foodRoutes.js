@@ -8,7 +8,7 @@ const router = express.Router();
 router
   .route("/")
   .get(Food.getAllFood) // All Food in the platform
-  .post(protect, restrictTo("restaurant_owner"), Food.createFood); // Create a new food
+  .post(protect, restrictTo('restaurant_owner'), Food.createFood); // Create a new food
 
 router.route("/price").get(Food.getFoodByPriceRange); // Get Food by price range
 

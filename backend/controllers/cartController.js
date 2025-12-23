@@ -5,7 +5,7 @@ const Food = require('./../models/foodModel');
 exports.getOrCreateCart = async (req, res) => {
   try {
     const { restaurant_id } = req.body;
-    
+
     if (!restaurant_id) {
       return res.status(400).json({
         status: 'failed',
@@ -16,9 +16,9 @@ exports.getOrCreateCart = async (req, res) => {
     // Get user_id from auth middleware (for authenticated users) or guest session
     const user_id = req.user ? req.user._id : null;
     const guest_session_id = req.guestSessionId || null;
-    
+
     const cart = await Cart.findOrCreateCart(user_id, restaurant_id, guest_session_id);
-    
+
     res.status(200).json({
       status: 'success',
       data: { cart }
@@ -34,11 +34,14 @@ exports.getOrCreateCart = async (req, res) => {
 // Add to Cart
 exports.addToCart = async (req, res) => {
   try {
-
-    console.log()
-
     const { food_id, quantity = 1 } = req.body;
-    
+
+    // Get user_id or guest_session_id
+    const user_id = req.user ? req.user._id : null;
+    const guest_session_id = req.guestSessionId || null;
+
+
+
     if (!food_id) {
       return res.status(400).json({
         status: 'failed',
@@ -63,20 +66,27 @@ exports.addToCart = async (req, res) => {
       });
     }
 
-    // Get user_id or guest_session_id
-    const user_id = req.user ? req.user._id : null;
-    const guest_session_id = req.guestSessionId || null;
-    
-    console.log(`Guest ID = ${guest_session_id}`);
+    // Validate restaurant_id (MongoDB ObjectId should be 24 characters)
+    const restaurantIdString = food.restaurant_id.toString();
+    if (restaurantIdString.length !== 24) {
+
+      return res.status(500).json({
+        status: 'failed',
+        message: 'Data integrity error: Invalid restaurant ID. Please contact support.'
+      });
+    }
+
 
     // Check if user/guest has ANY active cart first
     let cart;
     if (user_id) {
+
       cart = await Cart.findOne({
         user_id,
         is_active: true
       });
     } else {
+
       cart = await Cart.findOne({
         guest_session_id,
         is_active: true
@@ -96,7 +106,7 @@ exports.addToCart = async (req, res) => {
       const cartData = {
         restaurant_id: food.restaurant_id
       };
-      
+
       if (user_id) {
         cartData.user_id = user_id;
       } else {
@@ -127,7 +137,9 @@ exports.addToCart = async (req, res) => {
 exports.removeFromCart = async (req, res) => {
   try {
     const { food_id, quantity = 'all' } = req.body;
-    
+
+
+
     if (!food_id) {
       return res.status(400).json({
         status: 'failed',
@@ -138,15 +150,17 @@ exports.removeFromCart = async (req, res) => {
     // Get user_id or guest_session_id
     const user_id = req.user ? req.user._id : null;
     const guest_session_id = req.guestSessionId || null;
-    
+
     let cart;
     if (user_id) {
+
       cart = await Cart.findOne({
         user_id,
         is_active: true,
         expires_at: { $gt: new Date() }
       });
     } else {
+
       cart = await Cart.findOne({
         guest_session_id,
         is_active: true,
@@ -155,14 +169,27 @@ exports.removeFromCart = async (req, res) => {
     }
 
     if (!cart) {
+
       return res.status(404).json({
         status: 'failed',
         message: 'No active cart found'
       });
     }
 
-    cart.removeItem(food_id, quantity);
-    await cart.save();
+
+
+    // Use try-catch for removeItem to handle "item not found" error
+    try {
+      cart.removeItem(food_id, quantity);
+      await cart.save();
+
+    } catch (removeError) {
+
+      return res.status(400).json({
+        status: 'failed',
+        message: removeError.message || 'Failed to remove item from cart'
+      });
+    }
 
     res.status(200).json({
       status: 'success',
@@ -183,7 +210,7 @@ exports.getCart = async (req, res) => {
     // Get user_id or guest_session_id
     const user_id = req.user ? req.user._id : null;
     const guest_session_id = req.guestSessionId || null;
-    
+
     let cart;
     if (user_id) {
       cart = await Cart.findActiveByUser(user_id);
@@ -210,44 +237,47 @@ exports.getCart = async (req, res) => {
   }
 };
 
-// Clear Cart
+// Clear Cart - Deletes all carts for the user/guest
 exports.clearCart = async (req, res) => {
   try {
     // Get user_id or guest_session_id
     const user_id = req.user ? req.user._id : null;
     const guest_session_id = req.guestSessionId || null;
-    
-    let cart;
+
+    let deleteResult;
+
     if (user_id) {
-      cart = await Cart.findOne({
+      // Delete ALL active carts for this user
+      deleteResult = await Cart.deleteMany({
         user_id,
-        is_active: true,
-        expires_at: { $gt: new Date() }
+        is_active: true
       });
+
     } else {
-      cart = await Cart.findOne({
+      // Delete ALL active carts for this guest session
+      deleteResult = await Cart.deleteMany({
         guest_session_id,
-        is_active: true,
-        expires_at: { $gt: new Date() }
+        is_active: true
       });
+
     }
 
-    if (!cart) {
+    if (deleteResult.deletedCount === 0) {
       return res.status(404).json({
         status: 'failed',
-        message: 'No active cart found'
+        message: 'No active cart found to delete'
       });
     }
-
-    cart.clearCart();
-    await cart.save();
 
     res.status(200).json({
       status: 'success',
-      message: 'Cart cleared',
-      data: { cart }
+      message: `Cart${deleteResult.deletedCount > 1 ? 's' : ''} deleted successfully`,
+      data: {
+        deletedCount: deleteResult.deletedCount
+      }
     });
   } catch (err) {
+
     res.status(400).json({
       status: 'failed',
       message: err.message
@@ -259,7 +289,7 @@ exports.clearCart = async (req, res) => {
 exports.migrateGuestCart = async (req, res) => {
   try {
     const { guest_session_id } = req.body;
-    
+
     if (!guest_session_id) {
       return res.status(400).json({
         status: 'failed',

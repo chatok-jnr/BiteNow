@@ -1,27 +1,67 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import axiosInstance from "../../../utils/axios";
 
 function OrderManagement({ restaurantId, orders: initialOrders }) {
-  const [orders, setOrders] = useState(initialOrders);
+  const [orders, setOrders] = useState([]);
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [riderPin, setRiderPin] = useState("");
   const [showPinModal, setShowPinModal] = useState(false);
   const [rejectionReason, setRejectionReason] = useState("");
   const [showRejectModal, setShowRejectModal] = useState(false);
   const [orderToReject, setOrderToReject] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  // Fetch orders from API
+  const fetchOrders = async () => {
+    if (!restaurantId) return;
+    
+    try {
+      setLoading(true);
+      setError(null);
+      const response = await axiosInstance.get(`/api/v1/order/restaurant/${restaurantId}`);
+      
+      if (response.data.status === 'success' && response.data.data.myOrder) {
+        setOrders(response.data.data.myOrder);
+      }
+    } catch (err) {
+      console.error('Error fetching restaurant orders:', err);
+      setError(err.response?.data?.message || 'Failed to fetch orders');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchOrders();
+    
+    // Poll for new orders every 15 seconds
+    const interval = setInterval(() => {
+      fetchOrders();
+    }, 15000);
+
+    return () => clearInterval(interval);
+  }, [restaurantId]);
 
   const getOrdersByStatus = (status) => {
     return orders.filter((order) => order.order_status === status);
   };
 
   const handleAcceptOrder = async (orderId) => {
-    // TODO: API call
-    setOrders(
-      orders.map((order) =>
-        order._id === orderId
-          ? { ...order, order_status: "preparing", updated_at: new Date().toISOString() }
-          : order
-      )
-    );
+    try {
+      const response = await axiosInstance.patch(`/api/v1/order/restaurant/${orderId}`, {
+        order_status: "preparing"
+      });
+      
+      if (response.data.status === 'success') {
+        // Refresh orders from server
+        await fetchOrders();
+        alert('Order accepted and marked as preparing!');
+      }
+    } catch (err) {
+      console.error('Error accepting order:', err);
+      alert(err.response?.data?.message || 'Failed to accept order');
+    }
   };
 
   const handleRejectOrder = (order) => {
@@ -34,33 +74,41 @@ function OrderManagement({ restaurantId, orders: initialOrders }) {
       alert("Please provide a reason for rejection");
       return;
     }
-    // TODO: API call
-    setOrders(
-      orders.map((order) =>
-        order._id === orderToReject._id
-          ? {
-              ...order,
-              order_status: "cancelled",
-              rejection_reason: rejectionReason,
-              updated_at: new Date().toISOString(),
-            }
-          : order
-      )
-    );
-    setShowRejectModal(false);
-    setRejectionReason("");
-    setOrderToReject(null);
+    
+    try {
+      const response = await axiosInstance.patch(`/api/v1/order/restaurant/${orderToReject._id}`, {
+        order_status: "cancelled"
+      });
+      
+      if (response.data.status === 'success') {
+        // Refresh orders from server
+        await fetchOrders();
+        setShowRejectModal(false);
+        setRejectionReason("");
+        setOrderToReject(null);
+        alert('Order rejected successfully!');
+      }
+    } catch (err) {
+      console.error('Error rejecting order:', err);
+      alert(err.response?.data?.message || 'Failed to reject order');
+    }
   };
 
   const handleUpdateStatus = async (orderId, newStatus) => {
-    // TODO: API call
-    setOrders(
-      orders.map((order) =>
-        order._id === orderId
-          ? { ...order, order_status: newStatus, updated_at: new Date().toISOString() }
-          : order
-      )
-    );
+    try {
+      const response = await axiosInstance.patch(`/api/v1/order/restaurant/${orderId}`, {
+        order_status: newStatus
+      });
+      
+      if (response.data.status === 'success') {
+        // Refresh orders from server
+        await fetchOrders();
+        alert(`Order status updated to ${newStatus}!`);
+      }
+    } catch (err) {
+      console.error('Error updating order status:', err);
+      alert(err.response?.data?.message || 'Failed to update order status');
+    }
   };
 
   const handleVerifyPin = async () => {
@@ -99,14 +147,13 @@ function OrderManagement({ restaurantId, orders: initialOrders }) {
       <div className="flex justify-between items-start mb-4">
         <div>
           <div className="flex items-center gap-3 mb-2">
-            <h3 className="font-bold text-lg text-gray-900">Order #{order._id}</h3>
+            <h3 className="font-bold text-lg text-gray-900">Order #{order.order_id || order._id}</h3>
             <span className={`px-3 py-1 rounded-full text-xs font-semibold ${statusColor.replace('border', 'bg').replace('200', '100')} ${statusColor.replace('border-', 'text-').replace('-200', '-700')}`}>
               {statusLabel}
             </span>
           </div>
-          <p className="text-gray-700 font-medium">{order.customer_name}</p>
-          <p className="text-sm text-gray-500">{order.customer_phone}</p>
-          <p className="text-sm text-gray-500">{formatTime(order.created_at)}</p>
+          <p className="text-gray-700 font-medium">Customer ID: {order.customer_id}</p>
+          <p className="text-sm text-gray-500">{formatTime(order.createdAt)}</p>
         </div>
         <p className="text-2xl font-bold text-primary">৳{order.total_amount.toLocaleString()}</p>
       </div>
@@ -122,7 +169,7 @@ function OrderManagement({ restaurantId, orders: initialOrders }) {
                   <span className="text-green-600 ml-2">(-{item.discount_percentage}%)</span>
                 )}
               </span>
-              <span className="font-medium text-gray-900">৳{(item.price * item.quantity * (1 - item.discount_percentage / 100)).toFixed(2)}</span>
+              <span className="font-medium text-gray-900">৳{item.total_price.toFixed(2)}</span>
             </li>
           ))}
         </ul>
@@ -137,7 +184,7 @@ function OrderManagement({ restaurantId, orders: initialOrders }) {
 
       <div className="mb-4 text-sm text-gray-600">
         <p className="font-semibold mb-1">Delivery Address:</p>
-        <p>{order.delivery_address.street}, {order.delivery_address.city} - {order.delivery_address.zipCode}</p>
+        <p>{order.delivery_address.street}, {order.delivery_address.city}, {order.delivery_address.state} - {order.delivery_address.zip_code}</p>
       </div>
 
       {order.assigned_rider_name && (
@@ -150,56 +197,79 @@ function OrderManagement({ restaurantId, orders: initialOrders }) {
     </div>
   );
 
-  const newOrders = getOrdersByStatus("new");
-  const acceptedOrders = getOrdersByStatus("accepted");
+  const newOrders = getOrdersByStatus("pending");
   const preparingOrders = getOrdersByStatus("preparing");
-  const readyOrders = getOrdersByStatus("ready");
+  const readyOrders = getOrdersByStatus("ready_for_pickup");
 
   return (
     <div className="space-y-6">
+      {/* Loading State */}
+      {loading && (
+        <div className="text-center py-12">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading orders...</p>
+        </div>
+      )}
+
+      {/* Error State */}
+      {error && !loading && (
+        <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
+          <p className="text-red-800">⚠️ {error}</p>
+          <button
+            onClick={fetchOrders}
+            className="mt-2 text-red-600 hover:text-red-800 underline text-sm"
+          >
+            Try again
+          </button>
+        </div>
+      )}
+
       {/* Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <div className="bg-white p-4 rounded-lg shadow-sm border">
-          <p className="text-sm text-gray-500">New Orders</p>
-          <p className="text-2xl font-bold text-red-600">{newOrders.length}</p>
+      {!loading && (
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <div className="bg-white p-4 rounded-lg shadow-sm border">
+            <p className="text-sm text-gray-500">Pending Orders</p>
+            <p className="text-2xl font-bold text-red-600">{newOrders.length}</p>
+          </div>
+          <div className="bg-white p-4 rounded-lg shadow-sm border">
+            <p className="text-sm text-gray-500">Preparing</p>
+            <p className="text-2xl font-bold text-yellow-600">{preparingOrders.length}</p>
+          </div>
+          <div className="bg-white p-4 rounded-lg shadow-sm border">
+            <p className="text-sm text-gray-500">Ready for Pickup</p>
+            <p className="text-2xl font-bold text-green-600">{readyOrders.length}</p>
+          </div>
+          <div className="bg-white p-4 rounded-lg shadow-sm border">
+            <p className="text-sm text-gray-500">Total Orders</p>
+            <p className="text-2xl font-bold text-gray-900">{orders.length}</p>
+          </div>
         </div>
-        <div className="bg-white p-4 rounded-lg shadow-sm border">
-          <p className="text-sm text-gray-500">Preparing</p>
-          <p className="text-2xl font-bold text-yellow-600">{preparingOrders.length}</p>
-        </div>
-        <div className="bg-white p-4 rounded-lg shadow-sm border">
-          <p className="text-sm text-gray-500">Ready</p>
-          <p className="text-2xl font-bold text-green-600">{readyOrders.length}</p>
-        </div>
-        <div className="bg-white p-4 rounded-lg shadow-sm border">
-          <p className="text-sm text-gray-500">Today's Orders</p>
-          <p className="text-2xl font-bold text-gray-900">{orders.length}</p>
-        </div>
-      </div>
+      )}
 
       {/* 3-Column Kanban Layout */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Column 1: New Orders */}
-        <div className="flex flex-col">
-          <div className="bg-red-50 border-2 border-red-200 rounded-t-lg p-4 flex items-center justify-between">
-            <h2 className="text-lg font-bold text-red-800 flex items-center gap-2">
-              🔔 New Orders
-            </h2>
-            <span className="bg-red-200 text-red-900 text-sm font-bold px-3 py-1 rounded-full">
-              {newOrders.length}
-            </span>
-          </div>
-          <div className="space-y-4 bg-red-50/30 p-4 rounded-b-lg border-2 border-t-0 border-red-200 min-h-[600px] max-h-[calc(100vh-300px)] overflow-y-auto">
-            {newOrders.length === 0 ? (
-              <div className="text-center text-gray-500 py-8">
-                <p className="text-sm">No new orders</p>
+      {!loading && (
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Column 1: Pending Orders */}
+          <div className="flex flex-col">
+            <div className="bg-red-50 border-2 border-red-200 rounded-t-lg p-4 flex items-center justify-between">
+              <h2 className="text-lg font-bold text-red-800 flex items-center gap-2">
+                🔔 Pending Orders
+              </h2>
+              <span className="bg-red-200 text-red-900 text-sm font-bold px-3 py-1 rounded-full">
+                {newOrders.length}
+              </span>
+            </div>
+            <div className="space-y-4 bg-red-50/30 p-4 rounded-b-lg border-2 border-t-0 border-red-200 min-h-[600px] max-h-[calc(100vh-300px)] overflow-y-auto">
+              {newOrders.length === 0 ? (
+                <div className="text-center text-gray-500 py-8">
+                  <p className="text-sm">No pending orders</p>
               </div>
             ) : (
               newOrders.map((order) => (
                 <OrderCard
                   key={order._id}
                   order={order}
-                  statusLabel="NEW"
+                  statusLabel="PENDING"
                   statusColor="border-red-200"
                   actions={
                     <>
@@ -247,7 +317,7 @@ function OrderManagement({ restaurantId, orders: initialOrders }) {
                   statusColor="border-yellow-200"
                   actions={
                     <button
-                      onClick={() => handleUpdateStatus(order._id, "ready")}
+                      onClick={() => handleUpdateStatus(order._id, "ready_for_pickup")}
                       className="w-full px-3 py-2 bg-primary text-white rounded-lg text-sm font-semibold hover:bg-primary/90"
                     >
                       Mark as Ready
@@ -298,6 +368,7 @@ function OrderManagement({ restaurantId, orders: initialOrders }) {
           </div>
         </div>
       </div>
+      )}
 
       {/* PIN Verification Modal */}
       {showPinModal && (

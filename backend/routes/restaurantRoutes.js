@@ -24,6 +24,13 @@ router
   );
 
 router
+  .route("/my/:id")
+  .get(
+    restrictTo("restaurant_owner"),
+    restaurantController.getMyRestaurantById
+  );
+
+router
   .route("/:id")
   .patch(restrictTo("restaurant_owner"), restaurantController.updateRestaurant)
   .delete(
