@@ -34,6 +34,7 @@ function RiderDashboard() {
       setUser(parsedUser);
       // Fetch initial data
       fetchPendingRequests();
+      fetchActiveDeliveries();
       fetchRiderStats();
       
       // Add mock rider ID for profile visualization
@@ -43,6 +44,20 @@ function RiderDashboard() {
       }
     }
   }, [navigate]);
+
+  // Periodic refresh for active deliveries and pending requests
+  useEffect(() => {
+    // Refresh every 30 seconds
+    const interval = setInterval(() => {
+      if (activeTab === "active") {
+        fetchActiveDeliveries();
+      } else if (activeTab === "available") {
+        fetchPendingRequests();
+      }
+    }, 30000);
+
+    return () => clearInterval(interval);
+  }, [activeTab]);
 
   const fetchPendingRequests = async () => {
     try {
@@ -78,6 +93,42 @@ function RiderDashboard() {
     }
   };
 
+  const fetchActiveDeliveries = async () => {
+    try {
+      const response = await axiosInstance.get("/api/v1/order/rider/my-order");
+      
+      if (response.data.status === "success" && response.data.myOrder) {
+        // Transform API data to match component expectations
+        const transformedDeliveries = response.data.myOrder.map(order => ({
+          id: order._id,
+          _id: order._id,
+          order_id: order._id,
+          restaurant_name: order.restaurant_id?.restaurant_name || "Unknown Restaurant",
+          restaurant_address: order.restaurant_id?.restaurant_address || 
+            (order.restaurant_location ? "Restaurant Location Available" : "Unknown Address"),
+          customer_name: "Customer", // API doesn't provide customer name
+          customer_address: `${order.delivery_address.street}, ${order.delivery_address.city}, ${order.delivery_address.state}, ${order.delivery_address.zip_code}`,
+          delivery_address: `${order.delivery_address.street}, ${order.delivery_address.city}, ${order.delivery_address.state}, ${order.delivery_address.zip_code}`,
+          food_cost: order.subtotal,
+          delivery_charge: order.delivery_charge,
+          total_amount: order.total_amount,
+          pin1: order.rider_pin || "N/A", // Rider PIN from API
+          pin2: order.rider_pin || "N/A", // Using same PIN (adjust if different PIN needed)
+          estimated_delivery_time: order.estimated_delivery_time,
+          items: order.items,
+          payment_status: order.payment_status,
+          order_status: order.order_status,
+        }));
+        
+        setActiveDeliveries(transformedDeliveries);
+      }
+    } catch (error) {
+      console.error("Error fetching active deliveries:", error);
+      // Fallback to empty array on error
+      setActiveDeliveries([]);
+    }
+  };
+
   const fetchRiderStats = async () => {
     try {
       // TODO: Replace with actual API to fetch rider stats
@@ -94,11 +145,35 @@ function RiderDashboard() {
     }
   };
 
-  const handleAcceptRequest = (request) => {
-    // TODO: Call API to accept delivery request
-    setActiveDeliveries([...activeDeliveries, request]);
-    setPendingRequests(pendingRequests.filter((r) => r.id !== request.id));
-    setActiveTab("active");
+  const handleAcceptRequest = async (request) => {
+    try {
+      // Get rider ID from user object
+      const riderId = user._id || user.id;
+      
+      if (!riderId) {
+        console.error("Rider ID not found");
+        alert("Error: Rider ID not found. Please log in again.");
+        return;
+      }
+
+      // Call API to accept delivery request
+      const response = await axiosInstance.patch(
+        `/api/v1/order/rider/${request._id || request.id}`,
+        {
+          rider_id: riderId
+        }
+      );
+
+      if (response.data.status === "success") {
+        // Refresh both pending and active deliveries from API
+        await fetchPendingRequests();
+        await fetchActiveDeliveries();
+        setActiveTab("active");
+      }
+    } catch (error) {
+      console.error("Error accepting delivery request:", error);
+      alert(error.response?.data?.message || "Failed to accept delivery request. Please try again.");
+    }
   };
 
   const handleDropRequest = (request) => {
@@ -138,7 +213,9 @@ function RiderDashboard() {
       earnings: riderStats.earnings + 50,
     });
     
-    fetchPendingRequests(); // Refresh pending requests
+    // Refresh active deliveries and pending requests
+    fetchActiveDeliveries();
+    fetchPendingRequests();
     
     if (activeDeliveries.length <= 1) {
       setActiveTab("history");

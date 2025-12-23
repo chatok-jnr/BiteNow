@@ -114,18 +114,29 @@ function OrderManagement({ restaurantId, orders: initialOrders }) {
   const handleVerifyPin = async () => {
     if (!selectedOrder) return;
     
-    // TODO: API call to verify PIN
-    // Mock PIN for testing
-    const mockRiderPin = "1234";
-    
-    if (riderPin === mockRiderPin) {
-      handleUpdateStatus(selectedOrder._id, "picked_up");
-      setShowPinModal(false);
-      setRiderPin("");
-      setSelectedOrder(null);
-      alert("PIN verified! Order handed over to rider.");
-    } else {
-      alert("Invalid PIN! Please try again.");
+    if (riderPin.length !== 4) {
+      alert("Please enter a valid 4-digit PIN");
+      return;
+    }
+
+    try {
+      const response = await axiosInstance.patch('/api/v1/order/restaurant/verify-rider', {
+        order_id: selectedOrder._id,
+        rider_otp: parseInt(riderPin)
+      });
+
+      if (response.data.status === 'success') {
+        // Update order status to out_for_delivery
+        await handleUpdateStatus(selectedOrder._id, "out_for_delivery");
+        setShowPinModal(false);
+        setRiderPin("");
+        setSelectedOrder(null);
+        alert(response.data.message || "PIN verified! Order handed over to rider.");
+      }
+    } catch (err) {
+      console.error('Error verifying rider PIN:', err);
+      alert(err.response?.data?.message || 'Invalid PIN! Please try again.');
+      setRiderPin(""); // Clear the PIN on error
     }
   };
 
