@@ -204,8 +204,23 @@ function RestaurantMenu() {
                   className="bg-white rounded-lg shadow-sm p-4 hover:shadow-md transition-shadow"
                 >
                   <div className="flex items-start space-x-4">
-                    <div className="flex-shrink-0 w-20 h-20 bg-gray-100 rounded-lg flex items-center justify-center">
-                      <span className="text-4xl">{item.image}</span>
+                    {/* Food Image */}
+                    <div className="flex-shrink-0 w-24 h-24 bg-gray-100 rounded-lg overflow-hidden">
+                      {item.food_image?.url ? (
+                        <img
+                          src={item.food_image.url}
+                          alt={item.food_image.altText || item.name}
+                          className="w-full h-full object-cover"
+                          onError={(e) => {
+                            e.target.onerror = null;
+                            e.target.src = 'https://via.placeholder.com/300x200?text=No+Image';
+                          }}
+                        />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center">
+                          <span className="text-4xl">{item.image}</span>
+                        </div>
+                      )}
                     </div>
                     <div className="flex-1">
                       <div className="flex items-start justify-between">

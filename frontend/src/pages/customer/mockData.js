@@ -113,6 +113,10 @@ export const mockMenuItems = {
       description: "Authentic Dhaka-style mutton biryani with basmati rice",
       price: 320,
       image: "🍛",
+      food_image: {
+        url: "https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?w=400&h=300&fit=crop",
+        altText: "Kacchi Biryani"
+      },
       variants: [
         { name: "Regular", price: 320 },
         { name: "Large", price: 450 },
@@ -126,6 +130,10 @@ export const mockMenuItems = {
       description: "Spicy marinated chicken with traditional spices",
       price: 180,
       image: "🍗",
+      food_image: {
+        url: "https://images.unsplash.com/photo-1598103442097-8b74394b95c6?w=400&h=300&fit=crop",
+        altText: "Chicken Roast"
+      },
       variants: [
         { name: "Half", price: 180 },
         { name: "Full", price: 320 },
@@ -138,6 +146,10 @@ export const mockMenuItems = {
       description: "Flavorful beef cooked with aromatic rice",
       price: 280,
       image: "🍚",
+      food_image: {
+        url: "https://images.unsplash.com/photo-1596560548464-f010549b84d7?w=400&h=300&fit=crop",
+        altText: "Beef Tehari"
+      },
       variants: [
         { name: "Regular", price: 280 },
         { name: "Large", price: 380 },
@@ -150,6 +162,10 @@ export const mockMenuItems = {
       description: "Traditional yogurt drink",
       price: 40,
       image: "🥤",
+      food_image: {
+        url: "https://images.unsplash.com/photo-1623065422902-30a2d299bbe4?w=400&h=300&fit=crop",
+        altText: "Borhani"
+      },
     },
     {
       id: 105,
@@ -158,6 +174,10 @@ export const mockMenuItems = {
       description: "Creamy rice pudding with cardamom",
       price: 80,
       image: "🍮",
+      food_image: {
+        url: "https://images.unsplash.com/photo-1488477181946-6428a0291777?w=400&h=300&fit=crop",
+        altText: "Shahi Firni"
+      },
     },
   ],
   2: [ // Pizza Paradise
@@ -168,6 +188,10 @@ export const mockMenuItems = {
       description: "Classic tomato sauce, mozzarella, and basil",
       price: 450,
       image: "🍕",
+      food_image: {
+        url: "https://images.unsplash.com/photo-1574071318508-1cdbab80d002?w=400&h=300&fit=crop",
+        altText: "Margherita Pizza"
+      },
       variants: [
         { name: "Small (8\")", price: 450 },
         { name: "Medium (12\")", price: 680 },
@@ -182,6 +206,10 @@ export const mockMenuItems = {
       description: "Loaded with pepperoni and extra cheese",
       price: 550,
       image: "🍕",
+      food_image: {
+        url: "https://images.unsplash.com/photo-1628840042765-356cda07504e?w=400&h=300&fit=crop",
+        altText: "Pepperoni Feast"
+      },
       variants: [
         { name: "Small (8\")", price: 550 },
         { name: "Medium (12\")", price: 780 },
@@ -196,6 +224,10 @@ export const mockMenuItems = {
       description: "Crispy bread with garlic butter",
       price: 150,
       image: "🥖",
+      food_image: {
+        url: "https://images.unsplash.com/photo-1573140401552-3fab0b24306f?w=400&h=300&fit=crop",
+        altText: "Garlic Bread"
+      },
     },
     {
       id: 204,
@@ -204,6 +236,10 @@ export const mockMenuItems = {
       description: "Fresh romaine with parmesan and croutons",
       price: 250,
       image: "🥗",
+      food_image: {
+        url: "https://images.unsplash.com/photo-1546793665-c74683f339c1?w=400&h=300&fit=crop",
+        altText: "Caesar Salad"
+      },
     },
     {
       id: 205,
@@ -212,6 +248,10 @@ export const mockMenuItems = {
       description: "Classic Italian dessert",
       price: 280,
       image: "🍰",
+      food_image: {
+        url: "https://images.unsplash.com/photo-1571877227200-a0d98ea607e9?w=400&h=300&fit=crop",
+        altText: "Tiramisu"
+      },
     },
   ],
   3: [ // Burger Kingdom
@@ -222,6 +262,10 @@ export const mockMenuItems = {
       description: "Juicy beef patty with lettuce, tomato, and cheese",
       price: 280,
       image: "🍔",
+      food_image: {
+        url: "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=400&h=300&fit=crop",
+        altText: "Classic Beef Burger"
+      },
       variants: [
         { name: "Single", price: 280 },
         { name: "Double", price: 420 },
@@ -235,6 +279,10 @@ export const mockMenuItems = {
       description: "Crispy chicken with special sauce",
       price: 250,
       image: "🍔",
+      food_image: {
+        url: "https://images.unsplash.com/photo-1606755962773-d324e0a13086?w=400&h=300&fit=crop",
+        altText: "Chicken Burger"
+      },
       variants: [
         { name: "Single", price: 250 },
         { name: "Double", price: 380 },
@@ -247,6 +295,10 @@ export const mockMenuItems = {
       description: "Crispy golden fries",
       price: 120,
       image: "🍟",
+      food_image: {
+        url: "https://images.unsplash.com/photo-1576107232684-1279f390859f?w=400&h=300&fit=crop",
+        altText: "French Fries"
+      },
       variants: [
         { name: "Regular", price: 120 },
         { name: "Large", price: 180 },
@@ -259,6 +311,10 @@ export const mockMenuItems = {
       description: "Crispy battered onion rings",
       price: 150,
       image: "🧅",
+      food_image: {
+        url: "https://images.unsplash.com/photo-1639024471283-03518883512d?w=400&h=300&fit=crop",
+        altText: "Onion Rings"
+      },
     },
     {
       id: 305,
@@ -267,6 +323,10 @@ export const mockMenuItems = {
       description: "Thick chocolate milkshake",
       price: 180,
       image: "🥤",
+      food_image: {
+        url: "https://images.unsplash.com/photo-1572490122747-3968b75cc699?w=400&h=300&fit=crop",
+        altText: "Chocolate Shake"
+      },
     },
   ],
   4: [ // Sushi Master
@@ -277,6 +337,10 @@ export const mockMenuItems = {
       description: "Crab, avocado, and cucumber",
       price: 380,
       image: "🍣",
+      food_image: {
+        url: "https://images.unsplash.com/photo-1579584425555-c3ce17fd4351?w=400&h=300&fit=crop",
+        altText: "California Roll"
+      },
       popular: true,
     },
     {
@@ -286,6 +350,10 @@ export const mockMenuItems = {
       description: "Fresh tuna with spicy mayo",
       price: 420,
       image: "🍣",
+      food_image: {
+        url: "https://images.unsplash.com/photo-1617196034796-73dfa7b1fd56?w=400&h=300&fit=crop",
+        altText: "Spicy Tuna Roll"
+      },
       popular: true,
     },
     {
@@ -295,6 +363,10 @@ export const mockMenuItems = {
       description: "Fresh salmon slices (6 pieces)",
       price: 480,
       image: "🍣",
+      food_image: {
+        url: "https://images.unsplash.com/photo-1580822184713-fc5400e7fe10?w=400&h=300&fit=crop",
+        altText: "Salmon Sashimi"
+      },
     },
     {
       id: 404,
@@ -303,6 +375,10 @@ export const mockMenuItems = {
       description: "Traditional Japanese soup",
       price: 150,
       image: "🍜",
+      food_image: {
+        url: "https://images.unsplash.com/photo-1606491956689-2ea866880c84?w=400&h=300&fit=crop",
+        altText: "Miso Soup"
+      },
     },
     {
       id: 405,
@@ -311,6 +387,10 @@ export const mockMenuItems = {
       description: "Authentic matcha ice cream",
       price: 180,
       image: "🍨",
+      food_image: {
+        url: "https://images.unsplash.com/photo-1563805042-7684c019e1cb?w=400&h=300&fit=crop",
+        altText: "Green Tea Ice Cream"
+      },
     },
   ],
 };
