@@ -126,7 +126,11 @@ export const mockFoodItems = [
     tags: ["chicken", "grilled"],
     average_rating: 4.5,
     rating_count: 45,
-    food_images: [],
+    food_image: {
+      url: "https://images.unsplash.com/photo-1598103442097-8b74394b95c6?w=400&h=300&fit=crop",
+      altText: "Grilled Chicken Platter"
+    },
+    food_images: ["https://images.unsplash.com/photo-1598103442097-8b74394b95c6?w=400&h=300&fit=crop"],
     createdAt: "2025-12-01T10:00:00.000Z",
     updatedAt: "2025-12-15T14:30:00.000Z",
   },
@@ -143,7 +147,11 @@ export const mockFoodItems = [
     tags: ["salad", "vegetarian"],
     average_rating: 4.2,
     rating_count: 32,
-    food_images: [],
+    food_image: {
+      url: "https://images.unsplash.com/photo-1546793665-c74683f339c1?w=400&h=300&fit=crop",
+      altText: "Caesar Salad"
+    },
+    food_images: ["https://images.unsplash.com/photo-1546793665-c74683f339c1?w=400&h=300&fit=crop"],
     createdAt: "2025-12-01T10:00:00.000Z",
     updatedAt: "2025-12-14T09:20:00.000Z",
   },
@@ -160,7 +168,11 @@ export const mockFoodItems = [
     tags: ["bbq", "ribs"],
     average_rating: 4.8,
     rating_count: 67,
-    food_images: [],
+    food_image: {
+      url: "https://images.unsplash.com/photo-1529692236671-f1f6cf9683ba?w=400&h=300&fit=crop",
+      altText: "BBQ Ribs"
+    },
+    food_images: ["https://images.unsplash.com/photo-1529692236671-f1f6cf9683ba?w=400&h=300&fit=crop"],
     createdAt: "2025-12-01T10:00:00.000Z",
     updatedAt: "2025-12-16T08:15:00.000Z",
   },
@@ -177,7 +189,11 @@ export const mockFoodItems = [
     tags: ["rice", "asian"],
     average_rating: 4.0,
     rating_count: 28,
-    food_images: [],
+    food_image: {
+      url: "https://images.unsplash.com/photo-1603133872878-684f208fb84b?w=400&h=300&fit=crop",
+      altText: "Fried Rice"
+    },
+    food_images: ["https://images.unsplash.com/photo-1603133872878-684f208fb84b?w=400&h=300&fit=crop"],
     createdAt: "2025-12-01T10:00:00.000Z",
     updatedAt: "2025-12-16T07:45:00.000Z",
   },
@@ -194,7 +210,11 @@ export const mockFoodItems = [
     tags: ["chocolate", "dessert"],
     average_rating: 4.6,
     rating_count: 52,
-    food_images: [],
+    food_image: {
+      url: "https://images.unsplash.com/photo-1607920591413-4ec007e70023?w=400&h=300&fit=crop",
+      altText: "Chocolate Brownie"
+    },
+    food_images: ["https://images.unsplash.com/photo-1607920591413-4ec007e70023?w=400&h=300&fit=crop"],
     createdAt: "2025-12-01T10:00:00.000Z",
     updatedAt: "2025-12-15T16:00:00.000Z",
   },
@@ -211,7 +231,11 @@ export const mockFoodItems = [
     tags: ["juice", "fresh"],
     average_rating: 4.3,
     rating_count: 38,
-    food_images: [],
+    food_image: {
+      url: "https://images.unsplash.com/photo-1600271886742-f049cd451bba?w=400&h=300&fit=crop",
+      altText: "Fresh Orange Juice"
+    },
+    food_images: ["https://images.unsplash.com/photo-1600271886742-f049cd451bba?w=400&h=300&fit=crop"],
     createdAt: "2025-12-01T10:00:00.000Z",
     updatedAt: "2025-12-15T11:30:00.000Z",
   },

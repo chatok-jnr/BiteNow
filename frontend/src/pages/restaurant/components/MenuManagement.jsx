@@ -19,6 +19,7 @@ function MenuManagement({ restaurantId, foodItems: initialFoodItems }) {
     discount_percentage: "",
     food_category: "Main Course",
     food_image_url: null,
+    food_image_preview: null,
   });
 
   const handleAddFood = async (e) => {
@@ -30,7 +31,9 @@ function MenuManagement({ restaurantId, foodItems: initialFoodItems }) {
       return;
     }
     
-    // TODO: API call
+    // TODO: API call - In production, upload image to cloudinary first
+    const imageUrl = formData.food_image_preview || "https://via.placeholder.com/400x300?text=Food+Image";
+    
     const newFood = {
       _id: `FOOD${Date.now()}`,
       restaurant_id: restaurantId,
@@ -42,7 +45,11 @@ function MenuManagement({ restaurantId, foodItems: initialFoodItems }) {
       tags: [],
       average_rating: 0,
       rating_count: 0,
-      food_images: [formData.food_image_url],
+      food_image: {
+        url: imageUrl,
+        altText: formData.food_name,
+      },
+      food_images: [imageUrl],
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     };
@@ -54,23 +61,29 @@ function MenuManagement({ restaurantId, foodItems: initialFoodItems }) {
   const handleEditFood = async (e) => {
     e.preventDefault();
     
-    // Validate required fields
-    if (!formData.food_image_url) {
-      alert("Food image file is required");
-      return;
-    }
+    // Use existing image if no new image is uploaded
+    const imageUrl = formData.food_image_preview || 
+                     selectedFood.food_image?.url || 
+                     selectedFood.food_images?.[0] || 
+                     "https://via.placeholder.com/400x300?text=Food+Image";
     
-    // TODO: API call
+    // TODO: API call - In production, upload new image to cloudinary if changed
     setFoodItems(
       foodItems.map((item) =>
         item._id === selectedFood._id
           ? {
               ...item,
-              ...formData,
+              food_name: formData.food_name,
+              food_description: formData.food_description,
               food_price: parseFloat(formData.food_price),
               food_quantity: parseInt(formData.food_quantity),
               discount_percentage: parseInt(formData.discount_percentage) || 0,
-              food_images: [formData.food_image_url],
+              food_category: formData.food_category,
+              food_image: {
+                url: imageUrl,
+                altText: formData.food_name,
+              },
+              food_images: [imageUrl],
               updatedAt: new Date().toISOString(),
             }
           : item
@@ -130,6 +143,7 @@ function MenuManagement({ restaurantId, foodItems: initialFoodItems }) {
       discount_percentage: "",
       food_category: "Main Course",
       food_image_url: null,
+      food_image_preview: null,
     });
   };
 
@@ -143,6 +157,7 @@ function MenuManagement({ restaurantId, foodItems: initialFoodItems }) {
       discount_percentage: food.discount_percentage.toString(),
       food_category: food.food_category,
       food_image_url: null,
+      food_image_preview: food.food_image?.url || food.food_images?.[0] || null,
     });
     setShowEditModal(true);
   };
@@ -228,6 +243,21 @@ function MenuManagement({ restaurantId, foodItems: initialFoodItems }) {
               !food.is_available ? "border-red-200 bg-red-50" : "border-gray-200"
             }`}
           >
+            {/* Food Image */}
+            {(food.food_image?.url || food.food_images?.[0]) && (
+              <div className="mb-4 w-full h-48 bg-gray-100 rounded-lg overflow-hidden">
+                <img
+                  src={food.food_image?.url || food.food_images?.[0]}
+                  alt={food.food_image?.altText || food.food_name}
+                  className="w-full h-full object-cover"
+                  onError={(e) => {
+                    e.target.onerror = null;
+                    e.target.src = 'https://via.placeholder.com/400x300?text=No+Image';
+                  }}
+                />
+              </div>
+            )}
+
             <div className="flex justify-between items-start mb-3">
               <div className="flex-1">
                 <h3 className="font-bold text-lg text-gray-900">{food.food_name}</h3>
@@ -365,13 +395,30 @@ function MenuManagement({ restaurantId, foodItems: initialFoodItems }) {
                   onChange={(e) => {
                     const file = e.target.files[0];
                     if (file) {
-                      setFormData({ ...formData, food_image_url: file });
+                      const reader = new FileReader();
+                      reader.onloadend = () => {
+                        setFormData({ 
+                          ...formData, 
+                          food_image_url: file,
+                          food_image_preview: reader.result 
+                        });
+                      };
+                      reader.readAsDataURL(file);
                     }
                   }}
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary"
                   required
                 />
                 <p className="text-xs text-gray-500 mt-1">Upload an image file for the food item</p>
+                {formData.food_image_preview && (
+                  <div className="mt-3">
+                    <img 
+                      src={formData.food_image_preview} 
+                      alt="Preview" 
+                      className="w-full h-48 object-cover rounded-lg border border-gray-300"
+                    />
+                  </div>
+                )}
               </div>
 
               <div className="grid grid-cols-2 gap-4">
@@ -485,20 +532,37 @@ function MenuManagement({ restaurantId, foodItems: initialFoodItems }) {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Food Image *</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Food Image</label>
+                {formData.food_image_preview && (
+                  <div className="mb-3">
+                    <p className="text-sm text-gray-600 mb-2">Current Image:</p>
+                    <img 
+                      src={formData.food_image_preview} 
+                      alt="Current" 
+                      className="w-full h-48 object-cover rounded-lg border border-gray-300"
+                    />
+                  </div>
+                )}
                 <input
                   type="file"
                   accept="image/*"
                   onChange={(e) => {
                     const file = e.target.files[0];
                     if (file) {
-                      setFormData({ ...formData, food_image_url: file });
+                      const reader = new FileReader();
+                      reader.onloadend = () => {
+                        setFormData({ 
+                          ...formData, 
+                          food_image_url: file,
+                          food_image_preview: reader.result 
+                        });
+                      };
+                      reader.readAsDataURL(file);
                     }
                   }}
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary"
-                  required
                 />
-                <p className="text-xs text-gray-500 mt-1">Upload an image file for the food item</p>
+                <p className="text-xs text-gray-500 mt-1">Upload a new image to replace the current one (optional)</p>
               </div>
 
               <div className="grid grid-cols-2 gap-4">
