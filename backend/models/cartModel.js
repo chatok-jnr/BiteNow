@@ -173,7 +173,7 @@ cartSchema.statics.findActiveByUser = function(userId) {
     is_active: true,
     expires_at: { $gt: new Date() }
   })
-    .populate('items.food_id', 'food_name food_price discount_percentage')
+    .populate('items.food_id', 'food_name food_price discount_percentage food_image')
     .populate('restaurant_id', 'restaurant_name');
 };
 
@@ -183,7 +183,7 @@ cartSchema.statics.findActiveByGuest = function(guestSessionId) {
     is_active: true,
     expires_at: { $gt: new Date() }
   })
-    .populate('items.food_id', 'food_name food_price discount_percentage')
+    .populate('items.food_id', 'food_name food_price discount_percentage food_image')
     .populate('restaurant_id', 'restaurant_name');
 };
 
@@ -204,7 +204,7 @@ cartSchema.statics.findOrCreateCart = async function(userId, restaurantId, guest
   }
 
   let cart = await this.findOne(query)
-    .populate('items.food_id', 'food_name food_price discount_percentage')
+    .populate('items.food_id', 'food_name food_price discount_percentage food_image')
     .populate('restaurant_id', 'restaurant_name');
 
   if (!cart) {
@@ -221,7 +221,7 @@ cartSchema.statics.findOrCreateCart = async function(userId, restaurantId, guest
     cart = await this.create(cartData);
     
     // Populate the newly created cart
-    await cart.populate('items.food_id', 'food_name food_price discount_percentage');
+    await cart.populate('items.food_id', 'food_name food_price discount_percentage food_image');
     await cart.populate('restaurant_id', 'restaurant_name');
   }
 
@@ -230,13 +230,25 @@ cartSchema.statics.findOrCreateCart = async function(userId, restaurantId, guest
 
 // Migrate guest cart to user account
 cartSchema.statics.migrateGuestCart = async function(guestSessionId, userId) {
+  console.log('🔍 Looking for guest cart:', { guestSessionId, userId });
+  
   const guestCart = await this.findOne({
     guest_session_id: guestSessionId,
     is_active: true,
     expires_at: { $gt: new Date() }
+  })
+    .populate('items.food_id', 'food_name food_price discount_percentage food_image')
+    .populate('restaurant_id', 'restaurant_name');
+
+  console.log('📦 Guest cart found:', {
+    found: !!guestCart,
+    cartId: guestCart?._id,
+    itemCount: guestCart?.items?.length || 0,
+    restaurantId: guestCart?.restaurant_id
   });
 
   if (!guestCart) {
+    console.log('⚠️ No guest cart to migrate');
     return null; // No guest cart to migrate
   }
 
@@ -245,15 +257,26 @@ cartSchema.statics.migrateGuestCart = async function(guestSessionId, userId) {
     user_id: userId,
     is_active: true,
     expires_at: { $gt: new Date() }
+  })
+    .populate('items.food_id', 'food_name food_price discount_percentage food_image')
+    .populate('restaurant_id', 'restaurant_name');
+
+  console.log('👤 User cart found:', {
+    found: !!userCart,
+    cartId: userCart?._id,
+    itemCount: userCart?.items?.length || 0,
+    restaurantId: userCart?.restaurant_id
   });
 
   if (userCart) {
     // If user has a cart from a different restaurant, deactivate guest cart
     if (userCart.restaurant_id.toString() !== guestCart.restaurant_id.toString()) {
+      console.log('⚠️ Different restaurants - keeping user cart, deactivating guest cart');
       guestCart.is_active = false;
       await guestCart.save();
       return userCart; // Keep user's existing cart
     } else {
+      console.log('✅ Same restaurant - merging carts');
       // Same restaurant, merge items
       for (const guestItem of guestCart.items) {
         const existingItemIndex = userCart.items.findIndex(item => 
@@ -262,6 +285,7 @@ cartSchema.statics.migrateGuestCart = async function(guestSessionId, userId) {
 
         if (existingItemIndex > -1) {
           // Add quantities
+          console.log(`  Merging item ${guestItem.food_id}: ${userCart.items[existingItemIndex].quantity} + ${guestItem.quantity}`);
           userCart.items[existingItemIndex].quantity += guestItem.quantity;
           userCart.items[existingItemIndex].total_price = 
             userCart.items[existingItemIndex].quantity * 
@@ -269,6 +293,7 @@ cartSchema.statics.migrateGuestCart = async function(guestSessionId, userId) {
              (userCart.items[existingItemIndex].price_at_time * userCart.items[existingItemIndex].discount_at_time / 100));
         } else {
           // Add new item
+          console.log(`  Adding new item ${guestItem.food_id}`);
           userCart.items.push(guestItem);
         }
       }
@@ -279,13 +304,21 @@ cartSchema.statics.migrateGuestCart = async function(guestSessionId, userId) {
       guestCart.is_active = false;
       await guestCart.save();
       
+      console.log('✅ Merged cart:', { itemCount: userCart.items.length });
       return userCart;
     }
   } else {
+    console.log('🔄 No user cart - converting guest cart to user cart');
     // User has no cart, convert guest cart to user cart
     guestCart.user_id = userId;
     guestCart.guest_session_id = null;
     await guestCart.save();
+    
+    // Populate the cart before returning
+    await guestCart.populate('items.food_id', 'food_name food_price discount_percentage food_image');
+    await guestCart.populate('restaurant_id', 'restaurant_name');
+    
+    console.log('✅ Converted cart:', { cartId: guestCart._id, itemCount: guestCart.items.length });
     return guestCart;
   }
 };
