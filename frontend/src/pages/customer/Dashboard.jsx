@@ -22,6 +22,9 @@ function Dashboard() {
         localStorage.removeItem("user");
       }
     }
+    
+    // Check for saved customer location
+    checkSavedLocation();
   }, []);
 
   // Fetch restaurants from API
@@ -211,6 +214,13 @@ function Dashboard() {
   return (
     <div className="min-h-screen bg-gray-50">
       <CustomerNavbar />
+      
+      {/* Location Header */}
+      <LocationHeader
+        currentLocation={customerLocation}
+        onLocationChange={handleLocationChange}
+        lastUpdated={locationLastUpdated}
+      />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header */}

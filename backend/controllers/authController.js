@@ -670,7 +670,7 @@ exports.loginRestaurantOwner = async (req, res) => {
     const token = jwt.sign(
       {
         id: restaurantOwner._id,
-        role: "reataurant_owner",
+        role: "restaurant_owner",
         email: req.body.restaurant_owner_email,
       },
       process.env.JWT_SECRET,

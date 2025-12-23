@@ -169,7 +169,7 @@ function Checkout() {
             {/* Delivery Address */}
             <div className="bg-white rounded-lg shadow-md p-6">
               <h2 className="text-xl font-bold text-gray-900 mb-4">
-                📍 Delivery Address
+                📍 Delivery Location & Address
               </h2>
               <div className="space-y-4">
                 <div>
@@ -350,6 +350,14 @@ function Checkout() {
           </div>
         </div>
       </div>
+
+      {/* Location Picker Modal */}
+      <LocationPickerModal
+        isOpen={showLocationPicker}
+        onClose={() => setShowLocationPicker(false)}
+        onLocationSelect={handleLocationSelect}
+        title="Select Your Delivery Location"
+      />
     </div>
   );
 }

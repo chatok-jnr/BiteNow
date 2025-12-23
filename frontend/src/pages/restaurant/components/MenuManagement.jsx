@@ -25,6 +25,7 @@ function MenuManagement({ restaurantId, foodItems: initialFoodItems }) {
     tags: [],
     food_category: "Main Course",
     food_image_url: null,
+    food_image_preview: null,
   });
 
   useEffect(() => {
@@ -285,6 +286,7 @@ function MenuManagement({ restaurantId, foodItems: initialFoodItems }) {
       tags: [],
       food_category: "Main Course",
       food_image_url: null,
+      food_image_preview: null,
     });
     setTagInput("");
   };
@@ -317,6 +319,7 @@ function MenuManagement({ restaurantId, foodItems: initialFoodItems }) {
       tags: food.tags || [],
       food_category: food.food_category,
       food_image_url: null,
+      food_image_preview: food.food_image?.url || food.food_images?.[0] || null,
     });
     setShowEditModal(true);
   };
@@ -428,6 +431,21 @@ function MenuManagement({ restaurantId, foodItems: initialFoodItems }) {
               !food.is_available ? "border-red-200 bg-red-50" : "border-gray-200"
             }`}
           >
+            {/* Food Image */}
+            {(food.food_image?.url || food.food_images?.[0]) && (
+              <div className="mb-4 w-full h-48 bg-gray-100 rounded-lg overflow-hidden">
+                <img
+                  src={food.food_image?.url || food.food_images?.[0]}
+                  alt={food.food_image?.altText || food.food_name}
+                  className="w-full h-full object-cover"
+                  onError={(e) => {
+                    e.target.onerror = null;
+                    e.target.src = 'https://via.placeholder.com/400x300?text=No+Image';
+                  }}
+                />
+              </div>
+            )}
+
             <div className="flex justify-between items-start mb-3">
               <div className="flex-1">
                 <h3 className="font-bold text-lg text-gray-900">{food.food_name}</h3>
@@ -612,7 +630,15 @@ function MenuManagement({ restaurantId, foodItems: initialFoodItems }) {
                   onChange={(e) => {
                     const file = e.target.files[0];
                     if (file) {
-                      setFormData({ ...formData, food_image_url: file });
+                      const reader = new FileReader();
+                      reader.onloadend = () => {
+                        setFormData({ 
+                          ...formData, 
+                          food_image_url: file,
+                          food_image_preview: reader.result 
+                        });
+                      };
+                      reader.readAsDataURL(file);
                     }
                   }}
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary"
@@ -784,7 +810,15 @@ function MenuManagement({ restaurantId, foodItems: initialFoodItems }) {
                   onChange={(e) => {
                     const file = e.target.files[0];
                     if (file) {
-                      setFormData({ ...formData, food_image_url: file });
+                      const reader = new FileReader();
+                      reader.onloadend = () => {
+                        setFormData({ 
+                          ...formData, 
+                          food_image_url: file,
+                          food_image_preview: reader.result 
+                        });
+                      };
+                      reader.readAsDataURL(file);
                     }
                   }}
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary"
