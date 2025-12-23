@@ -31,14 +31,22 @@ function RestaurantMenu() {
   useEffect(() => {
     const fetchCart = async () => {
       try {
+        console.log('🔄 Fetching cart on RestaurantMenu load...');
         const existingCart = await cartService.getCart();
         
         if (existingCart) {
+          console.log('✅ Cart loaded:', {
+            cartId: existingCart._id,
+            itemCount: existingCart.items?.length || 0,
+            restaurantId: existingCart.restaurant_id
+          });
           setCart(existingCart);
+        } else {
+          console.log('ℹ️ No existing cart found');
         }
       } catch (error) {
         // Cart fetch errors are not critical - user can still browse
-        console.log('ℹ️ No existing cart found');
+        console.log('ℹ️ No existing cart found (error)');
       }
     };
 

@@ -33,10 +33,16 @@ function Checkout() {
           return;
         }
         
+        console.log('🔄 Fetching cart for checkout...');
+        
         // Fetch cart from backend
         const cartData = await cartService.getCart();
         
-        console.log("Cart data received:", cartData);
+        console.log("✅ Cart data received:", {
+          hasCart: !!cartData,
+          itemCount: cartData?.items?.length || 0,
+          restaurantId: cartData?.restaurant_id
+        });
         
         if (!cartData || !cartData.items || cartData.items.length === 0) {
           // No cart or empty cart - redirect to dashboard

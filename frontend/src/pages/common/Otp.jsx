@@ -118,7 +118,9 @@ function Otp() {
         
         // Store token if provided (for immediate login after verification)
         if (response.data.token) {
+          console.log("✅ OTP verified, storing credentials...");
           localStorage.setItem("token", response.data.token);
+          console.log("✅ Token stored in localStorage");
           
           // Store user data
           const userData = {
@@ -132,13 +134,23 @@ function Otp() {
           }
           
           localStorage.setItem("user", JSON.stringify(userData));
+          console.log("✅ User data stored in localStorage");
           
           // Migrate guest cart if customer
           if (userType === "customer") {
             try {
-              await cartService.migrateGuestCart();
+              console.log("🔄 Starting cart migration...");
+              const migratedCart = await cartService.migrateGuestCart();
+              if (migratedCart) {
+                console.log('✅ Guest cart migrated successfully:', {
+                  cartId: migratedCart._id,
+                  itemCount: migratedCart.items?.length || 0
+                });
+              } else {
+                console.log('ℹ️ No guest cart to migrate');
+              }
             } catch (migrationError) {
-              console.error("Cart migration failed:", migrationError);
+              console.error("❌ Cart migration failed:", migrationError);
               // Don't block login if cart migration fails
             }
           }

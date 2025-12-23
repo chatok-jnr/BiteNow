@@ -2,6 +2,7 @@ const Order = require('./../models/orderModel');
 const Food = require('./../models/foodModel');
 const Cart = require('./../models/cartModel');
 const mongoose = require('mongoose');
+const Restaurant = require('./../models/restaurantModel');
 
 // Create Order from Cart
 exports.createOrder = async (req, res) => {
@@ -310,7 +311,7 @@ exports.updateOrderStatusByRestaurant = async(req, res) => {
 //Get the order list which is requred rider
 exports.getLookForRider = async(req, res) => {
   try {
-    const needRider = await Order.find({'order_status':'look_rider'})
+    const needRider = await Order.find({'order_status':'preparing', 'rider_pin':''})
     .sort('-createdAt')
     .populate('restaurant_id', 'restaurant_address restaurant_name restaurant_location');
 
@@ -336,6 +337,29 @@ exports.getLookForRider = async(req, res) => {
   }
 }
 
+//Get My Order List
+exports.getMyOrderList = async (req, res) => {
+  try{  
+    const riderId = req.user._id;
+    let myOrder = await Order.find({
+      rider_id:riderId, 
+      order_status: { $in: ['ready_for_pickup', 'preparing'] }
+    })
+      .select('-customer_pin');
+
+    
+    res.status(200).json({
+      status:'success',
+      myOrder
+    });
+  } catch(err) {  
+    res.status(400).json({
+      status:'failed',
+      message:'err.message'
+    });
+  }
+}
+
 // Rider Accepting Order
 exports.availableToDeliver = async (req, res) => {
   try{
@@ -346,7 +370,7 @@ exports.availableToDeliver = async (req, res) => {
     const acceptRide = await Order.findByIdAndUpdate(
       req.params.orderId,
       {
-        order_status:'preparing',
+        rider_id:req.user._id,
         rider_pin: pin1,
         customer_pin: pin2
       },
@@ -443,7 +467,9 @@ exports.verifyCustomer = async (req, res) => {
     const order = await Order.findById(order_id)
     .select('+customer_pin');
 
-    if(order.customer_pin !== customer_pin) {
+    console.log(`Debug = ${order.customer_pin} $`);
+
+    if(order.customer_pin.toString() !== customer_pin.toString()) {
       return res.status(400).json({
         status:'failed',
         message:'Wrong Pin NUmber'

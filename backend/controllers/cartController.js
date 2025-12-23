@@ -211,11 +211,19 @@ exports.getCart = async (req, res) => {
     const user_id = req.user ? req.user._id : null;
     const guest_session_id = req.guestSessionId || null;
 
+    console.log('🔍 Get Cart Request:', {
+      user_id,
+      guest_session_id,
+      isAuthenticated: !!req.user
+    });
+
     let cart;
     if (user_id) {
       cart = await Cart.findActiveByUser(user_id);
+      console.log('👤 User cart lookup:', { found: !!cart, cartId: cart?._id, items: cart?.items?.length });
     } else {
       cart = await Cart.findActiveByGuest(guest_session_id);
+      console.log('🔑 Guest cart lookup:', { found: !!cart, cartId: cart?._id, items: cart?.items?.length });
     }
 
     if (!cart) {
@@ -230,6 +238,7 @@ exports.getCart = async (req, res) => {
       data: { cart }
     });
   } catch (err) {
+    console.error('❌ Get Cart Error:', err.message);
     res.status(400).json({
       status: 'failed',
       message: err.message
@@ -290,6 +299,12 @@ exports.migrateGuestCart = async (req, res) => {
   try {
     const { guest_session_id } = req.body;
 
+    console.log('🔄 Cart Migration Request:', {
+      guest_session_id,
+      user_id: req.user?._id,
+      user_email: req.user?.customer_email || req.user?.email
+    });
+
     if (!guest_session_id) {
       return res.status(400).json({
         status: 'failed',
@@ -307,6 +322,13 @@ exports.migrateGuestCart = async (req, res) => {
     const user_id = req.user._id;
     const migratedCart = await Cart.migrateGuestCart(guest_session_id, user_id);
 
+    console.log('✅ Migration Result:', {
+      success: !!migratedCart,
+      cartId: migratedCart?._id,
+      itemCount: migratedCart?.items?.length || 0,
+      restaurantId: migratedCart?.restaurant_id
+    });
+
     if (!migratedCart) {
       return res.status(200).json({
         status: 'success',
@@ -321,6 +343,7 @@ exports.migrateGuestCart = async (req, res) => {
       data: { cart: migratedCart }
     });
   } catch (err) {
+    console.error('❌ Cart Migration Error:', err.message);
     res.status(400).json({
       status: 'failed',
       message: err.message

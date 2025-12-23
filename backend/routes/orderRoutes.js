@@ -14,6 +14,9 @@ router
   .route('/restaurant/:restaurantId')
   .get(authMiddleware.restrictTo('restaurant_owner'), orderController.getOrderByRestaurant);
 router
+  .route('/restaurant/verify-rider')
+  .patch(orderController.verifyRider);
+router
   .route('/restaurant/:orderId')
   .patch(orderController.updateOrderStatusByRestaurant);
 
@@ -21,6 +24,14 @@ router
 router
   .route('/rider')
   .get(orderController.getLookForRider);
+router
+  .route('/rider/my-order')
+  .get(orderController.getMyOrderList);
+
+router
+  .route('/rider/verify-customer')
+  .patch(orderController.verifyCustomer);
+
 router
   .route('/rider/:orderId')
   .patch(orderController.availableToDeliver);

@@ -27,6 +27,11 @@ const orderItemSchema = new mongoose.Schema(
 
 const orderSchema = new mongoose.Schema(
   {
+    order_id: {
+      type: String,
+      unique: true,
+      sparse: true,
+    },
     customer_id: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Customer",
