@@ -1,9 +1,11 @@
 import { useState } from "react";
+import LocationPickerModal from "../../../components/Map/LocationPickerModal";
 
 function RestaurantSettings({ restaurant: initialRestaurant, onClose }) {
   const [restaurant, setRestaurant] = useState(initialRestaurant);
   const [isEditing, setIsEditing] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [showLocationPicker, setShowLocationPicker] = useState(false);
   const [formData, setFormData] = useState({
     name: initialRestaurant.restaurant_name,
     description: initialRestaurant.restaurant_description || "",
@@ -14,6 +16,7 @@ function RestaurantSettings({ restaurant: initialRestaurant, onClose }) {
     phone: initialRestaurant.restaurant_contact_phone || "",
     email: initialRestaurant.restaurant_contact_email || "",
     categories: initialRestaurant.restaurant_categories || [],
+    location: initialRestaurant.restaurant_location || null,
     openingHours: initialRestaurant.restaurant_opening_hours || {
       Monday: { open: "09:00", close: "22:00", closed: false },
       Tuesday: { open: "09:00", close: "22:00", closed: false },
@@ -72,6 +75,17 @@ function RestaurantSettings({ restaurant: initialRestaurant, onClose }) {
     }));
   };
 
+  const handleLocationSelect = (location) => {
+    setFormData((prev) => ({
+      ...prev,
+      location: {
+        type: 'Point',
+        coordinates: [location.lng, location.lat]
+      }
+    }));
+    setShowLocationPicker(false);
+  };
+
   const handleSaveChanges = async () => {
     // Validate image is provided
     if (!formData.imageUrl) {
@@ -96,6 +110,7 @@ function RestaurantSettings({ restaurant: initialRestaurant, onClose }) {
     //     restaurant_contact_email: formData.email,
     //     restaurant_categories: formData.categories,
     //     restaurant_opening_hours: formData.openingHours,
+    //     restaurant_location: formData.location,
     //   }),
     // });
 
@@ -114,6 +129,7 @@ function RestaurantSettings({ restaurant: initialRestaurant, onClose }) {
       restaurant_contact_email: formData.email,
       restaurant_categories: formData.categories,
       restaurant_opening_hours: formData.openingHours,
+      restaurant_location: formData.location,
     }));
 
     setIsEditing(false);
@@ -234,6 +250,34 @@ function RestaurantSettings({ restaurant: initialRestaurant, onClose }) {
       <div className="bg-white p-6 rounded-lg shadow-sm border">
         <h3 className="text-lg font-semibold text-gray-900 mb-4">Address</h3>
         <div className="space-y-4">
+          {/* Map Location Picker */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Restaurant Location</label>
+            <button
+              type="button"
+              onClick={() => setShowLocationPicker(true)}
+              disabled={!isEditing}
+              className={`w-full px-4 py-3 rounded-lg font-medium transition-colors text-left ${
+                formData.location?.coordinates
+                  ? 'bg-secondary/10 text-secondary border-2 border-secondary'
+                  : 'bg-gray-100 text-gray-600 border border-gray-300'
+              } ${!isEditing ? 'cursor-not-allowed opacity-60' : 'hover:bg-secondary/20'}`}
+            >
+              {formData.location?.coordinates ? (
+                <span className="flex items-center justify-between">
+                  <span className="flex items-center gap-2">
+                    ✓ Location Set ({formData.location.coordinates[1].toFixed(4)}, {formData.location.coordinates[0].toFixed(4)})
+                  </span>
+                  {isEditing && <span className="text-sm">Click to update</span>}
+                </span>
+              ) : (
+                <span className="flex items-center gap-2">
+                  📍 {isEditing ? 'Select Restaurant Location on Map' : 'No location set'}
+                </span>
+              )}
+            </button>
+          </div>
+
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Street Address</label>
             <input
@@ -355,12 +399,14 @@ function RestaurantSettings({ restaurant: initialRestaurant, onClose }) {
               setFormData({
                 name: restaurant.restaurant_name,
                 description: restaurant.restaurant_description || "",
+                imageUrl: restaurant.restaurant_image_url || "",
                 street: restaurant.restaurant_address?.street || "",
                 city: restaurant.restaurant_address?.city || "",
                 zipCode: restaurant.restaurant_address?.zipCode || "",
                 phone: restaurant.restaurant_contact_phone || "",
                 email: restaurant.restaurant_contact_email || "",
                 categories: restaurant.restaurant_categories || [],
+                location: restaurant.restaurant_location || null,
                 openingHours: restaurant.restaurant_opening_hours || {},
               });
             }}
@@ -425,6 +471,20 @@ function RestaurantSettings({ restaurant: initialRestaurant, onClose }) {
           </div>
         </div>
       )}
+
+      {/* Location Picker Modal */}
+      <LocationPickerModal
+        isOpen={showLocationPicker}
+        onClose={() => setShowLocationPicker(false)}
+        onLocationSelect={handleLocationSelect}
+        initialLocation={
+          formData.location?.coordinates
+            ? { lat: formData.location.coordinates[1], lng: formData.location.coordinates[0] }
+            : null
+        }
+        title="Update Restaurant Location"
+        markerColor="#8a122c"
+      />
     </div>
   );
 }

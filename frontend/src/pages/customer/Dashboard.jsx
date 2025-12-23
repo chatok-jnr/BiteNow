@@ -1,6 +1,8 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import CustomerNavbar from "./CustomerNavbar";
+import LocationHeader from "./components/LocationHeader";
+import LocationPickerModal from "../../components/Map/LocationPickerModal";
 import { mockRestaurants, cuisineCategories } from "./mockData";
 
 function Dashboard() {
@@ -8,6 +10,10 @@ function Dashboard() {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCuisine, setSelectedCuisine] = useState("All");
   const [filteredRestaurants, setFilteredRestaurants] = useState(mockRestaurants);
+  const [showLocationPicker, setShowLocationPicker] = useState(false);
+  const [customerLocation, setCustomerLocation] = useState(null);
+  const [locationLastUpdated, setLocationLastUpdated] = useState(null);
+  const [nearbyRestaurants, setNearbyRestaurants] = useState([]);
 
   // Clear non-customer users from localStorage
   useEffect(() => {
@@ -18,7 +24,120 @@ function Dashboard() {
         localStorage.removeItem("user");
       }
     }
+    
+    // Check for saved customer location
+    checkSavedLocation();
   }, []);
+
+  const checkSavedLocation = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        // No token, use mock data
+        setFilteredRestaurants(mockRestaurants);
+        return;
+      }
+
+      // Try to fetch customer profile to check for saved location
+      const response = await fetch('http://localhost:5000/api/customers/me', {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        if (data.data?.customer_location?.coordinates) {
+          const [lng, lat] = data.data.customer_location.coordinates;
+          setCustomerLocation({ lng, lat });
+          setLocationLastUpdated(data.data.lastLocationUpdate || new Date());
+          
+          // Fetch nearby restaurants
+          await fetchNearbyRestaurants();
+        } else {
+          // No location saved, show location picker
+          setShowLocationPicker(true);
+        }
+      } else {
+        // API failed, use mock data
+        setFilteredRestaurants(mockRestaurants);
+      }
+    } catch (error) {
+      console.error('Error checking location:', error);
+      // On error, use mock data
+      setFilteredRestaurants(mockRestaurants);
+    }
+  };
+
+  const fetchNearbyRestaurants = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      const response = await fetch(
+        'http://localhost:5000/api/location/nearby-restaurants?maxDistance=10',
+        {
+          headers: { Authorization: `Bearer ${token}` }
+        }
+      );
+
+      if (response.ok) {
+        const data = await response.json();
+        if (data.status === 'success' && data.data && data.data.length > 0) {
+          setNearbyRestaurants(data.data);
+          // Mix nearby restaurants with mock data for now
+          setFilteredRestaurants([...data.data, ...mockRestaurants]);
+        } else {
+          // No nearby restaurants, use mock data
+          setFilteredRestaurants(mockRestaurants);
+        }
+      } else {
+        // API failed, use mock data
+        setFilteredRestaurants(mockRestaurants);
+      }
+    } catch (error) {
+      console.error('Error fetching nearby restaurants:', error);
+      setFilteredRestaurants(mockRestaurants);
+    }
+  };
+
+  const handleLocationChange = () => {
+    setShowLocationPicker(true);
+  };
+
+  const handleLocationConfirm = async (location) => {
+    try {
+      const token = localStorage.getItem("token");
+      
+      // Try to update customer location in backend (optional - works without backend)
+      try {
+        const response = await fetch('http://localhost:5000/api/location/update', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            latitude: location.lat,
+            longitude: location.lng
+          })
+        });
+
+        if (!response.ok) {
+          console.warn('Backend update failed, continuing with mock data');
+        }
+      } catch (apiError) {
+        console.warn('Backend not available, continuing with mock data:', apiError);
+      }
+
+      // Always update local state (works with or without backend)
+      setCustomerLocation(location);
+      setLocationLastUpdated(new Date());
+      setShowLocationPicker(false);
+      
+      // Fetch nearby restaurants after location update
+      await fetchNearbyRestaurants();
+    } catch (error) {
+      console.error('Error updating location:', error);
+      alert('Failed to update location. Please try again.');
+    }
+  };
 
   // Filter logic
   useEffect(() => {
@@ -108,6 +227,13 @@ function Dashboard() {
   return (
     <div className="min-h-screen bg-gray-50">
       <CustomerNavbar />
+      
+      {/* Location Header */}
+      <LocationHeader
+        currentLocation={customerLocation}
+        onLocationChange={handleLocationChange}
+        lastUpdated={locationLastUpdated}
+      />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header */}
@@ -247,8 +373,23 @@ function Dashboard() {
         )}
       </div>
 
+      {/* Location Picker Modal */}
+      <LocationPickerModal
+        isOpen={showLocationPicker}
+        onClose={() => {
+          // Allow closing if location is already set
+          if (customerLocation) {
+            setShowLocationPicker(false);
+          }
+        }}
+        onLocationSelect={handleLocationConfirm}
+        initialLocation={customerLocation}
+        title="Select Delivery Location"
+        isMandatory={!customerLocation}
+      />
+
       {/* Custom Scrollbar Hide */}
-      <style jsx>{`
+      <style>{`
         .scrollbar-hide::-webkit-scrollbar {
           display: none;
         }

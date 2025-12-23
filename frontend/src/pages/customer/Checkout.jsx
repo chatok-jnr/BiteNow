@@ -1,10 +1,13 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import CustomerNavbar from "./CustomerNavbar";
+import LocationPickerModal from "../../components/Map/LocationPickerModal";
 
 function Checkout() {
   const navigate = useNavigate();
   const [deliveryAddress, setDeliveryAddress] = useState("");
+  const [deliveryLocation, setDeliveryLocation] = useState(null);
+  const [showLocationPicker, setShowLocationPicker] = useState(false);
   const [orderData, setOrderData] = useState(null);
   const user = JSON.parse(localStorage.getItem("user") || "{}");
 
@@ -28,16 +31,46 @@ function Checkout() {
     setOrderData(pendingOrder);
   }, [navigate]);
 
+  const handleLocationSelect = (location) => {
+    setDeliveryLocation(location);
+    setShowLocationPicker(false);
+    
+    // Try to update backend with delivery location (optional - works without backend)
+    const token = localStorage.getItem("token");
+    if (token) {
+      fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/location/update`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          latitude: location.lat,
+          longitude: location.lng
+        })
+      }).catch(err => console.warn('Backend not available, continuing with mock data:', err));
+    }
+  };
+
   const handleConfirmOrder = () => {
     if (!deliveryAddress.trim()) {
       alert("Please enter your delivery address");
       return;
     }
 
-    // Create final order with delivery address
+    if (!deliveryLocation) {
+      alert("Please select your delivery location on the map");
+      return;
+    }
+
+    // Create final order with delivery address and location
     const newOrder = {
       ...orderData,
       deliveryAddress,
+      deliveryLocation: {
+        type: 'Point',
+        coordinates: [deliveryLocation.lng, deliveryLocation.lat]
+      },
       id: `ORD${Date.now()}`,
       status: "pending",
       orderTime: new Date().toLocaleString(),
@@ -72,8 +105,36 @@ function Checkout() {
             {/* Delivery Address */}
             <div className="bg-white rounded-lg shadow-md p-6">
               <h2 className="text-xl font-bold text-gray-900 mb-4">
-                📍 Delivery Address
+                📍 Delivery Location & Address
               </h2>
+              
+              {/* Map Location Picker Button */}
+              <div className="mb-4">
+                <button
+                  onClick={() => setShowLocationPicker(true)}
+                  className={`w-full px-4 py-3 rounded-lg font-medium transition-colors ${
+                    deliveryLocation
+                      ? 'bg-secondary/10 text-secondary border-2 border-secondary'
+                      : 'bg-primary text-white hover:bg-primary/90'
+                  }`}
+                >
+                  {deliveryLocation ? (
+                    <span className="flex items-center justify-center gap-2">
+                      ✓ Location Selected ({deliveryLocation.lat.toFixed(4)}, {deliveryLocation.lng.toFixed(4)})
+                    </span>
+                  ) : (
+                    <span className="flex items-center justify-center gap-2">
+                      📍 Select Delivery Location on Map
+                    </span>
+                  )}
+                </button>
+                {deliveryLocation && (
+                  <p className="text-sm text-gray-600 mt-2">
+                    Click to change location
+                  </p>
+                )}
+              </div>
+
               <textarea
                 value={deliveryAddress}
                 onChange={(e) => setDeliveryAddress(e.target.value)}
@@ -171,6 +232,14 @@ function Checkout() {
           </div>
         </div>
       </div>
+
+      {/* Location Picker Modal */}
+      <LocationPickerModal
+        isOpen={showLocationPicker}
+        onClose={() => setShowLocationPicker(false)}
+        onLocationSelect={handleLocationSelect}
+        title="Select Your Delivery Location"
+      />
     </div>
   );
 }

@@ -1,11 +1,16 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import DeliveryMap from "./DeliveryMap";
+import NavigationMap from "./NavigationMap";
 
-function ActiveDelivery({ activeDeliveries, deliverySteps, setDeliverySteps, onDropRequest, onCompleteDelivery }) {
+function ActiveDelivery({ activeDeliveries, deliverySteps, setDeliverySteps, onDropRequest, onCompleteDelivery, riderLocation }) {
   const [selectedDeliveryId, setSelectedDeliveryId] = useState(null);
   const [pin2, setPin2] = useState("");
   const [showPin2Modal, setShowPin2Modal] = useState(false);
   const [showDropModal, setShowDropModal] = useState(false);
+  const [showNavigationMap, setShowNavigationMap] = useState(false);
+  const [navigationDestination, setNavigationDestination] = useState(null);
   const [error, setError] = useState("");
+  const [deliveryRoute, setDeliveryRoute] = useState(null);
 
   // Get current delivery step
   const getDeliveryStep = (deliveryId) => {
@@ -39,7 +44,49 @@ function ActiveDelivery({ activeDeliveries, deliverySteps, setDeliverySteps, onD
     setDeliveryStep(activeDelivery.id, "at_restaurant");
   };
 
-  const handleFoodPickedUp = () => {
+  const handleFoodPickedUp = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      
+      // Auto-update rider location to restaurant location
+      // Get restaurant coordinates from activeDelivery
+      const restaurantLocation = activeDelivery.restaurant_location || 
+                                activeDelivery.restaurant?.restaurant_location;
+      
+      if (restaurantLocation && restaurantLocation.coordinates) {
+        const [lng, lat] = restaurantLocation.coordinates;
+        
+        // Update rider location in backend
+        await fetch('http://localhost:5000/api/location/update', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            latitude: lat,
+            longitude: lng
+          })
+        });
+      }
+      
+      // Fetch delivery route from restaurant to customer
+      const orderId = activeDelivery._id || activeDelivery.id;
+      const routeResponse = await fetch(
+        `http://localhost:5000/api/location/delivery-route/${orderId}`,
+        {
+          headers: { 'Authorization': `Bearer ${token}` }
+        }
+      );
+      
+      if (routeResponse.ok) {
+        const routeData = await routeResponse.json();
+        setDeliveryRoute(routeData);
+      }
+    } catch (error) {
+      console.error('Error updating location or fetching route:', error);
+    }
+    
     // Restaurant has verified PIN1 on their end, rider confirms pickup
     setDeliveryStep(activeDelivery.id, "picked_up");
   };
@@ -85,6 +132,54 @@ function ActiveDelivery({ activeDeliveries, deliverySteps, setDeliverySteps, onD
   const confirmDrop = () => {
     setShowDropModal(false);
     onDropRequest(activeDelivery);
+  };
+
+  const handleNavigateToRestaurant = () => {
+    if (!riderLocation) {
+      alert('Please update your location first');
+      return;
+    }
+
+    const restaurantLocation = activeDelivery.restaurant_location || 
+                              activeDelivery.restaurant?.restaurant_location;
+    
+    if (restaurantLocation?.coordinates) {
+      setNavigationDestination({
+        location: {
+          lng: restaurantLocation.coordinates[0],
+          lat: restaurantLocation.coordinates[1]
+        },
+        name: activeDelivery.restaurant_name || activeDelivery.restaurant?.restaurant_name || 'Restaurant',
+        color: '#3b82f6' // blue
+      });
+      setShowNavigationMap(true);
+    } else {
+      alert('Restaurant location not available');
+    }
+  };
+
+  const handleNavigateToCustomer = () => {
+    if (!riderLocation) {
+      alert('Please update your location first');
+      return;
+    }
+
+    const customerLocation = activeDelivery.customer_location || 
+                            activeDelivery.delivery_location;
+    
+    if (customerLocation?.coordinates) {
+      setNavigationDestination({
+        location: {
+          lng: customerLocation.coordinates[0],
+          lat: customerLocation.coordinates[1]
+        },
+        name: activeDelivery.customer_name || 'Customer',
+        color: '#289c40' // secondary/green
+      });
+      setShowNavigationMap(true);
+    } else {
+      alert('Customer location not available');
+    }
   };
 
   return (
@@ -202,6 +297,25 @@ function ActiveDelivery({ activeDeliveries, deliverySteps, setDeliverySteps, onD
           </div>
         </div>
 
+        {/* Delivery Route Map - Show after food is picked up */}
+        {(deliveryStep === "picked_up" || deliveryStep === "delivering" || deliveryStep === "at_customer") && deliveryRoute && (
+          <div className="mb-8">
+            <h3 className="font-bold text-lg mb-4 flex items-center gap-2">
+              <span>🗺️</span>
+              Delivery Route
+            </h3>
+            <DeliveryMap
+              restaurantLocation={deliveryRoute.origin?.coordinates}
+              customerLocation={deliveryRoute.destination?.coordinates}
+              routeGeometry={deliveryRoute.geometry}
+            />
+            <div className="flex justify-between text-sm text-gray-600 mt-2">
+              <span>📏 Distance: {deliveryRoute.distance} km</span>
+              <span>⏱️ Est. Time: {deliveryRoute.duration} min</span>
+            </div>
+          </div>
+        )}
+
         {/* Delivery Details */}
         <div className="space-y-6 mb-8">
           <div className="bg-gray-50 p-6 rounded-xl">
@@ -218,7 +332,10 @@ function ActiveDelivery({ activeDeliveries, deliverySteps, setDeliverySteps, onD
                   </p>
                 </div>
                 {deliveryStep === "going_to_restaurant" && (
-                  <button className="px-4 py-2 bg-primary text-white rounded-lg text-sm font-semibold hover:bg-primary/90">
+                  <button 
+                    onClick={handleNavigateToRestaurant}
+                    className="px-4 py-2 bg-primary text-white rounded-lg text-sm font-semibold hover:bg-primary/90"
+                  >
                     Navigate
                   </button>
                 )}
@@ -233,7 +350,10 @@ function ActiveDelivery({ activeDeliveries, deliverySteps, setDeliverySteps, onD
                   </p>
                 </div>
                 {(deliveryStep === "picked_up" || deliveryStep === "delivering") && (
-                  <button className="px-4 py-2 bg-primary text-white rounded-lg text-sm font-semibold hover:bg-primary/90">
+                  <button 
+                    onClick={handleNavigateToCustomer}
+                    className="px-4 py-2 bg-primary text-white rounded-lg text-sm font-semibold hover:bg-primary/90"
+                  >
                     Navigate
                   </button>
                 )}
@@ -419,6 +539,19 @@ function ActiveDelivery({ activeDeliveries, deliverySteps, setDeliverySteps, onD
             </div>
           </div>
         </div>
+      )}
+
+      {/* Navigation Map Modal */}
+      {showNavigationMap && navigationDestination && riderLocation && (
+        <NavigationMap
+          isOpen={showNavigationMap}
+          onClose={() => setShowNavigationMap(false)}
+          riderLocation={riderLocation}
+          destinationLocation={navigationDestination.location}
+          destinationName={navigationDestination.name}
+          destinationColor={navigationDestination.color}
+          riderColor="#8a122c"
+        />
       )}
 
       <style jsx>{`
