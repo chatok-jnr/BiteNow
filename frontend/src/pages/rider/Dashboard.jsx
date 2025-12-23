@@ -4,6 +4,7 @@ import PendingDeliveries from "./components/PendingDeliveries";
 import ActiveDelivery from "./components/ActiveDelivery";
 import RiderProfile from "./components/RiderProfile";
 import DeliveryHistory from "./components/DeliveryHistory";
+import axiosInstance from "../../utils/axios";
 
 function RiderDashboard() {
   const navigate = useNavigate();
@@ -45,50 +46,35 @@ function RiderDashboard() {
 
   const fetchPendingRequests = async () => {
     try {
-      // TODO: Replace with actual API endpoint for pending delivery requests
-      // const token = localStorage.getItem("token");
-      // const response = await fetch("http://localhost:5000/api/deliveries/pending", {
-      //   headers: {
-      //     Authorization: `Bearer ${token}`,
-      //   },
-      // });
-      // const data = await response.json();
-      // setPendingRequests(data.data.requests);
-
-      // Mock data for now
-      const mockRequests = [
-        {
-          id: "req1",
-          _id: "req1",
-          order_id: "ORD123456",
-          restaurant_name: "Pizza Palace",
-          restaurant_address: "123 Main St, Dhaka",
-          customer_name: "John Doe",
-          customer_address: "456 Oak Ave, Dhaka",
-          food_cost: 450,
-          delivery_charge: 50,
-          total_amount: 500,
-          pin1: "1234",
-          pin2: "5678",
-        },
-        {
-          id: "req2",
-          _id: "req2",
-          order_id: "ORD123457",
-          restaurant_name: "Burger House",
-          restaurant_address: "789 Park Rd, Dhaka",
-          customer_name: "Jane Smith",
-          customer_address: "321 Elm St, Dhaka",
-          food_cost: 350,
-          delivery_charge: 50,
-          total_amount: 400,
-          pin1: "2345",
-          pin2: "6789",
-        },
-      ];
-      setPendingRequests(mockRequests);
+      const response = await axiosInstance.get("/api/v1/order/rider");
+      
+      if (response.data.status === "success" && response.data.data.needRider) {
+        // Transform API data to match component expectations
+        const transformedRequests = response.data.data.needRider.map(order => ({
+          id: order._id,
+          _id: order._id,
+          order_id: order.order_id,
+          restaurant_name: order.restaurant_id?.restaurant_name || "Unknown Restaurant",
+          restaurant_address: order.restaurant_id?.restaurant_address || "Unknown Address",
+          customer_name: "Customer", // API doesn't provide customer name
+          customer_address: `${order.delivery_address.street}, ${order.delivery_address.city}, ${order.delivery_address.state}, ${order.delivery_address.zip_code}`,
+          food_cost: order.subtotal,
+          delivery_charge: order.delivery_charge,
+          total_amount: order.total_amount,
+          pin1: "1234", // TODO: Get from API when available
+          pin2: "5678", // TODO: Get from API when available
+          estimated_delivery_time: order.estimated_delivery_time,
+          items: order.items,
+          payment_status: order.payment_status,
+          order_status: order.order_status,
+        }));
+        
+        setPendingRequests(transformedRequests);
+      }
     } catch (error) {
       console.error("Error fetching pending requests:", error);
+      // Fallback to empty array on error
+      setPendingRequests([]);
     }
   };
 

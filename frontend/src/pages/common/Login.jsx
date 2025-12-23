@@ -60,6 +60,14 @@ function Login() {
       console.log("Login response:", response.data);
 
       if (response.data.status === "success") {
+        console.log("✅ Login successful, storing credentials...");
+        
+        // CRITICAL: Store token FIRST before any API calls
+        if (response.data.token) {
+          localStorage.setItem("token", response.data.token);
+          console.log("✅ Token stored in localStorage");
+        }
+        
         // Store user info in localStorage
         const userData = {
           email: formData.email,
@@ -75,18 +83,24 @@ function Login() {
         }
 
         localStorage.setItem("user", JSON.stringify(userData));
-
-        // Store token separately for easy access
-        if (response.data.token) {
-          localStorage.setItem("token", response.data.token);
-        }
+        console.log("✅ User data stored in localStorage");
 
         // Migrate guest cart to user account if customer
+        // This must happen AFTER token is stored
         if (formData.role === "customer") {
           try {
-            await cartService.migrateGuestCart();
+            console.log("🔄 Starting cart migration...");
+            const migratedCart = await cartService.migrateGuestCart();
+            if (migratedCart) {
+              console.log('✅ Guest cart migrated successfully:', {
+                cartId: migratedCart._id,
+                itemCount: migratedCart.items?.length || 0
+              });
+            } else {
+              console.log('ℹ️ No guest cart to migrate');
+            }
           } catch (migrationError) {
-            console.error("Cart migration failed:", migrationError);
+            console.error("❌ Cart migration failed:", migrationError);
             // Don't block login if cart migration fails
           }
         }

@@ -60,14 +60,25 @@ export const getOrCreateCart = async (restaurantId) => {
  */
 export const getCart = async () => {
   try {
+    console.log('🔍 Fetching cart...', {
+      hasToken: !!localStorage.getItem('token'),
+      hasGuestSession: !!localStorage.getItem(GUEST_SESSION_KEY)
+    });
+    
     const response = await axiosInstance.get('/api/v1/cart/');
+    console.log('✅ Cart fetched:', {
+      cartId: response.data.data.cart?._id,
+      itemCount: response.data.data.cart?.items?.length || 0,
+      restaurantId: response.data.data.cart?.restaurant_id
+    });
     return response.data.data.cart;
   } catch (error) {
     if (error.response && error.response.status === 404) {
       // No cart found - this is normal
+      console.log('ℹ️ No cart found (404)');
       return null;
     }
-    console.error('Error fetching cart:', error);
+    console.error('❌ Error fetching cart:', error.response?.data || error.message);
     throw error;
   }
 };
@@ -141,21 +152,35 @@ export const migrateGuestCart = async () => {
     const guestSessionId = localStorage.getItem(GUEST_SESSION_KEY);
     
     if (!guestSessionId) {
+      console.log('ℹ️ No guest session to migrate');
       return null; // No guest session to migrate
     }
+    
+    console.log('🔄 Migrating guest cart:', guestSessionId);
     
     const response = await axiosInstance.post('/api/v1/cart/migrate', {
       guest_session_id: guestSessionId
     });
     
-    // Clear guest session after successful migration
+    console.log('✅ Cart migration successful:', response.data.data);
+    
+    // Clear guest session ONLY after successful migration
     clearGuestSession();
     
     return response.data.data.cart;
   } catch (error) {
-    console.error('Error migrating cart:', error);
+    console.error('❌ Error migrating cart:', error);
+    
+    // Only clear guest session if it's a 400 error (guest cart not found or already migrated)
+    // Don't clear on network errors or other issues
+    if (error.response && (error.response.status === 400 || error.response.status === 404)) {
+      console.log('ℹ️ No guest cart found, clearing session');
+      clearGuestSession();
+    } else {
+      console.log('⚠️ Migration failed but keeping guest session for retry');
+    }
+    
     // Don't throw - migration failure shouldn't block login
-    clearGuestSession(); // Clear guest session anyway
     return null;
   }
 };

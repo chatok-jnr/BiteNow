@@ -310,7 +310,7 @@ exports.updateOrderStatusByRestaurant = async(req, res) => {
 //Get the order list which is requred rider
 exports.getLookForRider = async(req, res) => {
   try {
-    const needRider = await Order.find({'order_status':'look_rider'})
+    const needRider = await Order.find({'order_status':'preparing'})
     .sort('-createdAt')
     .populate('restaurant_id', 'restaurant_address restaurant_name restaurant_location');
 
