@@ -332,6 +332,15 @@ export const mockOrders = [
     orderTime: "2025-12-16 12:30 PM",
     pin: "8899",
     isActive: true,
+    riderLocation: {
+      lng: 90.4150,
+      lat: 23.8120
+    },
+    deliveryLocation: {
+      lng: 90.4225,
+      lat: 23.8203
+    },
+    riderLocationUpdatedAt: new Date(Date.now() - 2 * 60000).toISOString(), // 2 minutes ago
   },
   {
     id: "ORD002",

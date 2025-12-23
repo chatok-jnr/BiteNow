@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import CustomerNavbar from "./CustomerNavbar";
+import TrackRiderMap from "./components/TrackRiderMap";
 import { mockOrders, orderStatuses } from "./mockData";
 
 function Orders() {
@@ -8,6 +9,8 @@ function Orders() {
   const [orders, setOrders] = useState([]);
   const [activeOrders, setActiveOrders] = useState([]);
   const [pastOrders, setPastOrders] = useState([]);
+  const [showTrackRider, setShowTrackRider] = useState(false);
+  const [trackingOrder, setTrackingOrder] = useState(null);
 
   useEffect(() => {
     // Check authentication
@@ -86,6 +89,11 @@ function Orders() {
     return percentages[status] || 0;
   };
 
+  const handleTrackRider = (order) => {
+    setTrackingOrder(order);
+    setShowTrackRider(true);
+  };
+
   const OrderCard = ({ order, isActive }) => {
     const statusConfig = orderStatuses[order.status];
 
@@ -137,6 +145,17 @@ function Orders() {
               <span>Preparing</span>
               <span>On the way</span>
             </div>
+
+            {/* Track Rider Button - Show when rider has picked up food */}
+            {order.status === "rider_assigned" && order.riderLocation && order.deliveryLocation && (
+              <button
+                onClick={() => handleTrackRider(order)}
+                className="w-full mt-3 px-4 py-2.5 bg-primary text-white rounded-lg font-semibold hover:bg-primary/90 transition-colors flex items-center justify-center gap-2"
+              >
+                <span>📍</span>
+                Track Rider
+              </button>
+            )}
           </div>
         )}
 
@@ -253,6 +272,18 @@ function Orders() {
           </div>
         )}
       </div>
+
+      {/* Track Rider Map Modal */}
+      {showTrackRider && trackingOrder && (
+        <TrackRiderMap
+          isOpen={showTrackRider}
+          onClose={() => setShowTrackRider(false)}
+          riderLocation={trackingOrder.riderLocation}
+          customerLocation={trackingOrder.deliveryLocation}
+          riderLocationUpdatedAt={trackingOrder.riderLocationUpdatedAt}
+          restaurantName={trackingOrder.restaurantName}
+        />
+      )}
     </div>
   );
 }

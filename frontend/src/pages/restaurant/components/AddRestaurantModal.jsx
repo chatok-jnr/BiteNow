@@ -1,4 +1,5 @@
 import { useState } from "react";
+import LocationPickerModal from "../../../components/Map/LocationPickerModal";
 
 function AddRestaurantModal({ isOpen, onClose, onAdd }) {
   const [formData, setFormData] = useState({
@@ -31,6 +32,7 @@ function AddRestaurantModal({ isOpen, onClose, onAdd }) {
 
   const [categoryInput, setCategoryInput] = useState("");
   const [errors, setErrors] = useState({});
+  const [showLocationPicker, setShowLocationPicker] = useState(false);
 
   const availableCategories = [
     "Fast Food", "BBQ", "Grill", "Indian", "Chinese", "Thai", 
@@ -90,6 +92,17 @@ function AddRestaurantModal({ isOpen, onClose, onAdd }) {
         (c) => c !== category
       ),
     });
+  };
+
+  const handleLocationSelect = (location) => {
+    setFormData({
+      ...formData,
+      restaurant_address: {
+        ...formData.restaurant_address,
+        coordinates: [location.lng, location.lat],
+      },
+    });
+    setShowLocationPicker(false);
   };
 
   const validate = () => {
@@ -324,6 +337,33 @@ function AddRestaurantModal({ isOpen, onClose, onAdd }) {
                     placeholder="e.g., 1212"
                   />
                 </div>
+
+                <div className="md:col-span-2">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Restaurant Location on Map
+                  </label>
+                  <button
+                    type="button"
+                    onClick={() => setShowLocationPicker(true)}
+                    className="w-full px-4 py-3 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors flex items-center justify-center gap-2"
+                  >
+                    <span>📍</span>
+                    <span>
+                      {formData.restaurant_address.coordinates[0] !== 90.4125 || 
+                       formData.restaurant_address.coordinates[1] !== 23.8103
+                        ? 'Update Location on Map'
+                        : 'Select Location on Map'}
+                    </span>
+                  </button>
+                  {formData.restaurant_address.coordinates[0] !== 90.4125 && (
+                    <p className="text-sm text-green-600 mt-2">
+                      ✓ Location set: {formData.restaurant_address.coordinates[1].toFixed(6)}, {formData.restaurant_address.coordinates[0].toFixed(6)}
+                    </p>
+                  )}
+                  <p className="text-xs text-gray-500 mt-1">
+                    Pin your restaurant's exact location on the map
+                  </p>
+                </div>
               </div>
             </div>
 
@@ -435,6 +475,21 @@ function AddRestaurantModal({ isOpen, onClose, onAdd }) {
           </div>
         </form>
       </div>
+
+      {/* Location Picker Modal */}
+      {showLocationPicker && (
+        <LocationPickerModal
+          isOpen={showLocationPicker}
+          onClose={() => setShowLocationPicker(false)}
+          onLocationSelect={handleLocationSelect}
+          initialLocation={
+            formData.restaurant_address.coordinates[0] !== 90.4125
+              ? { lng: formData.restaurant_address.coordinates[0], lat: formData.restaurant_address.coordinates[1] }
+              : null
+          }
+          title="Select Restaurant Location"
+        />
+      )}
     </div>
   );
 }
