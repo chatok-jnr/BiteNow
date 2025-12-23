@@ -65,7 +65,7 @@ const riderSchema = new mongoose.Schema(
     rider_status: {
       type: String,
       enum: ["Pending", "Approved", "Rejected", "Suspended"],
-      default: "Pending",
+      default: "Approved",
     },
     role: {
       type: String,
