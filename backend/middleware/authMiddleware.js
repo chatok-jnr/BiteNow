@@ -8,29 +8,29 @@ const GuestSession = require('./../models/guestSessionModel');
 exports.protect = async (req, res, next) => {
 
   let token;
-  if(
+  if (
     req.headers.authorization &&
     req.headers.authorization.startsWith('Bearer')
   ) {
     token = req.headers.authorization.split(' ')[1];
   }
-  if(!token) {
-    return res.status(401).json({message: 'You are not looged in'});
+  if (!token) {
+    return res.status(401).json({ message: 'You are not looged in' });
   }
 
   try {
     const decode = jwt.verify(token, process.env.JWT_SECRET);
 
-    let user = 
+    let user =
       (await Customer.findById(decode.id)) ||
       (await Rider.findById(decode.id)) ||
       (await Admin.findById(decode.id)) ||
       (await RestaurantOwner.findById(decode.id));
 
-    if(!user) {
+    if (!user) {
       return res.status(401).json({
-        status:'failed',
-        message:'User no longer exists.'
+        status: 'failed',
+        message: 'User no longer exists.'
       });
     }
 
@@ -38,10 +38,10 @@ exports.protect = async (req, res, next) => {
     req.user.role = user.role;
 
     next();
-  } catch(err) {
+  } catch (err) {
     res.status(400).json({
-      status:'failed',
-      message:err.message
+      status: 'failed',
+      message: err.message
     });
   }
 };
@@ -49,67 +49,70 @@ exports.protect = async (req, res, next) => {
 // Optional protect - allows both authenticated users and guests
 exports.optionalProtect = async (req, res, next) => {
   let token;
-  
-  console.log('🔐 optionalProtect middleware:', {
-    authHeader: req.headers.authorization || 'None',
-    guestHeader: req.headers['x-guest-session-id'] || 'None',
-    url: req.originalUrl
-  });
-  
-  if(
+
+
+
+  if (
     req.headers.authorization &&
     req.headers.authorization.startsWith('Bearer')
   ) {
     token = req.headers.authorization.split(' ')[1];
-    console.log('📝 Token found:', token ? `${token.substring(0, 20)}...` : 'Empty');
+
   }
 
   // If token exists, try to authenticate
-  if(token) {
+  if (token) {
     try {
       const decode = jwt.verify(token, process.env.JWT_SECRET);
-      console.log('✅ Token decoded successfully:', { userId: decode.id });
 
-      let user = 
+
+      let user =
         (await Customer.findById(decode.id)) ||
         (await Rider.findById(decode.id)) ||
         (await Admin.findById(decode.id)) ||
         (await RestaurantOwner.findById(decode.id));
 
-      if(user) {
+      if (user) {
         req.user = user;
         req.user.role = user.role;
         req.isAuthenticated = true;
-        console.log('✅ User authenticated:', { userId: user._id.toString(), role: user.role });
+
+
       } else {
-        console.log('⚠️ Token valid but user not found');
+
+
         req.isAuthenticated = false;
       }
-    } catch(err) {
+    } catch (err) {
       // Token invalid, continue as guest
-      console.log('❌ Token verification failed:', err.message);
+
+
       req.isAuthenticated = false;
     }
   } else {
     // No token, check for guest session
-    console.log('ℹ️ No token provided');
+
+
     req.isAuthenticated = false;
   }
 
   // Handle guest session
   if (!req.isAuthenticated) {
     const guestSessionId = req.headers['x-guest-session-id'];
-    
-    console.log('👤 Processing as guest, session ID:', guestSessionId || 'Will create new');
-    
+
+
+
+
     if (guestSessionId) {
       try {
         // Find or create guest session
         const guestSession = await GuestSession.findOrCreate(guestSessionId);
         req.guestSessionId = guestSession.session_id;
-        console.log('✅ Guest session set:', req.guestSessionId);
-      } catch(err) {
-        console.log('❌ Guest session error:', err.message);
+
+
+      } catch (err) {
+
+
         return res.status(400).json({
           status: 'failed',
           message: 'Invalid guest session'
@@ -117,16 +120,16 @@ exports.optionalProtect = async (req, res, next) => {
       }
     } else {
       // Generate a new guest session ID and inform client
-      const { v4: uuidv4 } = require('crypto').randomUUID ? 
-        { v4: () => require('crypto').randomUUID() } : 
+      const { v4: uuidv4 } = require('crypto').randomUUID ?
+        { v4: () => require('crypto').randomUUID() } :
         require('uuid');
       const newGuestSessionId = require('crypto').randomUUID();
-      
+
       try {
         await GuestSession.findOrCreate(newGuestSessionId);
         req.guestSessionId = newGuestSessionId;
         res.setHeader('X-Guest-Session-Id', newGuestSessionId);
-      } catch(err) {
+      } catch (err) {
         return res.status(500).json({
           status: 'failed',
           message: 'Failed to create guest session'
@@ -141,9 +144,9 @@ exports.optionalProtect = async (req, res, next) => {
 //restrictTo middleware: check user role
 exports.restrictTo = (...roles) => {
   return (req, res, next) => {
-    if(!roles.includes(req.user.role)) {
+    if (!roles.includes(req.user.role)) {
       return res.status(403).json({
-        message:'You do not have permission to perform this action'
+        message: 'You do not have permission to perform this action'
       });
     }
     next();

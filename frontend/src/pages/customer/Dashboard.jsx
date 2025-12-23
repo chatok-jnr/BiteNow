@@ -349,17 +349,6 @@ function Dashboard() {
           </div>
         )}
       </div>
-
-      {/* Custom Scrollbar Hide */}
-      <style jsx>{`
-        .scrollbar-hide::-webkit-scrollbar {
-          display: none;
-        }
-        .scrollbar-hide {
-          -ms-overflow-style: none;
-          scrollbar-width: none;
-        }
-      `}</style>
     </div>
   );
 }

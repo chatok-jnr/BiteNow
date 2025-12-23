@@ -1,13 +1,76 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import CustomerNavbar from "./CustomerNavbar";
-import { mockOrders, orderStatuses } from "./mockData";
+import { orderStatuses } from "./mockData";
+import axiosInstance from "../../utils/axios";
 
 function Orders() {
   const navigate = useNavigate();
   const [orders, setOrders] = useState([]);
   const [activeOrders, setActiveOrders] = useState([]);
+  const [deliveredOrders, setDeliveredOrders] = useState([]);
   const [pastOrders, setPastOrders] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  // Fetch orders from API
+  const fetchOrders = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const response = await axiosInstance.get('/api/v1/order/');
+      
+      if (response.data.status === 'success' && response.data.data.orders) {
+        const apiOrders = response.data.data.orders.map(order => ({
+          id: order.order_id,
+          restaurantName: order.restaurant_id?.fullAddress !== "No address!" 
+            ? order.restaurant_id?.fullAddress 
+            : `Restaurant ${order.restaurant_id?._id.slice(-6)}`,
+          items: order.items.map(item => ({
+            name: item.food_name,
+            quantity: item.quantity,
+            price: item.unit_price,
+            variant: null
+          })),
+          subtotal: order.subtotal,
+          deliveryFee: order.delivery_charge,
+          total: order.total_amount,
+          status: order.order_status,
+          paymentStatus: order.payment_status,
+          orderTime: new Date(order.createdAt).toLocaleString('en-US', {
+            month: 'short',
+            day: 'numeric',
+            year: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+          }),
+          estimatedDelivery: order.estimated_delivery_time,
+          isActive: order.is_active && order.order_status !== 'delivered' && order.order_status !== 'cancelled',
+          isDelivered: order.order_status === 'delivered',
+          deliveryAddress: order.delivery_address,
+          deliveredTime: order.order_status === 'delivered' 
+            ? new Date(order.updatedAt).toLocaleString('en-US', {
+                month: 'short',
+                day: 'numeric',
+                year: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+              })
+            : null
+        }));
+        
+        setOrders(apiOrders);
+        setActiveOrders(apiOrders.filter(order => order.isActive));
+        setDeliveredOrders(apiOrders.filter(order => order.isDelivered));
+        setPastOrders(apiOrders.filter(order => !order.isActive && !order.isDelivered));
+      }
+    } catch (err) {
+      console.error('Error fetching orders:', err);
+      setError(err.response?.data?.message || 'Failed to fetch orders');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
     // Check authentication
@@ -21,49 +84,19 @@ function Orders() {
     if (parsedUser.role !== "customer") {
       localStorage.setItem("intendedDestination", "/customer-dashboard/orders");
       navigate("/login");
+      return;
     }
 
-    // Load orders from localStorage (new orders) and merge with mock orders
-    const storedOrders = JSON.parse(localStorage.getItem("customerOrders") || "[]");
-    const allOrders = [...storedOrders, ...mockOrders];
-    
-    setOrders(allOrders);
-    setActiveOrders(allOrders.filter((order) => order.isActive));
-    setPastOrders(allOrders.filter((order) => !order.isActive));
+    // Fetch orders from API
+    fetchOrders();
 
-    // Simulate order status progression for active orders
+    // Set up polling to refresh orders every 30 seconds
     const interval = setInterval(() => {
-      setOrders((prevOrders) =>
-        prevOrders.map((order) => {
-          if (!order.isActive) return order;
-
-          // Auto-progress orders through statuses
-          if (order.status === "pending") {
-            return { ...order, status: "accepted" };
-          } else if (order.status === "accepted") {
-            return {
-              ...order,
-              status: "rider_assigned",
-              pin: Math.floor(1000 + Math.random() * 9000).toString(),
-            };
-          }
-          return order;
-        })
-      );
-    }, 10000); // Progress every 10 seconds
+      fetchOrders();
+    }, 30000);
 
     return () => clearInterval(interval);
   }, [navigate]);
-
-  // Update active and past orders when orders change
-  useEffect(() => {
-    setActiveOrders(orders.filter((order) => order.isActive));
-    setPastOrders(orders.filter((order) => !order.isActive));
-    
-    // Update localStorage with new orders
-    const newOrders = orders.filter(order => order.id.startsWith('ORD') && order.id.length > 6);
-    localStorage.setItem("customerOrders", JSON.stringify(newOrders));
-  }, [orders]);
 
   const getStatusColor = (status) => {
     const statusConfig = orderStatuses[status];
@@ -72,16 +105,21 @@ function Orders() {
       orange: "bg-orange-100 text-orange-800 border-orange-300",
       green: "bg-green-100 text-green-800 border-green-300",
       blue: "bg-blue-100 text-blue-800 border-blue-300",
+      red: "bg-red-100 text-red-800 border-red-300",
     };
     return colors[statusConfig?.color] || colors.yellow;
   };
 
   const getProgressPercentage = (status) => {
     const percentages = {
-      pending: 33,
-      accepted: 66,
-      rider_assigned: 100,
+      pending: 20,
+      accepted: 40,
+      preparing: 60,
+      rider_assigned: 75,
+      on_the_way: 85,
+      out_for_delivery: 95,
       delivered: 100,
+      cancelled: 0,
     };
     return percentages[status] || 0;
   };
@@ -125,8 +163,10 @@ function Orders() {
                 className={`h-2 rounded-full transition-all duration-500 ${
                   order.status === "pending"
                     ? "bg-yellow-500"
-                    : order.status === "accepted"
+                    : order.status === "accepted" || order.status === "preparing"
                     ? "bg-orange-500"
+                    : order.status === "cancelled"
+                    ? "bg-red-500"
                     : "bg-green-500"
                 }`}
                 style={{ width: `${getProgressPercentage(order.status)}%` }}
@@ -135,7 +175,7 @@ function Orders() {
             <div className="flex justify-between text-xs text-gray-500 mt-1">
               <span>Pending</span>
               <span>Preparing</span>
-              <span>On the way</span>
+              <span>Delivered</span>
             </div>
           </div>
         )}
@@ -201,8 +241,29 @@ function Orders() {
           <p className="text-gray-600">Track your orders and order history</p>
         </div>
 
+        {/* Loading State */}
+        {loading && (
+          <div className="bg-white rounded-lg shadow-md p-12 text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+            <p className="text-gray-600">Loading your orders...</p>
+          </div>
+        )}
+
+        {/* Error State */}
+        {error && !loading && (
+          <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
+            <p className="text-red-800">⚠️ {error}</p>
+            <button
+              onClick={fetchOrders}
+              className="mt-2 text-red-600 hover:text-red-800 underline text-sm"
+            >
+              Try again
+            </button>
+          </div>
+        )}
+
         {/* No Orders State */}
-        {orders.length === 0 && (
+        {!loading && orders.length === 0 && !error && (
           <div className="bg-white rounded-lg shadow-md p-12 text-center">
             <p className="text-6xl mb-4">📦</p>
             <h3 className="text-xl font-semibold text-gray-900 mb-2">
@@ -221,7 +282,7 @@ function Orders() {
         )}
 
         {/* Active Orders */}
-        {activeOrders.length > 0 && (
+        {!loading && activeOrders.length > 0 && (
           <div className="mb-8">
             <div className="flex items-center space-x-2 mb-4">
               <h2 className="text-2xl font-bold text-gray-900">
@@ -239,11 +300,25 @@ function Orders() {
           </div>
         )}
 
+        {/* Delivered Orders */}
+        {!loading && deliveredOrders.length > 0 && (
+          <div className="mb-8">
+            <h2 className="text-2xl font-bold text-gray-900 mb-4">
+              ✅ Delivered Orders
+            </h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {deliveredOrders.map((order) => (
+                <OrderCard key={order.id} order={order} isActive={false} />
+              ))}
+            </div>
+          </div>
+        )}
+
         {/* Past Orders */}
-        {pastOrders.length > 0 && (
+        {!loading && pastOrders.length > 0 && (
           <div>
             <h2 className="text-2xl font-bold text-gray-900 mb-4">
-              Past Orders
+              📋 Order History
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {pastOrders.map((order) => (

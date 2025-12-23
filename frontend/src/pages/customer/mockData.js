@@ -392,7 +392,13 @@ export const orderStatuses = {
   },
   accepted: {
     label: "Accepted",
-    message: "Restaurant is preparing...",
+    message: "Restaurant accepted your order",
+    color: "orange",
+    icon: "✓",
+  },
+  preparing: {
+    label: "Preparing",
+    message: "Restaurant is preparing your food...",
     color: "orange",
     icon: "👨‍🍳",
   },
@@ -402,10 +408,28 @@ export const orderStatuses = {
     color: "green",
     icon: "🏍️",
   },
+  on_the_way: {
+    label: "On The Way",
+    message: "Your order is on the way!",
+    color: "green",
+    icon: "🚴",
+  },
+  out_for_delivery: {
+    label: "Out for Delivery",
+    message: "Rider is delivering your order!",
+    color: "green",
+    icon: "🏍️",
+  },
   delivered: {
     label: "Delivered",
     message: "Order delivered successfully",
     color: "blue",
     icon: "✅",
+  },
+  cancelled: {
+    label: "Cancelled",
+    message: "Order was cancelled",
+    color: "red",
+    icon: "❌",
   },
 };

@@ -6,7 +6,14 @@ import axiosInstance from "../../utils/axios";
 
 function Checkout() {
   const navigate = useNavigate();
-  const [deliveryAddress, setDeliveryAddress] = useState("");
+  const [deliveryAddress, setDeliveryAddress] = useState({
+    street: "",
+    city: "",
+    state: "",
+    zip_code: "",
+    country: ""
+  });
+  const [specialInstructions, setSpecialInstructions] = useState("");
   const [cart, setCart] = useState(null);
   const [restaurant, setRestaurant] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -29,26 +36,36 @@ function Checkout() {
         // Fetch cart from backend
         const cartData = await cartService.getCart();
         
+        console.log("Cart data received:", cartData);
+        
         if (!cartData || !cartData.items || cartData.items.length === 0) {
           // No cart or empty cart - redirect to dashboard
+          alert("Your cart is empty. Please add items before checking out.");
           navigate("/customer-dashboard");
           return;
         }
         
         setCart(cartData);
         
-        // Fetch restaurant details
-        const restaurantResponse = await axiosInstance.get("/api/v1/restaurants");
-        if (restaurantResponse.data.status === "success") {
-          const foundRestaurant = restaurantResponse.data.data.restaurants.find(
-            (r) => r._id === cartData.restaurant_id
-          );
-          
-          if (foundRestaurant) {
-            setRestaurant({
-              id: foundRestaurant._id,
-              name: foundRestaurant.restaurant_name,
-            });
+        // Fetch restaurant details if restaurant_id exists
+        if (cartData.restaurant_id) {
+          try {
+            const restaurantResponse = await axiosInstance.get("/api/v1/restaurants");
+            if (restaurantResponse.data.status === "success") {
+              const foundRestaurant = restaurantResponse.data.data.restaurants.find(
+                (r) => r._id === cartData.restaurant_id
+              );
+              
+              if (foundRestaurant) {
+                setRestaurant({
+                  id: foundRestaurant._id,
+                  name: foundRestaurant.restaurant_name,
+                });
+              }
+            }
+          } catch (restError) {
+            console.error("Error fetching restaurant:", restError);
+            // Continue even if restaurant fetch fails
           }
         }
       } catch (error) {
@@ -64,28 +81,33 @@ function Checkout() {
   }, [navigate]);
 
   const handleConfirmOrder = async () => {
-    if (!deliveryAddress.trim()) {
-      alert("Please enter your delivery address");
+    // Validate delivery address fields
+    if (!deliveryAddress.street.trim() || !deliveryAddress.city.trim() || 
+        !deliveryAddress.state.trim() || !deliveryAddress.zip_code.trim() || 
+        !deliveryAddress.country.trim()) {
+      alert("Please fill in all delivery address fields");
       return;
     }
 
     try {
       setSubmitting(true);
       
-      // Create order via backend API
+      // Create order from cart via backend API
       const orderPayload = {
-        restaurant_id: cart.restaurant_id,
-        delivery_address: deliveryAddress,
-        payment_method: "cash_on_delivery",
-        // Items are already in the cart on backend
+        delivery_address: {
+          street: deliveryAddress.street,
+          city: deliveryAddress.city,
+          state: deliveryAddress.state,
+          zip_code: deliveryAddress.zip_code,
+          country: deliveryAddress.country
+        },
+        payment_method: "cash",
+        special_instructions: specialInstructions || undefined
       };
       
-      const response = await axiosInstance.post("/api/v1/orders", orderPayload);
+      const response = await axiosInstance.post("/api/v1/order/", orderPayload);
       
       if (response.data.status === "success") {
-        // Clear the cart after successful order
-        await cartService.clearCart();
-        
         // Show success message
         alert("Order placed successfully!");
         
@@ -121,8 +143,17 @@ function Checkout() {
     );
   }
 
-  if (!cart) {
-    return <div>Loading...</div>;
+  if (!cart || !cart.items || cart.items.length === 0) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <CustomerNavbar />
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <div className="text-center py-12">
+            <p className="text-gray-600">Your cart is empty</p>
+          </div>
+        </div>
+      </div>
+    );
   }
 
   return (
@@ -140,11 +171,84 @@ function Checkout() {
               <h2 className="text-xl font-bold text-gray-900 mb-4">
                 📍 Delivery Address
               </h2>
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Street Address
+                  </label>
+                  <input
+                    type="text"
+                    value={deliveryAddress.street}
+                    onChange={(e) => setDeliveryAddress({...deliveryAddress, street: e.target.value})}
+                    placeholder="e.g., 123 Main Street, Apt 4B"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+                  />
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      City
+                    </label>
+                    <input
+                      type="text"
+                      value={deliveryAddress.city}
+                      onChange={(e) => setDeliveryAddress({...deliveryAddress, city: e.target.value})}
+                      placeholder="e.g., New York"
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      State/Province
+                    </label>
+                    <input
+                      type="text"
+                      value={deliveryAddress.state}
+                      onChange={(e) => setDeliveryAddress({...deliveryAddress, state: e.target.value})}
+                      placeholder="e.g., NY"
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+                    />
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      ZIP/Postal Code
+                    </label>
+                    <input
+                      type="text"
+                      value={deliveryAddress.zip_code}
+                      onChange={(e) => setDeliveryAddress({...deliveryAddress, zip_code: e.target.value})}
+                      placeholder="e.g., 10001"
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Country
+                    </label>
+                    <input
+                      type="text"
+                      value={deliveryAddress.country}
+                      onChange={(e) => setDeliveryAddress({...deliveryAddress, country: e.target.value})}
+                      placeholder="e.g., USA"
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Special Instructions */}
+            <div className="bg-white rounded-lg shadow-md p-6">
+              <h2 className="text-xl font-bold text-gray-900 mb-4">
+                📝 Special Instructions
+              </h2>
               <textarea
-                value={deliveryAddress}
-                onChange={(e) => setDeliveryAddress(e.target.value)}
-                placeholder="Enter your complete delivery address (House/Flat, Street, Area, City)"
-                rows="4"
+                value={specialInstructions}
+                onChange={(e) => setSpecialInstructions(e.target.value)}
+                placeholder="Any special delivery instructions? (e.g., Please ring the doorbell twice)"
+                rows="3"
                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent resize-none"
               />
             </div>
@@ -197,16 +301,18 @@ function Checkout() {
 
               {/* Items List */}
               <div className="space-y-3 mb-4 border-b border-gray-200 pb-4">
-                {cart.items.map((item, index) => (
+                {cart && cart.items && cart.items.map((item, index) => (
                   <div key={index} className="flex justify-between items-start">
                     <div className="flex-1">
                       <span className="text-sm text-gray-600">{item.quantity} x </span>
                       <span className="text-sm text-gray-900">
-                        Item #{item.food_id.slice(-6)}
+                        {item.food_id && typeof item.food_id === 'string' 
+                          ? `Item #${item.food_id.slice(-6)}`
+                          : 'Item'}
                       </span>
                     </div>
                     <span className="text-sm font-medium text-gray-900">
-                      ৳{item.total_price}
+                      ৳{item.total_price || 0}
                     </span>
                   </div>
                 ))}
@@ -216,15 +322,15 @@ function Checkout() {
               <div className="space-y-2 mb-6">
                 <div className="flex justify-between text-sm">
                   <span className="text-gray-600">Subtotal</span>
-                  <span className="font-medium">৳{cart.subtotal}</span>
+                  <span className="font-medium">৳{cart?.subtotal || 0}</span>
                 </div>
                 <div className="flex justify-between text-sm">
                   <span className="text-gray-600">Delivery Fee</span>
-                  <span className="font-medium">৳{cart.delivery_charge}</span>
+                  <span className="font-medium">৳{cart?.delivery_charge || 0}</span>
                 </div>
                 <div className="flex justify-between text-lg font-bold pt-2 border-t border-gray-300">
                   <span>Total</span>
-                  <span className="text-primary">৳{cart.total_amount}</span>
+                  <span className="text-primary">৳{cart?.total_amount || 0}</span>
                 </div>
               </div>
 

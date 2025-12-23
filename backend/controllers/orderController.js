@@ -13,7 +13,7 @@ exports.createOrder = async (req, res) => {
     
     // In real app, get user_id from auth middleware
     const user_id = req.user._id;
-    
+
     // Get active cart
     const cart = await Cart.findOne({
       user_id,
@@ -84,7 +84,7 @@ exports.createOrder = async (req, res) => {
 
     // Create order
     const order = await Order.create([{
-      user_id: cart.user_id,
+      customer_id: req.user._id,
       restaurant_id: cart.restaurant_id,
       items: orderItems,
       subtotal: cart.subtotal,
@@ -123,7 +123,7 @@ exports.getUserOrders = async (req, res) => {
     // In real app, get user_id from auth middleware
     const user_id = req.user._id;
     
-    const orders = await Order.findByUser(user_id)
+    const orders = await Order.find({customer_id:user_id})
       .populate('restaurant_id', 'name')
       .populate('items.food_id', 'food_name');
 
@@ -374,6 +374,95 @@ exports.availableToDeliver = async (req, res) => {
       data:{
         riderResponse
       }
+    });
+  } catch(err) {
+    res.status(400).json({
+      status:'failed',
+      message:err.message
+    });
+  }
+}
+
+//Verify Rider Pin
+exports.verifyRider = async (req, res) => {
+  try{
+    const {order_id, rider_otp} = req.body;
+    if(!order_id || !rider_otp) {
+      return res.status(400).json({
+        status:'failed',
+        message:'Required orderId + riderOtp'
+      });
+    }
+
+    const orderInfo = await Order.findById(order_id)
+    .select('+rider_pin');
+
+    if(!orderInfo) {
+      return res.status(404).json({
+        status:'failed',
+        message:`No order found with this id: ${order_id}`
+      });
+    }
+
+    const areYouRider = (orderInfo.rider_pin === rider_otp);
+
+    if(!areYouRider) {
+      return res.status(400).json({
+        status:'failed',
+        message:'Wrong Pin Number'
+      });
+    }
+
+    await Order.findByIdAndUpdate(order_id, {
+      order_status:'out_for_delivery'
+    });
+
+    res.status(200).json({
+      status:'success',
+      message:"He is Our Rider"
+    });
+  } catch(err) {
+    res.status(400).json({
+      status:'failed',
+      message:err.message
+    });
+  } 
+}
+
+//Verify Customer Pin
+exports.verifyCustomer = async (req, res) => {
+  try{
+    const {order_id, customer_pin} = req.body;
+    if(!order_id || !customer_pin) {
+      return res.status(400).json({
+        status:'failed',
+        message:'Missing orderId or customer pin'
+      });
+    }
+
+    const order = await Order.findById(order_id)
+    .select('+customer_pin');
+
+    if(order.customer_pin !== customer_pin) {
+      return res.status(400).json({
+        status:'failed',
+        message:'Wrong Pin NUmber'
+      });
+    }
+
+    await Order.findByIdAndUpdate(order_id, {
+      order_status:'delivered',
+      payment_status:'paid'
+    });
+
+    await Restaurant.findByIdAndUpdate(order.restaurant_id, {
+      restaurant_total_revenue:order.subtotal,
+     // restaurant_total_sales: 
+    });
+
+    res.status(200).json({
+      status:'success',
+      message:'Delivered Successfully'
     });
   } catch(err) {
     res.status(400).json({
