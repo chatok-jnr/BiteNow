@@ -65,8 +65,8 @@ const restaurantOwnerSchema = new mongoose.Schema(
     },
     restaurant_owner_status: {
       type: String,
-      enum: ["Pending", "Active", "Suspended"],
-      default:"Active"
+      enum: ["Pending", "Approved", "Suspended", "Rejected"],
+      default:"Pending"
     },
     restaurant_owner_is_verified:{
       type:Boolean,
