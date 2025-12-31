@@ -14,10 +14,19 @@ router
   .get(adminController.getAllAuditLogs);
 
 router
+  .route('/admins')
+  .get(adminController.getAllAdmins);
+
+router
   .route('/allCount')
   .get(adminController.getCount);
+
 router
   .route('/owner/approve-reject/:id')
   .patch(adminController.approveOrRejectOwner);
+
+router
+  .route('/rider/approve-reject/:id')
+  .patch(adminController.approveOrRejectRider);
 
 module.exports = router;

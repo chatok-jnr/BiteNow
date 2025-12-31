@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { 
   LayoutDashboard, 
   Users, 
@@ -11,20 +12,23 @@ import {
 } from 'lucide-react';
 
 export default function Sidebar() {
-  const [activeNav, setActiveNav] = useState('Dashboard');
+  const navigate = useNavigate();
+  const location = useLocation();
 
   const navItems = [
-    { name: 'Dashboard', icon: LayoutDashboard },
-    { name: 'Customer', icon: Users },
-    { name: 'Restaurant Owner', icon: UserCog },
-    { name: 'Restaurant', icon: Store },
-    { name: 'Rider', icon: Bike }
+    { name: 'Dashboard', icon: LayoutDashboard, path: '/' },
+    { name: 'Customer', icon: Users, path: '/customers' },
+    { name: 'Restaurant Owner', icon: UserCog, path: '/restaurant-owner' },
+    { name: 'Restaurant', icon: Store, path: '/restaurant' },
+    { name: 'Rider', icon: Bike, path: '/rider' }
   ];
 
   const bottomNavItems = [
-    { name: 'Admin List', icon: Building2 },
-    { name: 'Audit Log', icon: FileText }
+    { name: 'Admin List', icon: Building2, path: '/admin-list' },
+    { name: 'Audit Log', icon: FileText, path: '/audit-log' }
   ];
+
+  const isActive = (path) => location.pathname === path;
 
   return (
     <aside className="w-64 border-r border-white/5 flex flex-col bg-[#111116]">
@@ -61,9 +65,9 @@ export default function Sidebar() {
               return (
                 <button
                   key={item.name}
-                  onClick={() => setActiveNav(item.name)}
+                  onClick={() => navigate(item.path)}
                   className={`w-full text-left px-4 py-2.5 rounded-3xl text-sm transition-all flex items-center gap-3 ${
-                    activeNav === item.name
+                    isActive(item.path)
                       ? 'bg-gradient-to-r from-[#fc5e03] to-[#fc5e03] border border-[#fc5e03] text-white shadow-lg shadow-[#fc5e03]/20 font-medium'
                       : 'border border-transparent text-gray-400 hover:bg-white/5 hover:text-gray-200'
                   }`}
@@ -87,9 +91,9 @@ export default function Sidebar() {
               return (
                 <button
                   key={item.name}
-                  onClick={() => setActiveNav(item.name)}
+                  onClick={() => navigate(item.path)}
                   className={`w-full text-left px-4 py-2.5 rounded-3xl text-sm transition-all flex items-center gap-3 ${
-                    activeNav === item.name
+                    isActive(item.path)
                       ? 'bg-gradient-to-r from-[#fc5e03] to-[#fc5e03] border border-[#fc5e03] text-white shadow-lg shadow-[#fc5e03]/20 font-medium'
                       : 'border border-transparent text-gray-400 hover:bg-white/5 hover:text-gray-200'
                   }`}
