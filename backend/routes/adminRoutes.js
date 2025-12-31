@@ -7,17 +7,17 @@ const {protect, restrictTo} = require('./../middleware/authMiddleware');
 const router = express.Router();
 
 router.use(protect);
+router.use(restrictTo('admin'));
 
 router
-  .route('/update-rider/:id')
-  .patch(restrictTo('admin'), adminController.updateRider)
+  .route('/auditLogs')
+  .get(adminController.getAllAuditLogs);
 
 router
-  .route('/update-restaurantOwner/:id')
-  .patch(restrictTo('admin'), adminController.updateCustomer);
-
+  .route('/allCount')
+  .get(adminController.getCount);
 router
-  .route('/update-customer/:id')
-  .patch(restrictTo('admin'), adminController.updateCustomer);
+  .route('/owner/approve-reject/:id')
+  .patch(adminController.approveOrRejectOwner);
 
 module.exports = router;
