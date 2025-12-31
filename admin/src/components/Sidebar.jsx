@@ -8,7 +8,8 @@ import {
   Bike,
   UserCog,
   FileText,
-  Search
+  Search,
+  LogOut
 } from 'lucide-react';
 
 export default function Sidebar() {
@@ -29,6 +30,15 @@ export default function Sidebar() {
   ];
 
   const isActive = (path) => location.pathname === path;
+
+  const handleLogout = () => {
+    // Clear all stored data
+    localStorage.removeItem('adminToken');
+    localStorage.removeItem('adminData');
+    
+    // Redirect to login page
+    navigate('/login', { replace: true });
+  };
 
   return (
     <aside className="w-64 border-r border-white/5 flex flex-col bg-[#111116]">
@@ -106,15 +116,13 @@ export default function Sidebar() {
           </nav>
         </div>
         {/* Logout Button Card */}
-        <div className="bg-[#1a1a22] border border-white/10 rounded-3xl p-3 flex items-center justify-center mt-4">
+        <div className="bg-[#1a1a22] border border-white/10 rounded-3xl p-3">
           <button
-            className="w-full py-2.5 rounded-3xl bg-gradient-to-r from-red-500 to-rose-500 text-white font-semibold shadow-lg transition-all hover:from-red-600 hover:to-rose-600 focus:outline-none"
-            onClick={() => {
-              // TODO: Add logout logic here
-              alert('Logout clicked!');
-            }}
+            className="w-full px-4 py-2.5 rounded-3xl bg-gradient-to-r from-red-500 to-rose-500 text-white font-medium shadow-lg transition-all hover:from-red-600 hover:to-rose-600 focus:outline-none hover:shadow-xl hover:shadow-red-500/20 flex items-center justify-center gap-2"
+            onClick={handleLogout}
           >
-            Logout
+            <LogOut className="w-4 h-4" />
+            <span>Logout</span>
           </button>
         </div>
       </div>

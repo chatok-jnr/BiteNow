@@ -39,6 +39,15 @@ exports.getCount = async (req, res) => {
     const res_owner = await RestaurantOwner.countDocuments(); 
     const riders = await Rider.countDocuments(); 
     const restaurant = await Restaurant.countDocuments();
+    const admin = await Admin.countDocuments();
+
+    const last4audit = await AuditLogs.find()
+      .populate({
+        path:'actor.id',
+        select:'admin_name'
+      })
+      .sort('-createdAt')
+      .limit(4);
 
     res.status(200).json({
       status:'success',
@@ -48,8 +57,34 @@ exports.getCount = async (req, res) => {
       no_of_customer: customer,
       no_of_restaurant_owner: res_owner,
       no_of_riders: riders,
-      no_of_restaurant: restaurant
+      no_of_restaurant: restaurant,
+      no_of_admin: admin,
+      last4audit
     });
+  } catch(err) {
+    res.status(400).json({
+      status:'failed',
+      message:err.message
+    });
+  }
+}
+
+//Get all Restaurant Owner
+exports.getAllOwner = async (req, res) => {
+  try{
+    const owners = await RestaurantOwner.find();
+    if(!owners) {
+      return res.status(404).json({
+        status:'failed',
+        message:'Owner not found'
+      });
+    } 
+
+    res.status(200).json({
+      status:'success',
+      owners
+    });
+
   } catch(err) {
     res.status(400).json({
       status:'failed',
@@ -123,12 +158,35 @@ exports.approveOrRejectOwner = async (req, res) => {
   }
 }
 
+//Get all Rider
+exports.getRider = async(req, res) => {
+  try{
+    const riders = await Rider.find()
+    .select('-rider_location');
+
+    if(!riders) {
+      return res.status(404).json({
+        status:'failed',
+        message:'Riders not found'
+      });
+    }
+
+    res.status(200).json({
+      status:'success',
+      riders
+    });
+
+  } catch(err) {
+    res.status(400).json({
+      status:'failed',
+      message:err.message
+    })
+  }
+}
+
 //Approve or Reject Rider
 exports.approveOrRejectRider = async (req, res) => {
   try{
-
-
-
     const {rider_status, reasson} = req.body;
     const admin_ip = req.ip;
 
@@ -179,67 +237,50 @@ exports.approveOrRejectRider = async (req, res) => {
   }
 }
 
-//Get all admins with their action counts
-exports.getAllAdmins = async(req, res) => {
+//Delete Rider
+exports.deleteRider = async (req, res) => {
   try{
-    const admins = await Admin.find().select('_id admin_name admin_email');
-    
-    if(!admins || admins.length === 0) {
-      return res.status(404).json({
+
+    if(!req.body.reasson) {
+      return res.status(403).json({
         status:'failed',
-        message:'No admins found'
+        message:`Without any reasson you can't perfom this operation`
       });
     }
 
-    // Get action counts for each admin
-    const adminsWithCounts = await Promise.all(
-      admins.map(async (admin) => {
-        // Get all audit logs for this admin
-        const logs = await AuditLogs.find({ 'actor.id': admin._id });
-        
-        // Count total actions
-        const totalActions = logs.length;
-        
-        // Count each action type
-        const actionCounts = {
-          CUSTOMER_BAN: 0,
-          CUSTOMER_DELETE: 0,
-          CUSTOMER_UNBAN: 0,
-          CUSTOMER_PASS_RESET: 0,
-          OWNER_APPROVE: 0,
-          OWNER_REJECT: 0,
-          OWNER_BAN: 0,
-          OWNER_UNBAN: 0,
-          OWNER_DELETE: 0,
-          OWNER_PASS_RESET: 0,
-          RIDER_APPROVE: 0,
-          RIDER_REJECT: 0,
-          RIDER_BAN: 0,
-          RIDER_UNBAN: 0,
-          RIDER_DELETE: 0,
-          RIDER_PASS_RESET: 0,
-          ANNOUNCEMENT: 0
-        };
-        
-        logs.forEach(log => {
-          if (actionCounts.hasOwnProperty(log.action)) {
-            actionCounts[log.action]++;
-          }
-        });
-        
-        return {
-          id: admin._id,
-          name: admin.admin_name,
-          email: admin.admin_email,
-          totalActions,
-          actionCounts
-        };
-      })
+    const rider = await Rider.findById(req.params.id);
+    if(!rider) {
+      return res.status(404).json({
+        status:'failed',
+        message:`Rider with this ${req.params.id} no longer exist`
+      });
+    }
+
+    const dltRider = Rider.findByIdAndDelete(req.params.id);
+    if(!dltRider) {
+      return res.status(400).json({
+        status:'failed',
+        message:'Failed to delete the rider'
+      });
+    }
+
+    await AuditLogs.create(
+      {
+        actor:{
+          id:req.user._id,
+          ip_address:req.ip
+        },
+        target:{
+          id:req.params.id,
+          user_type:'Rider',
+        },
+        action:'RIDER_DELETE',
+        reasson:req.body.reasson
+      }
     );
 
-    res.status(200).json({
-      status:'success',
-      data: adminsWithCounts
+    res.status(204).json({
+      status:'deleted'
     });
   } catch(err) {
     res.status(400).json({
