@@ -14,6 +14,10 @@ router
   .get(adminController.getAllAuditLogs);
 
 router
+  .route('/admins')
+  .get(adminController.getAllAdmins);
+
+router
   .route('/allCount')
   .get(adminController.getCount);
 
