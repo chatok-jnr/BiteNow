@@ -85,7 +85,7 @@ exports.approveOrRejectOwner = async (req, res) => {
       owner.restaurant_owner_address === 'Rejected'
     ) {
       return res.status(409).json({
-        stats:'conflict',
+        status:'conflict',
         message:`User Current status is ${owner.restaurant_owner_status}`
       });
     }
@@ -117,6 +117,61 @@ exports.approveOrRejectOwner = async (req, res) => {
   } catch(err) {
     res.status(400).json({
       status:'success',
+      message:err.message
+    });
+  }
+}
+
+//Approve or Reject Rider
+exports.approveOrRejectRider = async (req, res) => {
+  try{
+
+
+    const {rider_status, reasson} = req.body;
+    const admin_ip = req.ip;
+
+    const rider = await Rider.findById(req.params.id);
+    if(!rider) {
+      return res.stats(404).json({
+        status:'failed',
+        message:`User with this ${req.params.id} id is not found`
+      });
+    }
+
+    if(rider.rider_status === rider_status || rider.rider_status != 'Pending' ) {
+      return res.status(409).json({
+        status:'conflict',
+        message:`Current status is ${rider.rider_status} that's why we can't set it to ${rider_status}`
+      });
+    }
+    
+    const updRider = await Rider.findByIdAndUpdate(req.params.id, {
+      'rider_status':rider_status
+    }, {
+      runValidators:true
+    });
+
+    await AuditLogs.create({
+      actor:{
+        id:req.user._id,
+        ip_address:admin_ip
+      },
+      target:{
+        id:req.params.id,
+        user_type:'Rider'
+      },
+      action:(rider_status === 'Approved'?'RIDER_APPROVE':'RIDER_REJECT'),
+      reasson:reasson
+    });
+
+    res.status(200).json({
+      status:'success',
+      message:`Rider status set to ${rider_status}`
+    });
+
+  } catch(err) {
+    res.status(400).json({
+      status:'failed',
       message:err.message
     });
   }
