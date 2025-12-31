@@ -57,8 +57,6 @@ exports.getCount = async (req, res) => {
   }
 }
 
-
-
 //Approve or Reject Restaurant Owner
 exports.approveOrRejectOwner = async (req, res) => {
   try{
