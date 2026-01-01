@@ -69,6 +69,9 @@ exports.getCount = async (req, res) => {
   }
 }
 
+
+
+//-------------------------------------------------------
 //Get all Restaurant Owner
 exports.getAllOwner = async (req, res) => {
   try{
@@ -158,6 +161,11 @@ exports.approveOrRejectOwner = async (req, res) => {
   }
 }
 
+// exports.deleteOwner = async(req, res) => {
+
+// }
+
+//---------------------------------------------------------
 //Get all Rider
 exports.getRider = async(req, res) => {
   try{
@@ -237,6 +245,69 @@ exports.approveOrRejectRider = async (req, res) => {
   }
 }
 
+//Ban or Unban Rider
+exports.banUnbanRider = async (req, res) => {
+  try{
+
+    const {reasson, rider_status} = req.body;
+    if(!reasson) {
+      return res.status(403).json({
+        status:'failed',
+        message:err.message
+      });
+    }
+
+    const rider = await Rider.findById(req.params.id);
+
+    if(!rider) {
+      return res.status(404).json({
+        status:'not found',
+        message:`Rider with this ${req.params.id} not found`
+      });
+    }
+
+    console.log(`rider_status = ${rider_status}   ${rider.rider_status}`);
+
+    if(rider_status === rider.rider_status || 
+      rider.rider_status === 'Pending'
+    ) {
+      return res.status(400).json({
+        status:'failed',
+        message:`Current status is ${rider.rider_status}`
+      });
+    }
+
+    await Rider.findByIdAndUpdate(req.params.id, {
+      rider_status:rider_status
+    }, {
+      runValidators:true
+    })
+
+    await AuditLogs.create({
+      actor:{
+        id:req.user._id,
+        ip_address:req.ip
+      }, 
+      target:{
+        id:req.params.id,
+        user_type:'Rider'
+      },
+      action:(rider_status === 'Suspended'?'RIDER_BAN':'RIDER_UNBAN'),
+      reasson:reasson
+    })
+
+    res.status(200).json({
+      status:'success',
+      message:`New Rider Status is ${rider_status}`
+    });
+  } catch(err) {
+    res.status(400).json({
+      status:'failed',
+      message:err.message
+    });
+  }
+}
+
 //Delete Rider
 exports.deleteRider = async (req, res) => {
   try{
@@ -256,7 +327,7 @@ exports.deleteRider = async (req, res) => {
       });
     }
 
-    const dltRider = Rider.findByIdAndDelete(req.params.id);
+    const dltRider = await Rider.findByIdAndDelete(req.params.id);
     if(!dltRider) {
       return res.status(400).json({
         status:'failed',
