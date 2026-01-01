@@ -33,4 +33,9 @@ router
   .route('/rider/approve-reject/:id')
   .patch(adminController.approveOrRejectRider);
 
+router
+  .route('/rider/:id')
+  .delete(adminController.deleteRider)
+  .patch(adminController.banUnbanRider);
+
 module.exports = router;

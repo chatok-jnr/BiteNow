@@ -22,7 +22,7 @@ export default function Riders() {
         email: 'jahangir.alam@example.com',
         phone: '+8801712345678',
         status: 'Approved',
-        verified: true,
+        // removed verification
         photo: 'https://i.pravatar.cc/150?img=12',
         birthDate: '1995-03-15',
         gender: 'Male',
@@ -46,7 +46,7 @@ export default function Riders() {
         email: 'rahim.uddin@example.com',
         phone: '+8801823456789',
         status: 'Pending',
-        verified: false,
+        // removed verification
         photo: 'https://i.pravatar.cc/150?img=15',
         birthDate: '1992-07-22',
         gender: 'Male',
@@ -69,7 +69,7 @@ export default function Riders() {
         email: 'kamal.hossain@example.com',
         phone: '+8801934567890',
         status: 'Approved',
-        verified: true,
+        // removed verification
         photo: 'https://i.pravatar.cc/150?img=13',
         birthDate: '1988-11-08',
         gender: 'Male',
@@ -94,7 +94,7 @@ export default function Riders() {
         email: 'anwar.khan@example.com',
         phone: '+8801645678901',
         status: 'Suspended',
-        verified: true,
+        // removed verification
         photo: 'https://i.pravatar.cc/150?img=14',
         birthDate: '1990-05-30',
         gender: 'Male',
@@ -118,7 +118,7 @@ export default function Riders() {
         email: 'billal.hossain@example.com',
         phone: '+8801556789012',
         status: 'Approved',
-        verified: false,
+        // removed verification
         photo: 'https://i.pravatar.cc/150?img=16',
         birthDate: '1994-09-12',
         gender: 'Male',
@@ -141,7 +141,7 @@ export default function Riders() {
         email: 'shafiq.ahmed@example.com',
         phone: '+8801467890123',
         status: 'Pending',
-        verified: false,
+        // removed verification
         photo: 'https://i.pravatar.cc/150?img=17',
         birthDate: '1996-01-20',
         gender: 'Male',
@@ -165,7 +165,7 @@ export default function Riders() {
         email: 'nasir.mahmud@example.com',
         phone: '+8801378901234',
         status: 'Approved',
-        verified: true,
+        // removed verification
         photo: 'https://i.pravatar.cc/150?img=18',
         birthDate: '1991-06-18',
         gender: 'Male',
@@ -198,8 +198,7 @@ export default function Riders() {
       filtered = filtered.filter(r => r.status === 'Approved');
     } else if (activeTab === 'Suspended') {
       filtered = filtered.filter(r => r.status === 'Suspended');
-    } else if (activeTab === 'Verified') {
-      filtered = filtered.filter(r => r.verified === true);
+    // Removed Verified tab filter
     }
 
     // Filter by search
@@ -263,7 +262,7 @@ export default function Riders() {
     setPendingAction(null);
   };
 
-  const tabs = ['All', 'Pending', 'Approved', 'Suspended', 'Verified'];
+  const tabs = ['All', 'Pending', 'Approved', 'Suspended'];
 
   return (
     <div className="flex h-screen bg-[#0a0a0f] text-gray-100">
@@ -361,27 +360,7 @@ export default function Riders() {
                           Suspend
                         </button>
                       )}
-                      {!rider.verified ? (
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleAction('Verify', rider);
-                          }}
-                          className="w-full px-4 py-3 text-left text-sm text-blue-400 hover:bg-white/5 transition-colors"
-                        >
-                          Mark as Verified
-                        </button>
-                      ) : (
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleAction('Unverify', rider);
-                          }}
-                          className="w-full px-4 py-3 text-left text-sm text-gray-400 hover:bg-white/5 transition-colors"
-                        >
-                          Remove Verification
-                        </button>
-                      )}
+                      {/* Verification buttons removed */}
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
@@ -414,13 +393,7 @@ export default function Riders() {
                 <div className="text-center">
                   <div className="flex items-center justify-center gap-2 mb-1">
                     <h3 className="text-lg font-semibold text-gray-100">{rider.name}</h3>
-                    {rider.verified && (
-                      <div className="flex items-center justify-center w-5 h-5 bg-blue-500 rounded-full">
-                        <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
-                          <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                        </svg>
-                      </div>
-                    )}
+                    {/* Verification badge removed */}
                   </div>
                   <p className="text-xs text-gray-500 font-mono mb-3">{rider.id}</p>
                   
@@ -530,11 +503,7 @@ export default function Riders() {
                     }`}>
                       {selectedRider.status}
                     </span>
-                    {selectedRider.verified && (
-                      <span className="inline-block px-3 py-1 rounded-full text-xs font-medium bg-blue-500/10 text-blue-400 border border-blue-500/20">
-                        Verified
-                      </span>
-                    )}
+                    {/* Verification badge removed */}
                   </div>
                 </div>
               </div>
@@ -630,21 +599,7 @@ export default function Riders() {
                     Suspend Rider
                   </button>
                 )}
-                {!selectedRider.verified ? (
-                  <button
-                    onClick={() => handleAction('Verify', selectedRider)}
-                    className="flex-1 min-w-[200px] px-4 py-3 bg-blue-500/10 text-blue-400 border border-blue-500/20 rounded-xl font-medium hover:bg-blue-500/20 transition-colors"
-                  >
-                    Mark as Verified
-                  </button>
-                ) : (
-                  <button
-                    onClick={() => handleAction('Unverify', selectedRider)}
-                    className="flex-1 min-w-[200px] px-4 py-3 bg-gray-500/10 text-gray-400 border border-gray-500/20 rounded-xl font-medium hover:bg-gray-500/20 transition-colors"
-                  >
-                    Remove Verification
-                  </button>
-                )}
+                {/* Verification action buttons removed */}
                 <button
                   onClick={() => handleAction('Delete', selectedRider)}
                   className="flex-1 min-w-[200px] px-4 py-3 bg-red-500/10 text-red-400 border border-red-500/20 rounded-xl font-medium hover:bg-red-500/20 transition-colors"
@@ -680,7 +635,7 @@ export default function Riders() {
                     ? 'bg-red-500/10 text-red-400 border border-red-500/20 hover:bg-red-500/20'
                     : pendingAction.action === 'Suspend'
                     ? 'bg-yellow-500/10 text-yellow-400 border border-yellow-500/20 hover:bg-yellow-500/20'
-                    : pendingAction.action === 'Verify' || pendingAction.action === 'Approve'
+                    : pendingAction.action === 'Approve'
                     ? 'bg-green-500/10 text-green-400 border border-green-500/20 hover:bg-green-500/20'
                     : 'bg-blue-500/10 text-blue-400 border border-blue-500/20 hover:bg-blue-500/20'
                 }`}
