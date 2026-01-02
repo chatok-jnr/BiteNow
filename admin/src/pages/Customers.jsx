@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import Sidebar from '../components/Sidebar';
 import { Search, MoreVertical, X } from 'lucide-react';
+import axiosInstance from '../utils/axios';
 
 export default function Customers() {
   const [activeTab, setActiveTab] = useState('All');
@@ -12,97 +13,51 @@ export default function Customers() {
   const [showActionMenu, setShowActionMenu] = useState(null);
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [pendingAction, setPendingAction] = useState(null);
+  const [actionReason, setActionReason] = useState('');
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  // Mock data - Replace with actual API call
+  // Fetch customers from API
   useEffect(() => {
-    const mockCustomers = [
-      {
-        id: 'CUST001',
-        name: 'John Doe',
-        email: 'john.doe@example.com',
-        phone: '+1234567890',
-        status: 'Active',
-        photo: 'https://i.pravatar.cc/150?img=1',
-        birthDate: '1990-05-15',
-        gender: 'Male',
-        address: '123 Main St, New York, NY 10001',
-        joinedDate: '2024-01-15',
-        totalOrders: 45,
-        totalSpent: '$1,234.50'
-      },
-      {
-        id: 'CUST002',
-        name: 'Sarah Smith',
-        email: 'sarah.smith@example.com',
-        phone: '+1234567891',
-        status: 'Active',
-        photo: 'https://i.pravatar.cc/150?img=5',
-        birthDate: '1992-08-22',
-        gender: 'Female',
-        address: '456 Oak Ave, Los Angeles, CA 90001',
-        joinedDate: '2024-02-10',
-        totalOrders: 32,
-        totalSpent: '$892.30'
-      },
-      {
-        id: 'CUST003',
-        name: 'Mike Johnson',
-        email: 'mike.j@example.com',
-        phone: '+1234567892',
-        status: 'Suspended',
-        photo: 'https://i.pravatar.cc/150?img=12',
-        birthDate: '1988-03-10',
-        gender: 'Male',
-        address: '789 Pine Rd, Chicago, IL 60601',
-        joinedDate: '2023-11-20',
-        totalOrders: 15,
-        totalSpent: '$456.80'
-      },
-      {
-        id: 'CUST004',
-        name: 'Emily Davis',
-        email: 'emily.davis@example.com',
-        phone: '+1234567893',
-        status: 'Active',
-        photo: 'https://i.pravatar.cc/150?img=9',
-        birthDate: '1995-12-05',
-        gender: 'Female',
-        address: '321 Elm St, Boston, MA 02101',
-        joinedDate: '2024-03-05',
-        totalOrders: 28,
-        totalSpent: '$678.90'
-      },
-      {
-        id: 'CUST005',
-        name: 'David Wilson',
-        email: 'david.w@example.com',
-        phone: '+1234567894',
-        status: 'Active',
-        photo: 'https://i.pravatar.cc/150?img=14',
-        birthDate: '1991-07-18',
-        gender: 'Male',
-        address: '654 Maple Dr, Seattle, WA 98101',
-        joinedDate: '2024-01-28',
-        totalOrders: 52,
-        totalSpent: '$1,567.40'
-      },
-      {
-        id: 'CUST006',
-        name: 'Lisa Anderson',
-        email: 'lisa.a@example.com',
-        phone: '+1234567895',
-        status: 'Suspended',
-        photo: 'https://i.pravatar.cc/150?img=20',
-        birthDate: '1993-04-25',
-        gender: 'Female',
-        address: '987 Cedar Ln, Miami, FL 33101',
-        joinedDate: '2023-12-15',
-        totalOrders: 8,
-        totalSpent: '$234.60'
-      }
-    ];
-    setCustomers(mockCustomers);
+    fetchCustomers();
   }, []);
+
+  const fetchCustomers = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const response = await axiosInstance.get('/admin/customer');
+      
+      // Transform API data to match component structure
+      const transformedCustomers = response.data.customer.map(customer => ({
+        id: customer._id,
+        name: customer.customer_name,
+        email: customer.customer_email,
+        phone: customer.customer_phone,
+        status: customer.customer_status,
+        photo: customer.customer_image?.url || getGenderEmoji(customer.customer_gender),
+        birthDate: new Date(customer.customer_birth_date).toISOString().split('T')[0],
+        gender: customer.customer_gender,
+        address: customer.customer_address,
+        joinedDate: new Date(customer.createdAt).toISOString().split('T')[0],
+        isVerified: customer.customer_is_verified,
+        totalOrders: 0, // Not provided in API
+        totalSpent: '$0.00' // Not provided in API
+      }));
+      
+      setCustomers(transformedCustomers);
+    } catch (err) {
+      console.error('Error fetching customers:', err);
+      setError('Failed to load customers. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Get emoji based on gender when no image is available
+  const getGenderEmoji = (gender) => {
+    return gender === 'Male' ? '👨' : gender === 'Female' ? '👩' : '👤';
+  };
 
   // Filter customers based on active tab and search
   useEffect(() => {
@@ -144,29 +99,56 @@ export default function Customers() {
     setShowActionMenu(null);
   };
 
-  const confirmAction = () => {
+  const confirmAction = async () => {
+    if (!actionReason.trim()) {
+      alert('Please provide a reason for this action.');
+      return;
+    }
+
     const { action, customer } = pendingAction;
     
-    // Update customer status
-    setCustomers(prev => prev.map(c => {
-      if (c.id === customer.id) {
-        if (action === 'Delete') {
-          return null; // Will be filtered out
-        }
-        return { ...c, status: action === 'Suspend' ? 'Suspended' : 'Active' };
+    try {
+      if (action === 'Delete') {
+        // Delete customer
+        await axiosInstance.delete(`/admin/customer/${customer.id}`, {
+          data: { reasson: actionReason }
+        });
+        
+        // Remove from local state
+        setCustomers(prev => prev.filter(c => c.id !== customer.id));
+      } else {
+        // Suspend or Activate customer
+        const newStatus = action === 'Suspend' ? 'Suspended' : 'Active';
+        await axiosInstance.patch(`/admin/customer/${customer.id}`, {
+          customer_status: newStatus,
+          reasson: actionReason
+        });
+        
+        // Update local state
+        setCustomers(prev => prev.map(c => 
+          c.id === customer.id ? { ...c, status: newStatus } : c
+        ));
       }
-      return c;
-    }).filter(Boolean));
-
-    // Close dialogs
+      
+      // Show success message
+      alert(`Customer ${action.toLowerCase()}d successfully!`);
+    } catch (err) {
+      console.error(`Error ${action.toLowerCase()}ing customer:`, err);
+      alert(err.response?.data?.message || `Failed to ${action.toLowerCase()} customer. Please try again.`);
+      // Close dialogs and reset on error too
+    }
+    
+    // Close dialogs and reset
     setShowConfirmDialog(false);
     setPendingAction(null);
+    setActionReason('');
     setShowDetailModal(false);
   };
 
   const cancelAction = () => {
     setShowConfirmDialog(false);
     setPendingAction(null);
+    setActionReason('');
   };
 
   const tabs = ['All', 'Active', 'Suspended'];
@@ -215,8 +197,36 @@ export default function Customers() {
             </div>
           </div>
 
+          {/* Loading State */}
+          {loading && (
+            <div className="text-center py-16">
+              <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-white/5 mb-4">
+                <div className="w-8 h-8 border-4 border-orange-500 border-t-transparent rounded-full animate-spin"></div>
+              </div>
+              <h3 className="text-xl font-semibold text-gray-400 mb-2">Loading customers...</h3>
+            </div>
+          )}
+
+          {/* Error State */}
+          {error && !loading && (
+            <div className="text-center py-16">
+              <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-red-500/10 mb-4">
+                <X className="w-8 h-8 text-red-400" />
+              </div>
+              <h3 className="text-xl font-semibold text-red-400 mb-2">Error</h3>
+              <p className="text-gray-500 mb-4">{error}</p>
+              <button
+                onClick={fetchCustomers}
+                className="px-6 py-2 bg-orange-500 text-white rounded-xl hover:bg-orange-600 transition-colors"
+              >
+                Retry
+              </button>
+            </div>
+          )}
+
           {/* Customer Cards Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {!loading && !error && (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredCustomers.map((customer) => (
               <div
                 key={customer.id}
@@ -235,7 +245,7 @@ export default function Customers() {
                   {/* Action Dropdown */}
                   {showActionMenu === customer.id && (
                     <div className="absolute right-0 mt-2 w-40 bg-[#1f1f2a] border border-white/10 rounded-xl shadow-2xl overflow-hidden z-20">
-                      {customer.status === 'Suspended' ? (
+                      {customer.status === 'Suspended' && (
                         <button
                           onClick={(e) => {
                             e.stopPropagation();
@@ -245,7 +255,8 @@ export default function Customers() {
                         >
                           Activate
                         </button>
-                      ) : (
+                      )}
+                      {customer.status === 'Active' && (
                         <button
                           onClick={(e) => {
                             e.stopPropagation();
@@ -272,11 +283,17 @@ export default function Customers() {
                 {/* Customer Photo */}
                 <div className="flex justify-center mb-4">
                   <div className="relative">
-                    <img
-                      src={customer.photo}
-                      alt={customer.name}
-                      className="w-24 h-24 rounded-full border-4 border-white/10 group-hover:border-orange-500/50 transition-colors"
-                    />
+                    {customer.photo.startsWith('http') ? (
+                      <img
+                        src={customer.photo}
+                        alt={customer.name}
+                        className="w-24 h-24 rounded-full border-4 border-white/10 group-hover:border-orange-500/50 transition-colors object-cover"
+                      />
+                    ) : (
+                      <div className="w-24 h-24 rounded-full border-4 border-white/10 group-hover:border-orange-500/50 transition-colors flex items-center justify-center text-5xl bg-[#111116]">
+                        {customer.photo}
+                      </div>
+                    )}
                     <div className={`absolute bottom-0 right-0 w-5 h-5 rounded-full border-2 border-[#1a1a22] ${
                       customer.status === 'Active' ? 'bg-green-500' : 'bg-red-500'
                     }`}></div>
@@ -317,9 +334,10 @@ export default function Customers() {
               </div>
             ))}
           </div>
+          )}
 
           {/* Empty State */}
-          {filteredCustomers.length === 0 && (
+          {!loading && !error && filteredCustomers.length === 0 && (
             <div className="text-center py-16">
               <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-white/5 mb-4">
                 <Search className="w-8 h-8 text-gray-600" />
@@ -359,11 +377,17 @@ export default function Customers() {
             <div className="p-6">
               {/* Profile Section */}
               <div className="flex items-center gap-6 mb-8 pb-6 border-b border-white/10">
-                <img
-                  src={selectedCustomer.photo}
-                  alt={selectedCustomer.name}
-                  className="w-24 h-24 rounded-full border-4 border-white/10"
-                />
+                {selectedCustomer.photo.startsWith('http') ? (
+                  <img
+                    src={selectedCustomer.photo}
+                    alt={selectedCustomer.name}
+                    className="w-24 h-24 rounded-full border-4 border-white/10 object-cover"
+                  />
+                ) : (
+                  <div className="w-24 h-24 rounded-full border-4 border-white/10 flex items-center justify-center text-6xl bg-[#111116]">
+                    {selectedCustomer.photo}
+                  </div>
+                )}
                 <div className="flex-1">
                   <h4 className="text-2xl font-bold text-gray-100 mb-1">{selectedCustomer.name}</h4>
                   <p className="text-sm text-gray-500 font-mono mb-2">{selectedCustomer.id}</p>
@@ -384,6 +408,7 @@ export default function Customers() {
                 <DetailItem label="Birth Date" value={selectedCustomer.birthDate} />
                 <DetailItem label="Gender" value={selectedCustomer.gender} />
                 <DetailItem label="Joined Date" value={selectedCustomer.joinedDate} />
+                <DetailItem label="Verified" value={selectedCustomer.isVerified ? 'Yes' : 'No'} />
                 <DetailItem label="Total Orders" value={selectedCustomer.totalOrders} />
                 <DetailItem label="Total Spent" value={selectedCustomer.totalSpent} />
               </div>
@@ -398,14 +423,15 @@ export default function Customers() {
 
               {/* Action Buttons */}
               <div className="flex gap-3 pt-4 border-t border-white/10">
-                {selectedCustomer.status === 'Suspended' ? (
+                {selectedCustomer.status === 'Suspended' && (
                   <button
                     onClick={() => handleAction('Active', selectedCustomer)}
                     className="flex-1 px-4 py-3 bg-green-500/10 text-green-400 border border-green-500/20 rounded-xl font-medium hover:bg-green-500/20 transition-colors"
                   >
                     Activate Customer
                   </button>
-                ) : (
+                )}
+                {selectedCustomer.status === 'Active' && (
                   <button
                     onClick={() => handleAction('Suspend', selectedCustomer)}
                     className="flex-1 px-4 py-3 bg-yellow-500/10 text-yellow-400 border border-yellow-500/20 rounded-xl font-medium hover:bg-yellow-500/20 transition-colors"
@@ -430,10 +456,23 @@ export default function Customers() {
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-[60] p-4">
           <div className="bg-[#1a1a22] border border-white/10 rounded-2xl max-w-md w-full p-6">
             <h3 className="text-xl font-bold text-gray-100 mb-2">Confirm Action</h3>
-            <p className="text-gray-400 mb-6">
+            <p className="text-gray-400 mb-4">
               Are you sure you want to <span className="font-semibold text-orange-400">{pendingAction.action.toLowerCase()}</span> customer{' '}
               <span className="font-semibold text-gray-200">{pendingAction.customer.name}</span>?
             </p>
+            
+            {/* Reason Input */}
+            <div className="mb-6">
+              <label className="text-sm font-medium text-gray-400 mb-2 block">Reason for this action *</label>
+              <textarea
+                value={actionReason}
+                onChange={(e) => setActionReason(e.target.value)}
+                placeholder="Please provide a reason for this action..."
+                rows="4"
+                className="w-full px-4 py-3 bg-[#111116] border border-white/10 rounded-xl text-sm text-gray-300 placeholder-gray-600 focus:outline-none focus:border-orange-500/50 resize-none"
+              />
+            </div>
+            
             <div className="flex gap-3">
               <button
                 onClick={cancelAction}

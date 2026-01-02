@@ -14,6 +14,7 @@ export default function Restaurants() {
   const [showActionMenu, setShowActionMenu] = useState(null);
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [pendingAction, setPendingAction] = useState(null);
+  const [actionReason, setActionReason] = useState('');
 
   // Mock data - Replace with actual API call
   useEffect(() => {
@@ -290,7 +291,15 @@ export default function Restaurants() {
   };
 
   const confirmAction = () => {
+    if (!actionReason.trim()) {
+      alert('Please provide a reason for this action.');
+      return;
+    }
+
     const { action, restaurant } = pendingAction;
+    
+    // Log the action with reason (in real app, send to backend)
+    console.log(`Action: ${action}, Restaurant: ${restaurant.name}, Reason: ${actionReason}`);
     
     // Update restaurant status
     setRestaurants(prev => prev.map(r => {
@@ -299,6 +308,8 @@ export default function Restaurants() {
           return null; // Will be filtered out
         } else if (action === 'Accept') {
           return { ...r, status: 'Accepted' };
+        } else if (action === 'Reject') {
+          return { ...r, status: 'Rejected' };
         } else if (action === 'Suspend') {
           return { ...r, status: 'Suspended' };
         } else if (action === 'Verify') {
@@ -310,15 +321,17 @@ export default function Restaurants() {
       return r;
     }).filter(Boolean));
 
-    // Close dialogs
+    // Close dialogs and reset
     setShowConfirmDialog(false);
     setPendingAction(null);
+    setActionReason('');
     setShowDetailModal(false);
   };
 
   const cancelAction = () => {
     setShowConfirmDialog(false);
     setPendingAction(null);
+    setActionReason('');
   };
 
   const tabs = ['All', 'Pending', 'Accepted', 'Suspended', 'Verified'];
@@ -403,27 +416,39 @@ export default function Restaurants() {
                   {showActionMenu === restaurant.id && (
                     <div className="absolute right-0 mt-2 w-48 bg-[#1f1f2a] border border-white/10 rounded-xl shadow-2xl overflow-hidden z-20">
                       {restaurant.status === 'Pending' && (
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleAction('Accept', restaurant);
-                          }}
-                          className="w-full px-4 py-3 text-left text-sm text-green-400 hover:bg-white/5 transition-colors"
-                        >
-                          Accept
-                        </button>
+                        <>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleAction('Accept', restaurant);
+                            }}
+                            className="w-full px-4 py-3 text-left text-sm text-green-400 hover:bg-white/5 transition-colors"
+                          >
+                            Accept
+                          </button>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleAction('Reject', restaurant);
+                            }}
+                            className="w-full px-4 py-3 text-left text-sm text-red-400 hover:bg-white/5 transition-colors"
+                          >
+                            Reject
+                          </button>
+                        </>
                       )}
-                      {restaurant.status === 'Suspended' ? (
+                      {restaurant.status === 'Suspended' && (
                         <button
                           onClick={(e) => {
                             e.stopPropagation();
-                            handleAction('Accept', restaurant);
+                            handleAction('Activate', restaurant);
                           }}
                           className="w-full px-4 py-3 text-left text-sm text-green-400 hover:bg-white/5 transition-colors"
                         >
                           Activate
                         </button>
-                      ) : (
+                      )}
+                      {restaurant.status === 'Accepted' && (
                         <button
                           onClick={(e) => {
                             e.stopPropagation();
@@ -434,7 +459,7 @@ export default function Restaurants() {
                           Suspend
                         </button>
                       )}
-                      {!restaurant.verified ? (
+                      {restaurant.status === 'Accepted' && !restaurant.verified && (
                         <button
                           onClick={(e) => {
                             e.stopPropagation();
@@ -444,7 +469,8 @@ export default function Restaurants() {
                         >
                           Mark as Verified
                         </button>
-                      ) : (
+                      )}
+                      {restaurant.status === 'Accepted' && restaurant.verified && (
                         <button
                           onClick={(e) => {
                             e.stopPropagation();
@@ -712,21 +738,30 @@ export default function Restaurants() {
               {/* Action Buttons */}
               <div className="flex gap-3 pt-4 border-t border-white/10 flex-wrap">
                 {selectedRestaurant.status === 'Pending' && (
-                  <button
-                    onClick={() => handleAction('Accept', selectedRestaurant)}
-                    className="flex-1 min-w-[200px] px-4 py-3 bg-green-500/10 text-green-400 border border-green-500/20 rounded-xl font-medium hover:bg-green-500/20 transition-colors"
-                  >
-                    Accept Restaurant
-                  </button>
+                  <>
+                    <button
+                      onClick={() => handleAction('Accept', selectedRestaurant)}
+                      className="flex-1 min-w-[200px] px-4 py-3 bg-green-500/10 text-green-400 border border-green-500/20 rounded-xl font-medium hover:bg-green-500/20 transition-colors"
+                    >
+                      Accept Restaurant
+                    </button>
+                    <button
+                      onClick={() => handleAction('Reject', selectedRestaurant)}
+                      className="flex-1 min-w-[200px] px-4 py-3 bg-red-500/10 text-red-400 border border-red-500/20 rounded-xl font-medium hover:bg-red-500/20 transition-colors"
+                    >
+                      Reject Restaurant
+                    </button>
+                  </>
                 )}
-                {selectedRestaurant.status === 'Suspended' ? (
+                {selectedRestaurant.status === 'Suspended' && (
                   <button
-                    onClick={() => handleAction('Accept', selectedRestaurant)}
+                    onClick={() => handleAction('Activate', selectedRestaurant)}
                     className="flex-1 min-w-[200px] px-4 py-3 bg-green-500/10 text-green-400 border border-green-500/20 rounded-xl font-medium hover:bg-green-500/20 transition-colors"
                   >
                     Activate Restaurant
                   </button>
-                ) : selectedRestaurant.status === 'Accepted' && (
+                )}
+                {selectedRestaurant.status === 'Accepted' && (
                   <button
                     onClick={() => handleAction('Suspend', selectedRestaurant)}
                     className="flex-1 min-w-[200px] px-4 py-3 bg-yellow-500/10 text-yellow-400 border border-yellow-500/20 rounded-xl font-medium hover:bg-yellow-500/20 transition-colors"
@@ -734,14 +769,15 @@ export default function Restaurants() {
                     Suspend Restaurant
                   </button>
                 )}
-                {!selectedRestaurant.verified ? (
+                {selectedRestaurant.status === 'Accepted' && !selectedRestaurant.verified && (
                   <button
                     onClick={() => handleAction('Verify', selectedRestaurant)}
                     className="flex-1 min-w-[200px] px-4 py-3 bg-blue-500/10 text-blue-400 border border-blue-500/20 rounded-xl font-medium hover:bg-blue-500/20 transition-colors"
                   >
                     Mark as Verified
                   </button>
-                ) : (
+                )}
+                {selectedRestaurant.status === 'Accepted' && selectedRestaurant.verified && (
                   <button
                     onClick={() => handleAction('Unverify', selectedRestaurant)}
                     className="flex-1 min-w-[200px] px-4 py-3 bg-gray-500/10 text-gray-400 border border-gray-500/20 rounded-xl font-medium hover:bg-gray-500/20 transition-colors"
@@ -766,10 +802,23 @@ export default function Restaurants() {
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-[60] p-4">
           <div className="bg-[#1a1a22] border border-white/10 rounded-2xl max-w-md w-full p-6">
             <h3 className="text-xl font-bold text-gray-100 mb-2">Confirm Action</h3>
-            <p className="text-gray-400 mb-6">
+            <p className="text-gray-400 mb-4">
               Are you sure you want to <span className="font-semibold text-orange-400">{pendingAction.action.toLowerCase()}</span> restaurant{' '}
               <span className="font-semibold text-gray-200">{pendingAction.restaurant.name}</span>?
             </p>
+            
+            {/* Reason Input */}
+            <div className="mb-6">
+              <label className="text-sm font-medium text-gray-400 mb-2 block">Reason for this action *</label>
+              <textarea
+                value={actionReason}
+                onChange={(e) => setActionReason(e.target.value)}
+                placeholder="Please provide a reason for this action..."
+                rows="4"
+                className="w-full px-4 py-3 bg-[#111116] border border-white/10 rounded-xl text-sm text-gray-300 placeholder-gray-600 focus:outline-none focus:border-orange-500/50 resize-none"
+              />
+            </div>
+            
             <div className="flex gap-3">
               <button
                 onClick={cancelAction}
@@ -780,11 +829,11 @@ export default function Restaurants() {
               <button
                 onClick={confirmAction}
                 className={`flex-1 px-4 py-3 rounded-xl font-medium transition-colors ${
-                  pendingAction.action === 'Delete'
+                  pendingAction.action === 'Delete' || pendingAction.action === 'Reject'
                     ? 'bg-red-500/10 text-red-400 border border-red-500/20 hover:bg-red-500/20'
                     : pendingAction.action === 'Suspend'
                     ? 'bg-yellow-500/10 text-yellow-400 border border-yellow-500/20 hover:bg-yellow-500/20'
-                    : pendingAction.action === 'Verify' || pendingAction.action === 'Accept'
+                    : pendingAction.action === 'Verify' || pendingAction.action === 'Accept' || pendingAction.action === 'Activate'
                     ? 'bg-green-500/10 text-green-400 border border-green-500/20 hover:bg-green-500/20'
                     : 'bg-blue-500/10 text-blue-400 border border-blue-500/20 hover:bg-blue-500/20'
                 }`}

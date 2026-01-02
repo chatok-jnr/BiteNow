@@ -6,29 +6,6 @@ const AuditLogs = require('./../models/auditLogs');
 const Order = require('./../models/orderModel');
 const Admin = require('./../models/adminModel');
 
-//GET all audit logs
-exports.getAllAuditLogs = async(req, res) => {
-  try{
-    const logs = await AuditLogs.find();
-    if(!logs) {
-      return res.status(404).json({
-        status:'failed',
-        message:'No audit logs found'
-      });
-    }
-
-    res.status(200).json({
-      status:'success',
-      data: logs
-    });
-  } catch(err) {
-    res.status(400).json({
-      status:'success',
-      message:err.message
-    });
-  }
-}
-
 //Get All Pending no
 exports.getCount = async (req, res) => {
   try{
@@ -69,19 +46,152 @@ exports.getCount = async (req, res) => {
   }
 }
 
+//-------------------------------------------------------
+//Get all customer
+exports.getAllCustomer = async(req, res) => {
+  try{  
+    const customer = await Customer.find();
+    if(!customer) {
+      return res.status(404).json({
+        status:'failed',
+        message:'Customer not found'
+      });
+    }
 
+    res.status(200).json({
+      status:'success',
+      customer
+    });
+  } catch(err) {
+    res.status(400).json({
+      status:'failed',
+      message:err.message
+    });
+  }
+}
+
+//Ban | Unban customer
+exports.banOrUnabnCustomer = async (req, res) => {
+  try{
+
+    const {reasson, customer_status} = req.body;
+
+    if(!reasson || !customer_status) {
+      return res.status(400).json({
+        status:'failed',
+        message:'reasson | customer_status is required'
+      });
+    }
+
+    const customer = await Customer.findById(req.params.id);
+    if(!customer) {
+      return res.status(404).json({
+        status:'failed',
+        message:`Customer with this ${req.params.id} id not found`
+      }); 
+    }
+
+    if(customer_status === customer.customer_status) {
+      return res.status(400).json({
+        status:'failed',
+        message:`Customer current status is ${customer.customer_status}`
+      });
+    }
+
+    const updCustomer = await Customer.findByIdAndUpdate(req.params.id, {
+                        customer_status:customer_status
+                        }, {
+                          runValidators:true
+                        });
+
+    const auditLogs = await AuditLogs.create({
+                        actor:{
+                          id:req.user._id,
+                          ip_address:req.ip
+                        },
+                        target:{
+                          id:req.params.id,
+                          user_type:'Customer'
+                        },
+                        action:(customer_status === 'Suspended'?'CUSTOMER_BAN':'CUSTOMER_UNBAN'),
+                        reasson:reasson
+                      });
+
+    res.status(200).json({
+      status:'success',
+      message:`Customer new status is ${customer_status}`
+    });
+
+  } catch(err) {
+    res.status(400).json({
+      status:'failed',
+      message:err.message
+    });
+  }
+}
+
+//Delete Customer
+exports.deleteCustomer = async (req, res) => {
+  try{
+    const {reasson} = req.body;
+    if(!reasson) {
+      return res.status(400).json({
+        status:'failed',
+        message:`To perform a this operation you have to enter a reasson`
+      });
+    }
+
+    const customer = await Customer.findById(req.params.id);
+    if(!customer) {
+      return res.status(404).json({
+        status:'failed',
+        message:`Customer with ${req.params.id} is not found`
+      });
+    }
+
+    const dltUser = await Customer.findByIdAndDelete(req.params.id);
+    const auditLogs = await AuditLogs.create({
+                        actor:{
+                          id:req.user._id,
+                          ip_address:req.ip
+                        },
+                        target:{
+                          id:req.params.id,
+                          user_type:'Customer'
+                        }, 
+                        action:'CUSTOMER_DELETE',
+                        reasson:reasson
+                      });
+    
+    res.status(204).json({
+      status:'success'
+    });
+  } catch(err) {
+    res.status(400).json({
+      status:'failed',
+      message:err.message
+    });
+  }
+}
 
 //-------------------------------------------------------
 //Get all Restaurant Owner
 exports.getAllOwner = async (req, res) => {
   try{
-    const owners = await RestaurantOwner.find();
+    let owners = await RestaurantOwner.find();
     if(!owners) {
       return res.status(404).json({
         status:'failed',
         message:'Owner not found'
       });
     } 
+
+    for(let i = 0; i < owners.length; i++) {
+      const my_restaurant = await Restaurant.find({"owner_id":owners[i].id})
+        .select('restaurant_name');
+      owners[i] = owners[i].toObject();
+      owners[i].restaurants = my_restaurant;
+    }
 
     res.status(200).json({
       status:'success',
@@ -161,9 +271,104 @@ exports.approveOrRejectOwner = async (req, res) => {
   }
 }
 
-// exports.deleteOwner = async(req, res) => {
+//Ban | UnBan Restaurant_owner
+exports.banOrUnbanOwner = async (req, res) => {
+  try{
+    const {reasson, owner_status} = req.body;
+    if(!reasson || !owner_status) {
+      return res.status(400).json({
+        status:'failed',
+        message:`reasson | owner_status is missing`
+      });
+    }
 
-// }
+    const owner = await RestaurantOwner.findById(req.params.id);
+    if(!owner) {
+      return res.status(404).json({
+        status:'failed',
+        message:`Owner with this ${req.params.id} id not found`
+      });
+    }
+
+    if(owner_status === owner.restaurant_owner_status || 
+      owner.restaurant_owner_status === 'Pending'
+    ) {
+      return res.status(403).json({
+        status:'failed',
+        message:`Owner current status is ${owner.restaurant_owner_status}`
+      });
+    }
+
+    await RestaurantOwner.findByIdAndUpdate(req.params.id, {
+      restaurant_owner_status:(owner_status === 'Suspended'?'Suspended':'Approved')
+    }, {
+      runValidators:true
+    });
+
+    await AuditLogs.create({
+      actor:{
+        id:req.user._id,
+        ip_address:req.ip
+      },
+      target:{
+        id:req.params.id,
+        user_type:'RestaurantOwner'
+      },
+      action: (owner_status === 'Suspended'?'OWNER_BAN':'OWNER_UNBAN'),
+      reasson:reasson
+    });
+
+    res.status(200).json({
+      status:'success',
+      message:`Owner status changed to ${owner_status}`
+    });
+  } catch(err) {
+    res.status(400).json({
+      status:'failed',
+      message:err.message
+    });
+  }
+}
+
+//Delete Restaurant Owner
+exports.deleteOwner = async(req, res) => {
+  try{
+    const owner = await RestaurantOwner.findById(req.params.id);
+    if(!owner) {
+      return res.status(404).json({
+        status:'failed',
+        message:`user not found with ${req.params.id} this id`
+      });
+    }
+
+    await Restaurant.deleteMany({
+      owner_id:req.params.id
+    });
+
+    await RestaurantOwner.findByIdAndDelete(req.params.id);
+    await AuditLogs.create({
+      actor:{
+        id:req.user._id,
+        ip_address:req.ip
+      },
+      targe:{
+        id:req.params.id,
+        user_type:'RestaurantOwner'
+      },
+      action:'OWNER_DELETE',
+      reasson:req.body.reasson
+    });
+
+    res.status(204).json({
+      status:'no content'
+    });
+  } catch(err) {
+    res.status(400).json({
+      status:'failed',
+      message:err.message
+    });
+  }
+}
 
 //---------------------------------------------------------
 //Get all Rider
@@ -356,6 +561,64 @@ exports.deleteRider = async (req, res) => {
   } catch(err) {
     res.status(400).json({
       status:'failed',
+      message:err.message
+    });
+  }
+}
+
+
+//----------------------------------------------------------
+//Admin
+
+exports.getAllAdmin = async (req, res) => {
+  try{
+    let admins = await Admin.find().select('-admin_password');
+
+    if(!admins) {
+      return res.status(404).json({
+        status:'failed',
+        message:'admin not found'
+      });
+    }
+
+    for(let i = 0; i < admins.length; i++) {
+      admins[i] = admins[i].toObject();
+      const myActions = await AuditLogs.find({
+        "actor.id":req.user._id
+      }).select('action target.user_type');
+      admins[i].myActions = myActions
+    }
+
+    res.status(200).json({
+      status:'success',
+      admins
+    });
+  } catch(err) {
+    res.status(400).json({
+      status:'failed',
+      message:err.message
+    });
+  }
+}
+
+//GET all audit logs
+exports.getAllAuditLogs = async(req, res) => {
+  try{
+    const logs = await AuditLogs.find().populate('actor.id', 'admin_name');
+    if(!logs) {
+      return res.status(404).json({
+        status:'failed',
+        message:'No audit logs found'
+      });
+    }
+
+    res.status(200).json({
+      status:'success',
+      data: logs
+    });
+  } catch(err) {
+    res.status(400).json({
+      status:'success',
       message:err.message
     });
   }

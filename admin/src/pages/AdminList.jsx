@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import Sidebar from '../components/Sidebar';
 import { Search, X, Shield, Mail, Hash, Activity, ChevronDown, ChevronUp } from 'lucide-react';
+import axiosInstance from '../utils/axios';
 
 export default function AdminList() {
   const [searchQuery, setSearchQuery] = useState('');
@@ -19,128 +20,72 @@ export default function AdminList() {
   const fetchAdmins = async () => {
     try {
       setLoading(true);
-      // Replace with your actual API endpoint
-      // const response = await fetch('/api/admin/admins');
-      // const data = await response.json();
-      // setAdmins(data.data);
-      // setFilteredAdmins(data.data);
+      const response = await axiosInstance.get('/admin/adminList');
       
-      // Using dummy data for now
-      loadDummyData();
+      if (response.data.status === 'success' && response.data.admins) {
+        // Transform the API response to match the component's data structure
+        const transformedAdmins = response.data.admins.map(admin => {
+          // Count actions by type
+          const actionCounts = {
+            CUSTOMER_BAN: 0,
+            CUSTOMER_DELETE: 0,
+            CUSTOMER_UNBAN: 0,
+            CUSTOMER_PASS_RESET: 0,
+            OWNER_APPROVE: 0,
+            OWNER_REJECT: 0,
+            OWNER_BAN: 0,
+            OWNER_UNBAN: 0,
+            OWNER_DELETE: 0,
+            OWNER_PASS_RESET: 0,
+            RIDER_APPROVE: 0,
+            RIDER_REJECT: 0,
+            RIDER_BAN: 0,
+            RIDER_UNBAN: 0,
+            RIDER_DELETE: 0,
+            RIDER_PASS_RESET: 0,
+            ANNOUNCEMENT: 0
+          };
+
+          // Count each action type from myActions array
+          if (admin.myActions && Array.isArray(admin.myActions)) {
+            admin.myActions.forEach(actionItem => {
+              const actionType = actionItem.action;
+              if (actionCounts.hasOwnProperty(actionType)) {
+                actionCounts[actionType]++;
+              }
+            });
+          }
+
+          // Calculate total actions
+          const totalActions = admin.myActions ? admin.myActions.length : 0;
+
+          return {
+            id: admin._id,
+            name: admin.admin_name,
+            email: admin.admin_email,
+            phone: admin.admin_phone,
+            dob: admin.admin_dob,
+            gender: admin.admin_gender,
+            address: admin.admin_address,
+            photo: admin.admin_photo,
+            isVerified: admin.admin_is_verified,
+            role: admin.role,
+            createdAt: admin.createdAt,
+            updatedAt: admin.updatedAt,
+            totalActions: totalActions,
+            actionCounts: actionCounts,
+            myActions: admin.myActions || []
+          };
+        });
+
+        setAdmins(transformedAdmins);
+        setFilteredAdmins(transformedAdmins);
+      }
+      setLoading(false);
     } catch (error) {
       console.error('Error fetching admins:', error);
       setLoading(false);
     }
-  };
-
-  const loadDummyData = () => {
-    setTimeout(() => {
-      const dummyAdmins = [
-        {
-          id: '67890abc12345def67890abc',
-          name: 'Sarah Johnson',
-          email: 'sarah.johnson@bitenow.com',
-          totalActions: 145,
-          actionCounts: {
-            CUSTOMER_BAN: 12,
-            CUSTOMER_DELETE: 3,
-            CUSTOMER_UNBAN: 8,
-            CUSTOMER_PASS_RESET: 15,
-            OWNER_APPROVE: 25,
-            OWNER_REJECT: 8,
-            OWNER_BAN: 5,
-            OWNER_UNBAN: 3,
-            OWNER_DELETE: 1,
-            OWNER_PASS_RESET: 7,
-            RIDER_APPROVE: 32,
-            RIDER_REJECT: 10,
-            RIDER_BAN: 6,
-            RIDER_UNBAN: 4,
-            RIDER_DELETE: 2,
-            RIDER_PASS_RESET: 3,
-            ANNOUNCEMENT: 1
-          }
-        },
-        {
-          id: '11111abc22222def33333abc',
-          name: 'Michael Chen',
-          email: 'michael.chen@bitenow.com',
-          totalActions: 98,
-          actionCounts: {
-            CUSTOMER_BAN: 8,
-            CUSTOMER_DELETE: 2,
-            CUSTOMER_UNBAN: 5,
-            CUSTOMER_PASS_RESET: 10,
-            OWNER_APPROVE: 18,
-            OWNER_REJECT: 6,
-            OWNER_BAN: 3,
-            OWNER_UNBAN: 2,
-            OWNER_DELETE: 0,
-            OWNER_PASS_RESET: 5,
-            RIDER_APPROVE: 22,
-            RIDER_REJECT: 7,
-            RIDER_BAN: 4,
-            RIDER_UNBAN: 3,
-            RIDER_DELETE: 1,
-            RIDER_PASS_RESET: 2,
-            ANNOUNCEMENT: 0
-          }
-        },
-        {
-          id: '44444abc55555def66666abc',
-          name: 'Emily Rodriguez',
-          email: 'emily.rodriguez@bitenow.com',
-          totalActions: 67,
-          actionCounts: {
-            CUSTOMER_BAN: 5,
-            CUSTOMER_DELETE: 1,
-            CUSTOMER_UNBAN: 3,
-            CUSTOMER_PASS_RESET: 8,
-            OWNER_APPROVE: 12,
-            OWNER_REJECT: 4,
-            OWNER_BAN: 2,
-            OWNER_UNBAN: 1,
-            OWNER_DELETE: 0,
-            OWNER_PASS_RESET: 3,
-            RIDER_APPROVE: 15,
-            RIDER_REJECT: 5,
-            RIDER_BAN: 3,
-            RIDER_UNBAN: 2,
-            RIDER_DELETE: 1,
-            RIDER_PASS_RESET: 2,
-            ANNOUNCEMENT: 0
-          }
-        },
-        {
-          id: '77777abc88888def99999abc',
-          name: 'David Park',
-          email: 'david.park@bitenow.com',
-          totalActions: 182,
-          actionCounts: {
-            CUSTOMER_BAN: 15,
-            CUSTOMER_DELETE: 4,
-            CUSTOMER_UNBAN: 10,
-            CUSTOMER_PASS_RESET: 20,
-            OWNER_APPROVE: 35,
-            OWNER_REJECT: 12,
-            OWNER_BAN: 7,
-            OWNER_UNBAN: 5,
-            OWNER_DELETE: 2,
-            OWNER_PASS_RESET: 9,
-            RIDER_APPROVE: 38,
-            RIDER_REJECT: 12,
-            RIDER_BAN: 8,
-            RIDER_UNBAN: 3,
-            RIDER_DELETE: 1,
-            RIDER_PASS_RESET: 1,
-            ANNOUNCEMENT: 0
-          }
-        }
-      ];
-      setAdmins(dummyAdmins);
-      setFilteredAdmins(dummyAdmins);
-      setLoading(false);
-    }, 800);
   };
 
   // Filter admins based on search query
