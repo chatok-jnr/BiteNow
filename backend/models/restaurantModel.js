@@ -39,7 +39,7 @@ const restaurantSchema = new mongoose.Schema(
     restaurant_status: {
       type: String,
       enum: ["Pending", "Accepted", "Rejected", "Suspended"],
-      default: "Accepted",
+      default: "Pending",
     },
 
     restaurant_commissionRate: {

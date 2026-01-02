@@ -5,6 +5,8 @@ const Restaurant = require('./../models/restaurantModel');
 const AuditLogs = require('./../models/auditLogs');
 const Order = require('./../models/orderModel');
 const Admin = require('./../models/adminModel');
+const Food = require('./../models/foodModel');
+const Announcement = require('./../models/announcementModel');
 
 //Get All Pending no
 exports.getCount = async (req, res) => {
@@ -371,6 +373,193 @@ exports.deleteOwner = async(req, res) => {
 }
 
 //---------------------------------------------------------
+//Get all restaurant
+exports.getAllRestaurant = async (req, res) => {
+  try{
+    const restaurant = await Restaurant.find();
+
+    if(!restaurant) {
+      return res.status(404).json({
+        status:'failed',
+        message:'restaurant not found'
+      });
+    }
+
+    res.status(200).json({
+      status:'success',
+      restaurant
+    });
+  } catch(err) {
+    res.status(400).json({
+      status:'failed',
+      message:err.message
+    });
+  }
+}
+
+// Accept | Reject Restaurnat
+exports.acceptOrRejectRestaurant = async (req, res) => {
+  try{
+    const {reasson, restaurant_status} = req.body;
+    if(!reasson || !restaurant_status) {
+      return res.status(400).json({
+        status:'failed',
+        message:'reasson | restaurant_status missing'
+      });
+    }
+
+    const restaurant = await Restaurant.findById(req.params.id);
+    if(!restaurant) {
+      return res.status(404).json({
+        status:'failed',
+        message:`Restaurant with this ${req.params.id} id is not found`
+      });
+    }
+
+    if(restaurant.restaurant_status !== 'Pending') {
+      return res.status(400).json({
+        status:'failed',
+        message:`This Restaurant Current status is ${restaurant.restaurant_status}`
+      });
+    }
+
+    if(restaurant_status === 'Rejected') {
+      await Restaurant.findByIdAndDelete(req.params.id);
+    } else {
+      await Restaurant.findByIdAndUpdate(req.params.id, {
+            restaurant_status:restaurant_status
+          }, {
+            runValidators:true
+          });
+    }
+
+    await AuditLogs.create({
+            actor:{
+              id:req.user._id,
+              ip_address:req.ip
+            },
+            target:{
+              id:req.params.id,
+              user_type:'Restaurant'
+            },
+            action:(restaurant_status === 'Accepted'?'RESTAURANT_APPROVE':'RESTAURANT_REJECT'),
+            reasson:reasson
+          });
+    res.status(200).json({
+      status:'success',
+      message:`Restaurant Status Set to ${restaurant_status} successfully`
+    });
+  } catch(err) {
+    res.status(400).json({
+      status:'failed',
+      message:err.message
+    });
+  }
+}
+
+// Ban | Unban Restaurant
+exports.banUnbanRestaurant = async(req, res) => {
+  try{
+    const {reasson, restaurant_status} = req.body;
+    if(!reasson || !restaurant_status) {
+      return res.status(400).json({
+        status:'failed',
+        message:'reasson | restaurant_status missing'
+      });
+    }
+
+    const restaurant = await Restaurant.findById(req.params.id);
+    if(!restaurant) {
+      return res.status(404).json({
+        status:'failed',
+        message:`Restaurant with this ${req.params.id} id is not found`
+      });
+    }
+
+    if(restaurant.restaurant_status === 'Pending' || restaurant.restaurant_status === restaurant_status) {
+      return res.status(400).json({
+        status:'failed',
+        message:`This Restaurant Current status is ${restaurant.restaurant_status}`
+      });
+    }
+
+    await Restaurant.findByIdAndUpdate(req.params.id, {
+            restaurant_status:restaurant_status
+          }, {
+            runValidators:true
+          });
+
+    await AuditLogs.create({
+            actor:{
+              id:req.user._id,
+              ip_address:req.ip
+            },
+            target:{
+              id:req.params.id,
+              user_type:'Restaurant'
+            },
+            action:(restaurant_status === 'Accepted'?'RESTAURANT_UNBAN':'RESTAURANT_BAN'),
+            reasson:reasson
+          });
+    res.status(200).json({
+      status:'success',
+      message:`Restaurant Status Set to ${restaurant_status} successfully`
+    });
+  } catch(err) {
+    res.status(400).jsonn({
+      status:'failed',
+      message:err.message
+    });
+  }
+}
+
+// Delete Restaurant
+exports.deleteRestaurant = async(req, res) => {
+  try{
+    const {reasson} = req.body;
+    if(!reasson) {
+      return res.status(400).json({
+        status:'failed',
+        message:'reasson missing'
+      });
+    }
+
+    const restaurant = await Restaurant.findById(req.params.id);
+    if(!restaurant) {
+      return res.status(404).json({
+        status:'failed',
+        message:`Restaurant with this ${req.params.id} id is not found`
+      });
+    }
+
+    await Restaurant.findByIdAndDelete(req.params.id);
+    await Food.deleteMany({restaurant_id:req.params.id});
+    
+    await AuditLogs.create({
+            actor:{
+              id:req.user._id,
+              ip_address:req.ip
+            },
+            target:{
+              id:req.params.id,
+              user_type:'Restaurant'
+            },
+            action:'RESTAURANT_DELETE',
+            reasson:reasson
+          });
+
+    res.status(204).json({
+      status:'success',
+    });
+  } catch(err) {
+    res.status(400).json({
+      status:'failed',
+      message:err.message
+    });
+  }
+}
+
+//---------------------------------------------------------
 //Get all Rider
 exports.getRider = async(req, res) => {
   try{
@@ -566,10 +755,99 @@ exports.deleteRider = async (req, res) => {
   }
 }
 
-
 //----------------------------------------------------------
-//Admin
 
+//Create Announcement
+exports.createAnnouncement = async (req, res) => {
+  try {
+    const {title, message, user_type, reasson} = req.body;
+
+    if(!title || !message || !user_type || !reasson) {
+      return res.status(400).json({
+        status:'failed',
+        message:`title, message, user_type & reasson required`
+      });
+    } else if(user_type === 'CUSTOMER' || user_type === 'OWNER' || user_type === 'RIDER') {
+      if(!req.body.user_id) {
+        return res.status(400).json({
+          status:'failed',
+          message:`User Id required`
+        });
+      }
+
+      let user;
+      if(user_type === 'CUSTOMER') {
+        user = await Customer.findById(req.body.user_id);
+      } else if(user_type === 'RIDER') {
+        user = await Rider.findById(req.body.user_id);
+      } else if(user_type === 'OWNER') {
+        user = await RestaurantOwner.findById(req.body.user_id);
+      }
+
+      if(!user) {
+        return res.status(404).json({
+          status:'failed',
+          message:`User with this ${req.user_id} id is not found`
+        });
+      }
+    }
+
+    await Announcement.create({
+            'announcement.title':title,
+            'announcement.message':message,
+            'admin_id':req.user._id,
+            'target.user_type':user_type,
+            'target.user_id':req.body.user_id || null
+          });
+
+    let auditTarget;
+    if(user_type === 'CUSTOMER' || user_type === 'ALL_CUSTOMER') auditTarget = 'Customer';
+    else if(user_type === 'RIDER' || user_type === 'ALL_RIDER') auditTarget = 'Rider';
+    else if(user_type === 'OWNER' || user_type === 'ALL_RESTAURANT_OWNER') auditTarget = 'RestaurantOwner';
+    else if(user_type === 'ALL') auditTarget = 'All';
+
+    await AuditLogs.create({
+            actor:{
+              id:req.user._id,
+              ip_address:req.ip
+            }, 
+            target:auditTarget,
+            action:'ANNOUNCEMENT',
+            reasson:reasson
+          });
+
+    res.status(200).json({
+      status:'success',
+      message:'Announcement Sent successfully'
+    });
+
+  } catch(err) {
+    res.status(400).json({
+      status:'failed',
+      message:err.message
+    });
+  }
+}
+
+//Get all announcement
+exports.getAnnouncement = async (req, res) => {
+  try {
+
+    const announcement = await Announcement.find().sort('-createdAt');
+    res.status(200).json({
+      status:'success',
+      announcement
+    });
+
+  } catch(err) {
+    res.status(400).json({
+      status:'failed',
+      message:err.message
+    });
+  }
+}
+
+//Admin
 exports.getAllAdmin = async (req, res) => {
   try{
     let admins = await Admin.find().select('-admin_password');

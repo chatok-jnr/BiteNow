@@ -37,11 +37,25 @@ router
   .patch(adminController.banOrUnbanOwner)
   .delete(adminController.deleteOwner);
 
+// Restaurant ---------------------------------------------
+router
+  .route('/restaurant')
+  .get(adminController.getAllRestaurant)
+
+router
+  .route('/restaurant/pending/:id')
+  .patch(adminController.acceptOrRejectRestaurant);
+
+router
+  .route('/restaurant/:id')
+  .patch(adminController.banUnbanRestaurant)
+  .delete(adminController.deleteRestaurant);
+
 // Rider --------------------------------------------------
 router
   .route('/rider')
   .get(adminController.getRider);
-  
+
 router
   .route('/rider/approve-reject/:id')
   .patch(adminController.approveOrRejectRider);
@@ -52,6 +66,12 @@ router
   .patch(adminController.banUnbanRider);
 
 // Admins ----------------------------------------------------
+
+router
+  .route('/announcement')
+  .get(adminController.getAnnouncement)
+  .post(adminController.createAnnouncement);
+
 router
   .route('/auditLogs')
   .get(adminController.getAllAuditLogs);
