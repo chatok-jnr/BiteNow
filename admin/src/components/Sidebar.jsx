@@ -9,7 +9,8 @@ import {
   UserCog,
   FileText,
   Search,
-  LogOut
+  LogOut,
+  Bell
 } from 'lucide-react';
 
 export default function Sidebar() {
@@ -26,7 +27,8 @@ export default function Sidebar() {
 
   const bottomNavItems = [
     { name: 'Admin List', icon: Building2, path: '/admin-list' },
-    { name: 'Audit Log', icon: FileText, path: '/audit-log' }
+    { name: 'Audit Log', icon: FileText, path: '/audit-log' },
+    { name: 'Announcement', icon: Bell, path: '/announcement' }
   ];
 
   const isActive = (path) => location.pathname === path;

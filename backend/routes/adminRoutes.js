@@ -10,13 +10,20 @@ router.use(protect);
 router.use(restrictTo('admin'));
 
 router
-  .route('/auditLogs')
-  .get(adminController.getAllAuditLogs);
-
-router
   .route('/allCount')
   .get(adminController.getCount);
 
+// Customer -----------------------------------------------
+router
+  .route('/customer')
+  .get(adminController.getAllCustomer);
+
+router
+  .route('/customer/:id')
+  .patch(adminController.banOrUnabnCustomer)
+  .delete(adminController.deleteCustomer);
+
+// Restaurant Owner ---------------------------------------
 router  
   .route('/owner')
   .get(adminController.getAllOwner);
@@ -26,9 +33,29 @@ router
   .patch(adminController.approveOrRejectOwner);
 
 router
+  .route('/owner/:id')
+  .patch(adminController.banOrUnbanOwner)
+  .delete(adminController.deleteOwner);
+
+// Restaurant ---------------------------------------------
+router
+  .route('/restaurant')
+  .get(adminController.getAllRestaurant)
+
+router
+  .route('/restaurant/pending/:id')
+  .patch(adminController.acceptOrRejectRestaurant);
+
+router
+  .route('/restaurant/:id')
+  .patch(adminController.banUnbanRestaurant)
+  .delete(adminController.deleteRestaurant);
+
+// Rider --------------------------------------------------
+router
   .route('/rider')
   .get(adminController.getRider);
-  
+
 router
   .route('/rider/approve-reject/:id')
   .patch(adminController.approveOrRejectRider);
@@ -37,5 +64,20 @@ router
   .route('/rider/:id')
   .delete(adminController.deleteRider)
   .patch(adminController.banUnbanRider);
+
+// Admins ----------------------------------------------------
+
+router
+  .route('/announcement')
+  .get(adminController.getAnnouncement)
+  .post(adminController.createAnnouncement);
+
+router
+  .route('/auditLogs')
+  .get(adminController.getAllAuditLogs);
+
+router
+  .route('/adminLIst')
+  .get(adminController.getAllAdmin);
 
 module.exports = router;

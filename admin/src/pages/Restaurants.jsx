@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import Sidebar from '../components/Sidebar';
 import { Search, MoreVertical, X, FileText, ExternalLink, Store, ShoppingBag, DollarSign, User, Filter } from 'lucide-react';
+import axiosInstance from '../utils/axios';
 
 export default function Restaurants() {
   const [activeTab, setActiveTab] = useState('All');
@@ -14,227 +15,61 @@ export default function Restaurants() {
   const [showActionMenu, setShowActionMenu] = useState(null);
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [pendingAction, setPendingAction] = useState(null);
+  const [actionReason, setActionReason] = useState('');
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  // Mock data - Replace with actual API call
+  // Fetch restaurants from API
   useEffect(() => {
-    const mockRestaurants = [
-      {
-        id: 'REST001',
-        name: 'Spice Garden',
-        logo: 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=300',
-        status: 'Accepted',
-        verified: true,
-        cuisine: 'Indian, Chinese',
-        address: 'Dhanmondi 15, Dhaka',
-        phone: '+8801912345678',
-        email: 'spicegarden@example.com',
-        rating: 4.5,
-        totalOrders: 1250,
-        completedOrders: 1180,
-        taxPerOrder: 50, // BDT
-        totalTaxCollected: 59000, // BDT
-        joinedDate: '2024-01-15',
-        owner: {
-          id: 'RO001',
-          name: 'Ahmed Hassan',
-          phone: '+8801712345678'
-        },
-        documents: [
-          { type: 'Trade License', url: 'https://example.com/trade-license-r1.pdf', uploadedAt: '2024-01-15' },
-          { type: 'Tax Certificate', url: 'https://example.com/tax-cert-r1.pdf', uploadedAt: '2024-01-15' },
-          { type: 'Food Safety Certificate', url: 'https://example.com/food-safety-r1.pdf', uploadedAt: '2024-01-15' },
-          { type: 'Business Registration', url: 'https://example.com/business-reg-r1.pdf', uploadedAt: '2024-01-15' }
-        ]
-      },
-      {
-        id: 'REST002',
-        name: 'Royal Kitchen',
-        logo: 'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=300',
-        status: 'Accepted',
-        verified: true,
-        cuisine: 'Bengali, Mughlai',
-        address: 'Gulshan 1, Dhaka',
-        phone: '+8801823456789',
-        email: 'royalkitchen@example.com',
-        rating: 4.8,
-        totalOrders: 2100,
-        completedOrders: 2050,
-        taxPerOrder: 60,
-        totalTaxCollected: 123000,
-        joinedDate: '2024-01-20',
-        owner: {
-          id: 'RO001',
-          name: 'Ahmed Hassan',
-          phone: '+8801712345678'
-        },
-        documents: [
-          { type: 'Trade License', url: 'https://example.com/trade-license-r2.pdf', uploadedAt: '2024-01-20' },
-          { type: 'Tax Certificate', url: 'https://example.com/tax-cert-r2.pdf', uploadedAt: '2024-01-20' },
-          { type: 'Food Safety Certificate', url: 'https://example.com/food-safety-r2.pdf', uploadedAt: '2024-01-20' }
-        ]
-      },
-      {
-        id: 'REST003',
-        name: 'Fusion Café',
-        logo: 'https://images.unsplash.com/photo-1554118811-1e0d58224f24?w=300',
-        status: 'Pending',
-        verified: false,
-        cuisine: 'Continental, Asian',
-        address: 'Banani 11, Dhaka',
-        phone: '+8801934567890',
-        email: 'fusioncafe@example.com',
-        rating: 0,
-        totalOrders: 0,
-        completedOrders: 0,
-        taxPerOrder: 45,
-        totalTaxCollected: 0,
-        joinedDate: '2024-03-25',
-        owner: {
-          id: 'RO002',
-          name: 'Fatima Rahman',
-          phone: '+8801823456789'
-        },
-        documents: [
-          { type: 'Trade License', url: 'https://example.com/trade-license-r3.pdf', uploadedAt: '2024-03-25' },
-          { type: 'Tax Certificate', url: 'https://example.com/tax-cert-r3.pdf', uploadedAt: '2024-03-25' }
-        ]
-      },
-      {
-        id: 'REST004',
-        name: 'Heritage Restaurant',
-        logo: 'https://images.unsplash.com/photo-1552566626-52f8b828add9?w=300',
-        status: 'Accepted',
-        verified: true,
-        cuisine: 'Traditional Bengali',
-        address: 'Uttara, Sector 7, Dhaka',
-        phone: '+8801645678901',
-        email: 'heritage@example.com',
-        rating: 4.6,
-        totalOrders: 1580,
-        completedOrders: 1520,
-        taxPerOrder: 55,
-        totalTaxCollected: 83600,
-        joinedDate: '2023-12-10',
-        owner: {
-          id: 'RO003',
-          name: 'Karim Uddin',
-          phone: '+8801934567890'
-        },
-        documents: [
-          { type: 'Trade License', url: 'https://example.com/trade-license-r4.pdf', uploadedAt: '2023-12-10' },
-          { type: 'Tax Certificate', url: 'https://example.com/tax-cert-r4.pdf', uploadedAt: '2023-12-10' },
-          { type: 'Food Safety Certificate', url: 'https://example.com/food-safety-r4.pdf', uploadedAt: '2023-12-10' },
-          { type: 'Business Registration', url: 'https://example.com/business-reg-r4.pdf', uploadedAt: '2023-12-10' }
-        ]
-      },
-      {
-        id: 'REST005',
-        name: 'Green Curry',
-        logo: 'https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=300',
-        status: 'Suspended',
-        verified: true,
-        cuisine: 'Thai, Asian',
-        address: 'Dhanmondi 27, Dhaka',
-        phone: '+8801556789012',
-        email: 'greencurry@example.com',
-        rating: 4.2,
-        totalOrders: 890,
-        completedOrders: 820,
-        taxPerOrder: 48,
-        totalTaxCollected: 39360,
-        joinedDate: '2023-11-20',
-        owner: {
-          id: 'RO004',
-          name: 'Nusrat Jahan',
-          phone: '+8801645678901'
-        },
-        documents: [
-          { type: 'Trade License', url: 'https://example.com/trade-license-r5.pdf', uploadedAt: '2023-11-20' },
-          { type: 'Tax Certificate', url: 'https://example.com/tax-cert-r5.pdf', uploadedAt: '2023-11-20' }
-        ]
-      },
-      {
-        id: 'REST006',
-        name: 'Biryani House',
-        logo: 'https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?w=300',
-        status: 'Accepted',
-        verified: false,
-        cuisine: 'Hyderabadi, Mughlai',
-        address: 'Mirpur 10, Dhaka',
-        phone: '+8801467890123',
-        email: 'biryanihouse@example.com',
-        rating: 4.7,
-        totalOrders: 1920,
-        completedOrders: 1850,
-        taxPerOrder: 52,
-        totalTaxCollected: 96200,
-        joinedDate: '2024-02-05',
-        owner: {
-          id: 'RO003',
-          name: 'Karim Uddin',
-          phone: '+8801934567890'
-        },
-        documents: [
-          { type: 'Trade License', url: 'https://example.com/trade-license-r6.pdf', uploadedAt: '2024-02-05' },
-          { type: 'Tax Certificate', url: 'https://example.com/tax-cert-r6.pdf', uploadedAt: '2024-02-05' },
-          { type: 'Food Safety Certificate', url: 'https://example.com/food-safety-r6.pdf', uploadedAt: '2024-02-05' }
-        ]
-      },
-      {
-        id: 'REST007',
-        name: 'Sweet Treats',
-        logo: 'https://images.unsplash.com/photo-1559925393-8be0ec4767c8?w=300',
-        status: 'Pending',
-        verified: false,
-        cuisine: 'Desserts, Bakery',
-        address: 'Mohammadpur, Dhaka',
-        phone: '+8801378901234',
-        email: 'sweettreats@example.com',
-        rating: 0,
-        totalOrders: 0,
-        completedOrders: 0,
-        taxPerOrder: 35,
-        totalTaxCollected: 0,
-        joinedDate: '2024-03-28',
-        owner: {
-          id: 'RO006',
-          name: 'Shabnam Akter',
-          phone: '+8801467890123'
-        },
-        documents: [
-          { type: 'Trade License', url: 'https://example.com/trade-license-r7.pdf', uploadedAt: '2024-03-28' }
-        ]
-      },
-      {
-        id: 'REST008',
-        name: 'Fast Bites',
-        logo: 'https://images.unsplash.com/photo-1586190848861-99aa4a171e90?w=300',
-        status: 'Accepted',
-        verified: true,
-        cuisine: 'Fast Food, Burgers',
-        address: 'Bashundhara R/A, Dhaka',
-        phone: '+8801289012345',
-        email: 'fastbites@example.com',
-        rating: 4.4,
-        totalOrders: 2350,
-        completedOrders: 2280,
-        taxPerOrder: 42,
-        totalTaxCollected: 95760,
-        joinedDate: '2024-01-05',
-        owner: {
-          id: 'RO003',
-          name: 'Karim Uddin',
-          phone: '+8801934567890'
-        },
-        documents: [
-          { type: 'Trade License', url: 'https://example.com/trade-license-r8.pdf', uploadedAt: '2024-01-05' },
-          { type: 'Tax Certificate', url: 'https://example.com/tax-cert-r8.pdf', uploadedAt: '2024-01-05' },
-          { type: 'Food Safety Certificate', url: 'https://example.com/food-safety-r8.pdf', uploadedAt: '2024-01-05' }
-        ]
-      }
-    ];
-    setRestaurants(mockRestaurants);
+    fetchRestaurants();
   }, []);
+
+  const fetchRestaurants = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const response = await axiosInstance.get('/admin/restaurant');
+      
+      if (response.data.status === 'success') {
+        // Map API response to component structure
+        const mappedRestaurants = response.data.restaurant.map(r => ({
+          id: r._id,
+          name: r.restaurant_name,
+          logo: r.restaurant_image?.url || '🏠',
+          status: r.restaurant_status,
+          verified: false, // API doesn't provide this field
+          cuisine: r.restaurant_category?.join(', ') || 'N/A',
+          address: r.restaurant_address,
+          phone: r.restaurant_contact_info?.phone || 'N/A',
+          email: r.restaurant_contact_info?.email || 'N/A',
+          rating: r.restaurant_rating?.average || 0,
+          totalOrders: r.restaurant_total_sales || 0,
+          completedOrders: r.restaurant_total_sales || 0,
+          taxPerOrder: Math.round(r.restaurant_total_revenue / (r.restaurant_total_sales || 1)),
+          totalTaxCollected: r.restaurant_total_revenue || 0,
+          joinedDate: new Date(r.restaurant_created_at).toLocaleDateString(),
+          owner: {
+            id: r.owner_id,
+            name: 'N/A', // API doesn't provide owner name
+            phone: 'N/A'
+          },
+          description: r.restaurant_description,
+          commissionRate: r.restaurant_commissionRate,
+          location: r.restaurant_location,
+          documents: [] // API doesn't provide documents
+        }));
+        
+        setRestaurants(mappedRestaurants);
+      }
+    } catch (err) {
+      console.error('Error fetching restaurants:', err);
+      setError(err.response?.data?.message || 'Failed to fetch restaurants');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+
 
   // Filter restaurants based on active tab, search, and owner filter
   useEffect(() => {
@@ -289,36 +124,77 @@ export default function Restaurants() {
     setShowActionMenu(null);
   };
 
-  const confirmAction = () => {
+  const confirmAction = async () => {
+    if (!actionReason.trim()) {
+      alert('Please provide a reason for this action.');
+      return;
+    }
+
     const { action, restaurant } = pendingAction;
     
-    // Update restaurant status
-    setRestaurants(prev => prev.map(r => {
-      if (r.id === restaurant.id) {
-        if (action === 'Delete') {
-          return null; // Will be filtered out
-        } else if (action === 'Accept') {
-          return { ...r, status: 'Accepted' };
-        } else if (action === 'Suspend') {
-          return { ...r, status: 'Suspended' };
-        } else if (action === 'Verify') {
-          return { ...r, verified: true };
-        } else if (action === 'Unverify') {
-          return { ...r, verified: false };
-        }
+    try {
+      setLoading(true);
+      
+      if (action === 'Delete') {
+        // DELETE /admin/restaurant/:id
+        await axiosInstance.delete(`/admin/restaurant/${restaurant.id}`, {
+          data: { reasson: actionReason }
+        });
+      } else if (action === 'Accept' && restaurant.status === 'Pending') {
+        // PATCH /admin/restaurant/pending/:id
+        await axiosInstance.patch(`/admin/restaurant/pending/${restaurant.id}`, {
+          restaurant_status: 'Accepted',
+          reasson: actionReason
+        });
+      } else if (action === 'Reject' && restaurant.status === 'Pending') {
+        // PATCH /admin/restaurant/pending/:id
+        await axiosInstance.patch(`/admin/restaurant/pending/${restaurant.id}`, {
+          restaurant_status: 'Rejected',
+          reasson: actionReason
+        });
+      } else if (action === 'Suspend') {
+        // PATCH /admin/restaurant/:id
+        await axiosInstance.patch(`/admin/restaurant/${restaurant.id}`, {
+          restaurant_status: 'Suspended',
+          reasson: actionReason
+        });
+      } else if (action === 'Activate') {
+        // PATCH /admin/restaurant/:id
+        await axiosInstance.patch(`/admin/restaurant/${restaurant.id}`, {
+          restaurant_status: 'Accepted',
+          reasson: actionReason
+        });
+      } else if (action === 'Verify' || action === 'Unverify') {
+        // These actions are not supported by the API yet
+        alert('Verification feature is not yet available in the API');
+        setShowConfirmDialog(false);
+        setPendingAction(null);
+        setActionReason('');
+        setLoading(false);
+        return;
       }
-      return r;
-    }).filter(Boolean));
 
-    // Close dialogs
-    setShowConfirmDialog(false);
-    setPendingAction(null);
-    setShowDetailModal(false);
+      // Refresh restaurants list after successful action
+      await fetchRestaurants();
+      
+      // Close dialogs and reset
+      setShowConfirmDialog(false);
+      setPendingAction(null);
+      setActionReason('');
+      setShowDetailModal(false);
+      
+    } catch (err) {
+      console.error('Error performing action:', err);
+      alert(err.response?.data?.message || 'Failed to perform action');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const cancelAction = () => {
     setShowConfirmDialog(false);
     setPendingAction(null);
+    setActionReason('');
   };
 
   const tabs = ['All', 'Pending', 'Accepted', 'Suspended', 'Verified'];
@@ -382,6 +258,35 @@ export default function Restaurants() {
             </div>
           </div>
 
+          {/* Loading State */}
+          {loading && (
+            <div className="text-center py-16">
+              <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-white/5 mb-4">
+                <div className="w-8 h-8 border-4 border-orange-500 border-t-transparent rounded-full animate-spin"></div>
+              </div>
+              <h3 className="text-xl font-semibold text-gray-400 mb-2">Loading restaurants...</h3>
+            </div>
+          )}
+
+          {/* Error State */}
+          {error && (
+            <div className="text-center py-16">
+              <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-red-500/10 mb-4">
+                <X className="w-8 h-8 text-red-400" />
+              </div>
+              <h3 className="text-xl font-semibold text-gray-400 mb-2">Error loading restaurants</h3>
+              <p className="text-gray-600 mb-4">{error}</p>
+              <button
+                onClick={fetchRestaurants}
+                className="px-6 py-2 bg-orange-500/10 text-orange-400 border border-orange-500/20 rounded-xl font-medium hover:bg-orange-500/20 transition-colors"
+              >
+                Retry
+              </button>
+            </div>
+          )}
+
+          {!loading && !error && (
+            <>
           {/* Restaurant Cards Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredRestaurants.map((restaurant) => (
@@ -403,27 +308,39 @@ export default function Restaurants() {
                   {showActionMenu === restaurant.id && (
                     <div className="absolute right-0 mt-2 w-48 bg-[#1f1f2a] border border-white/10 rounded-xl shadow-2xl overflow-hidden z-20">
                       {restaurant.status === 'Pending' && (
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleAction('Accept', restaurant);
-                          }}
-                          className="w-full px-4 py-3 text-left text-sm text-green-400 hover:bg-white/5 transition-colors"
-                        >
-                          Accept
-                        </button>
+                        <>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleAction('Accept', restaurant);
+                            }}
+                            className="w-full px-4 py-3 text-left text-sm text-green-400 hover:bg-white/5 transition-colors"
+                          >
+                            Accept
+                          </button>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleAction('Reject', restaurant);
+                            }}
+                            className="w-full px-4 py-3 text-left text-sm text-red-400 hover:bg-white/5 transition-colors"
+                          >
+                            Reject
+                          </button>
+                        </>
                       )}
-                      {restaurant.status === 'Suspended' ? (
+                      {restaurant.status === 'Suspended' && (
                         <button
                           onClick={(e) => {
                             e.stopPropagation();
-                            handleAction('Accept', restaurant);
+                            handleAction('Activate', restaurant);
                           }}
                           className="w-full px-4 py-3 text-left text-sm text-green-400 hover:bg-white/5 transition-colors"
                         >
                           Activate
                         </button>
-                      ) : (
+                      )}
+                      {restaurant.status === 'Accepted' && (
                         <button
                           onClick={(e) => {
                             e.stopPropagation();
@@ -434,27 +351,7 @@ export default function Restaurants() {
                           Suspend
                         </button>
                       )}
-                      {!restaurant.verified ? (
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleAction('Verify', restaurant);
-                          }}
-                          className="w-full px-4 py-3 text-left text-sm text-blue-400 hover:bg-white/5 transition-colors"
-                        >
-                          Mark as Verified
-                        </button>
-                      ) : (
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleAction('Unverify', restaurant);
-                          }}
-                          className="w-full px-4 py-3 text-left text-sm text-gray-400 hover:bg-white/5 transition-colors"
-                        >
-                          Remove Verification
-                        </button>
-                      )}
+
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
@@ -471,11 +368,17 @@ export default function Restaurants() {
                 {/* Restaurant Logo */}
                 <div className="flex justify-center mb-4">
                   <div className="relative">
-                    <img
-                      src={restaurant.logo}
-                      alt={restaurant.name}
-                      className="w-24 h-24 rounded-full object-cover border-4 border-white/10 group-hover:border-orange-500/50 transition-colors"
-                    />
+                    {restaurant.logo === '🏠' ? (
+                      <div className="w-24 h-24 rounded-full bg-white/5 border-4 border-white/10 group-hover:border-orange-500/50 transition-colors flex items-center justify-center text-4xl">
+                        🏠
+                      </div>
+                    ) : (
+                      <img
+                        src={restaurant.logo}
+                        alt={restaurant.name}
+                        className="w-24 h-24 rounded-full object-cover border-4 border-white/10 group-hover:border-orange-500/50 transition-colors"
+                      />
+                    )}
                     <div className={`absolute bottom-0 right-0 w-5 h-5 rounded-full border-2 border-[#1a1a22] ${
                       restaurant.status === 'Accepted' ? 'bg-green-500' : 
                       restaurant.status === 'Pending' ? 'bg-yellow-500' : 'bg-red-500'
@@ -545,6 +448,8 @@ export default function Restaurants() {
               <h3 className="text-xl font-semibold text-gray-400 mb-2">No restaurants found</h3>
               <p className="text-gray-600">Try adjusting your search or filter criteria</p>
             </div>
+          )}
+          </>
           )}
         </div>
       </main>
@@ -683,50 +588,61 @@ export default function Restaurants() {
               </div>
 
               {/* Documents Section */}
-              <div className="mb-6">
-                <label className="text-sm font-medium text-gray-400 mb-3 block">Documents</label>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {selectedRestaurant.documents.map((doc, index) => (
-                    <a
-                      key={index}
-                      href={doc.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex items-center justify-between p-4 bg-[#111116] border border-white/10 rounded-xl hover:border-orange-500/50 transition-all group"
-                    >
-                      <div className="flex items-center gap-3">
-                        <div className="p-2 bg-orange-500/10 rounded-lg">
-                          <FileText className="w-5 h-5 text-orange-400" />
+              {selectedRestaurant.documents && selectedRestaurant.documents.length > 0 && (
+                <div className="mb-6">
+                  <label className="text-sm font-medium text-gray-400 mb-3 block">Documents</label>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {selectedRestaurant.documents.map((doc, index) => (
+                      <a
+                        key={index}
+                        href={doc.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center justify-between p-4 bg-[#111116] border border-white/10 rounded-xl hover:border-orange-500/50 transition-all group"
+                      >
+                        <div className="flex items-center gap-3">
+                          <div className="p-2 bg-orange-500/10 rounded-lg">
+                            <FileText className="w-5 h-5 text-orange-400" />
+                          </div>
+                          <div>
+                            <p className="text-sm font-medium text-gray-200">{doc.type}</p>
+                            <p className="text-xs text-gray-500">Uploaded: {doc.uploadedAt}</p>
+                          </div>
                         </div>
-                        <div>
-                          <p className="text-sm font-medium text-gray-200">{doc.type}</p>
-                          <p className="text-xs text-gray-500">Uploaded: {doc.uploadedAt}</p>
-                        </div>
-                      </div>
-                      <ExternalLink className="w-4 h-4 text-gray-400 group-hover:text-orange-400 transition-colors" />
-                    </a>
-                  ))}
+                        <ExternalLink className="w-4 h-4 text-gray-400 group-hover:text-orange-400 transition-colors" />
+                      </a>
+                    ))}
+                  </div>
                 </div>
-              </div>
+              )}
 
               {/* Action Buttons */}
               <div className="flex gap-3 pt-4 border-t border-white/10 flex-wrap">
                 {selectedRestaurant.status === 'Pending' && (
-                  <button
-                    onClick={() => handleAction('Accept', selectedRestaurant)}
-                    className="flex-1 min-w-[200px] px-4 py-3 bg-green-500/10 text-green-400 border border-green-500/20 rounded-xl font-medium hover:bg-green-500/20 transition-colors"
-                  >
-                    Accept Restaurant
-                  </button>
+                  <>
+                    <button
+                      onClick={() => handleAction('Accept', selectedRestaurant)}
+                      className="flex-1 min-w-[200px] px-4 py-3 bg-green-500/10 text-green-400 border border-green-500/20 rounded-xl font-medium hover:bg-green-500/20 transition-colors"
+                    >
+                      Accept Restaurant
+                    </button>
+                    <button
+                      onClick={() => handleAction('Reject', selectedRestaurant)}
+                      className="flex-1 min-w-[200px] px-4 py-3 bg-red-500/10 text-red-400 border border-red-500/20 rounded-xl font-medium hover:bg-red-500/20 transition-colors"
+                    >
+                      Reject Restaurant
+                    </button>
+                  </>
                 )}
-                {selectedRestaurant.status === 'Suspended' ? (
+                {selectedRestaurant.status === 'Suspended' && (
                   <button
-                    onClick={() => handleAction('Accept', selectedRestaurant)}
+                    onClick={() => handleAction('Activate', selectedRestaurant)}
                     className="flex-1 min-w-[200px] px-4 py-3 bg-green-500/10 text-green-400 border border-green-500/20 rounded-xl font-medium hover:bg-green-500/20 transition-colors"
                   >
                     Activate Restaurant
                   </button>
-                ) : selectedRestaurant.status === 'Accepted' && (
+                )}
+                {selectedRestaurant.status === 'Accepted' && (
                   <button
                     onClick={() => handleAction('Suspend', selectedRestaurant)}
                     className="flex-1 min-w-[200px] px-4 py-3 bg-yellow-500/10 text-yellow-400 border border-yellow-500/20 rounded-xl font-medium hover:bg-yellow-500/20 transition-colors"
@@ -734,21 +650,7 @@ export default function Restaurants() {
                     Suspend Restaurant
                   </button>
                 )}
-                {!selectedRestaurant.verified ? (
-                  <button
-                    onClick={() => handleAction('Verify', selectedRestaurant)}
-                    className="flex-1 min-w-[200px] px-4 py-3 bg-blue-500/10 text-blue-400 border border-blue-500/20 rounded-xl font-medium hover:bg-blue-500/20 transition-colors"
-                  >
-                    Mark as Verified
-                  </button>
-                ) : (
-                  <button
-                    onClick={() => handleAction('Unverify', selectedRestaurant)}
-                    className="flex-1 min-w-[200px] px-4 py-3 bg-gray-500/10 text-gray-400 border border-gray-500/20 rounded-xl font-medium hover:bg-gray-500/20 transition-colors"
-                  >
-                    Remove Verification
-                  </button>
-                )}
+
                 <button
                   onClick={() => handleAction('Delete', selectedRestaurant)}
                   className="flex-1 min-w-[200px] px-4 py-3 bg-red-500/10 text-red-400 border border-red-500/20 rounded-xl font-medium hover:bg-red-500/20 transition-colors"
@@ -766,10 +668,23 @@ export default function Restaurants() {
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-[60] p-4">
           <div className="bg-[#1a1a22] border border-white/10 rounded-2xl max-w-md w-full p-6">
             <h3 className="text-xl font-bold text-gray-100 mb-2">Confirm Action</h3>
-            <p className="text-gray-400 mb-6">
+            <p className="text-gray-400 mb-4">
               Are you sure you want to <span className="font-semibold text-orange-400">{pendingAction.action.toLowerCase()}</span> restaurant{' '}
               <span className="font-semibold text-gray-200">{pendingAction.restaurant.name}</span>?
             </p>
+            
+            {/* Reason Input */}
+            <div className="mb-6">
+              <label className="text-sm font-medium text-gray-400 mb-2 block">Reason for this action *</label>
+              <textarea
+                value={actionReason}
+                onChange={(e) => setActionReason(e.target.value)}
+                placeholder="Please provide a reason for this action..."
+                rows="4"
+                className="w-full px-4 py-3 bg-[#111116] border border-white/10 rounded-xl text-sm text-gray-300 placeholder-gray-600 focus:outline-none focus:border-orange-500/50 resize-none"
+              />
+            </div>
+            
             <div className="flex gap-3">
               <button
                 onClick={cancelAction}
@@ -780,11 +695,11 @@ export default function Restaurants() {
               <button
                 onClick={confirmAction}
                 className={`flex-1 px-4 py-3 rounded-xl font-medium transition-colors ${
-                  pendingAction.action === 'Delete'
+                  pendingAction.action === 'Delete' || pendingAction.action === 'Reject'
                     ? 'bg-red-500/10 text-red-400 border border-red-500/20 hover:bg-red-500/20'
                     : pendingAction.action === 'Suspend'
                     ? 'bg-yellow-500/10 text-yellow-400 border border-yellow-500/20 hover:bg-yellow-500/20'
-                    : pendingAction.action === 'Verify' || pendingAction.action === 'Accept'
+                    : pendingAction.action === 'Verify' || pendingAction.action === 'Accept' || pendingAction.action === 'Activate'
                     ? 'bg-green-500/10 text-green-400 border border-green-500/20 hover:bg-green-500/20'
                     : 'bg-blue-500/10 text-blue-400 border border-blue-500/20 hover:bg-blue-500/20'
                 }`}
