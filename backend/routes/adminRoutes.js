@@ -1,6 +1,7 @@
 const express = require('express');
 
 const adminController = require('./../controllers/adminController');
+const { adminUploader } = require('./../utils/cloudinary');
 
 const {protect, restrictTo} = require('./../middleware/authMiddleware');
 
@@ -79,5 +80,16 @@ router
 router
   .route('/adminLIst')
   .get(adminController.getAllAdmin);
+
+// Admin Profile Routes
+router
+  .route('/profile')
+  .get(adminController.getMe)
+  .patch(adminUploader.single('admin_photo'), adminController.updateProfile)
+  .delete(adminController.deleteMyAccount);
+
+router
+  .route('/profile/change-password')
+  .patch(adminController.changePassword);
 
 module.exports = router;

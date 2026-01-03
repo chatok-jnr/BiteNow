@@ -28,6 +28,7 @@ const restaurantStorage = createStorage("restaurant", "restaurant");
 const restaurantOwnerStorage = createStorage("restaurant-owner", "owner");
 const riderStorage = createStorage("rider", "rider");
 const customerStorage = createStorage("customer", "customer");
+const adminStorage = createStorage("admin", "admin");
 
 //Create image uploader for rider, restaurant, restaurant owner, customer
 const createUpload = (storage) => {
@@ -50,6 +51,7 @@ const restaurantUploader = createUpload(restaurantStorage);
 const restaurantOwnerUploader = createUpload(restaurantOwnerStorage);
 const riderUploader = createUpload(riderStorage);
 const customerUploader = createUpload(customerStorage);
+const adminUploader = createUpload(adminStorage);
 
 //helper function for reusable
 //for image upload
@@ -166,6 +168,7 @@ module.exports = {
   restaurantOwnerUploader,
   riderUploader,
   customerUploader,
+  adminUploader,
   riderDocUploader,
   restaurantOwnerDocUploader,
   imageUploadHelper,

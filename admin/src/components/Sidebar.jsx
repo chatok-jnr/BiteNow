@@ -10,7 +10,8 @@ import {
   FileText,
   Search,
   LogOut,
-  Bell
+  Bell,
+  User
 } from 'lucide-react';
 
 export default function Sidebar() {
@@ -28,7 +29,8 @@ export default function Sidebar() {
   const bottomNavItems = [
     { name: 'Admin List', icon: Building2, path: '/admin-list' },
     { name: 'Audit Log', icon: FileText, path: '/audit-log' },
-    { name: 'Announcement', icon: Bell, path: '/announcement' }
+    { name: 'Announcement', icon: Bell, path: '/announcement' },
+    { name: 'My Profile', icon: User, path: '/profile' }
   ];
 
   const isActive = (path) => location.pathname === path;
