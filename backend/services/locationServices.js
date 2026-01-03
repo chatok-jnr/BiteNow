@@ -128,15 +128,17 @@ const findNearestOrders = async (riderLat, riderLon, maxDistance = 15) => {
     const orders = await Order.find({
       order_status: "look_rider",
       rider_id: null,
+      'restaurant_location.coordinates': {$exists: true},
+      'customer_location.coordinates': {$exists: true},
     })
-      .populate("restaurant_id", "restaurant_location")
-      .populate("customer_id", "customer_location");
+      .populate("restaurant_id", "restaurant_name restaurant_address")
+      .populate("customer_id", "customer_name customer_phone");
 
     //calculate distance rider to restaurant and restaurant to customer
     const ordersWithDistance = orders.map((order) => {
       const [restLon, restLat] =
-        order.restaurant_id.restaurant_location.coordinates;
-      const [cusLat, cusLon] = order.customer_id.customer_location.coordinates;
+        order.restaurant_location.coordinates;
+      const [cusLat, cusLon] = order.customer_location.coordinates;
       const d1 = calculateDistance(riderLat, riderLon, restLat, restLon);
       const d2 = calculateDistance(restLat, restLon, cusLat, cusLon);
       const distance = d1 + d2;
@@ -144,6 +146,8 @@ const findNearestOrders = async (riderLat, riderLon, maxDistance = 15) => {
       return {
         ...order.toObject(),
         distanceFromRider: distance.toFixed(2),
+        distanceToRestaurant: d1.toFixed(2),
+        distanceToCustomer: d2.toFixed(2),
       };
     });
 
