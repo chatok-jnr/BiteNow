@@ -22,7 +22,7 @@ app.use(morgan("dev"));
 // Cors for production
 const whiteList = [
   'https://bite-now-admin.netlify.app',
-  'https://bite-now.netlify.app/',
+  'https://bite-now.netlify.app',
   'http://localhost:5173',
   'http://localhost:5174'
 ];
