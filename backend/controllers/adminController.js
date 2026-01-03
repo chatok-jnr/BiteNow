@@ -901,3 +901,221 @@ exports.getAllAuditLogs = async(req, res) => {
     });
   }
 }
+
+// Get current admin profile
+exports.getMe = async (req, res) => {
+  try {
+    const admin = await Admin.findById(req.user._id).select('-admin_password');
+    if (!admin) {
+      return res.status(404).json({
+        status: 'failed',
+        message: 'Admin not found'
+      });
+    }
+
+    res.status(200).json({
+      status: 'success',
+      data: admin
+    });
+  } catch (err) {
+    res.status(400).json({
+      status: 'failed',
+      message: err.message
+    });
+  }
+}
+
+// Update admin profile
+exports.updateProfile = async (req, res) => {
+  try {
+    const { admin_email, admin_phone, admin_dob, admin_address } = req.body;
+
+    // Build update object with only provided fields
+    const updateFields = {};
+    if (admin_email) updateFields.admin_email = admin_email;
+    if (admin_phone) updateFields.admin_phone = admin_phone;
+    if (admin_dob) updateFields.admin_dob = admin_dob;
+    if (admin_address) updateFields.admin_address = admin_address;
+    
+    // Handle photo upload
+    if (req.file) {
+      updateFields.admin_photo = req.file.path;
+    }
+
+    if (Object.keys(updateFields).length === 0) {
+      return res.status(400).json({
+        status: 'failed',
+        message: 'No fields to update'
+      });
+    }
+
+    const admin = await Admin.findByIdAndUpdate(
+      req.user._id,
+      updateFields,
+      { new: true, runValidators: true }
+    ).select('-admin_password');
+
+    if (!admin) {
+      return res.status(404).json({
+        status: 'failed',
+        message: 'Admin not found'
+      });
+    }
+
+    await AuditLogs.create({
+      actor: {
+        id: req.user._id,
+        ip_address: req.ip
+      },
+      target: {
+        id: req.user._id,
+        user_type: 'Admin'
+      },
+      action: 'ADMIN_PROFILE_UPDATE',
+      reasson: 'Admin updated their profile'
+    });
+
+    res.status(200).json({
+      status: 'success',
+      message: 'Profile updated successfully',
+      data: admin
+    });
+  } catch (err) {
+    res.status(400).json({
+      status: 'failed',
+      message: err.message
+    });
+  }
+}
+
+// Change admin password
+exports.changePassword = async (req, res) => {
+  try {
+    const { currentPassword, newPassword, confirmPassword } = req.body;
+
+    if (!currentPassword || !newPassword || !confirmPassword) {
+      return res.status(400).json({
+        status: 'failed',
+        message: 'Current password, new password, and confirm password are required'
+      });
+    }
+
+    if (newPassword !== confirmPassword) {
+      return res.status(400).json({
+        status: 'failed',
+        message: 'New password and confirm password do not match'
+      });
+    }
+
+    if (newPassword.length < 6) {
+      return res.status(400).json({
+        status: 'failed',
+        message: 'Password must be at least 6 characters long'
+      });
+    }
+
+    const admin = await Admin.findById(req.user._id);
+    if (!admin) {
+      return res.status(404).json({
+        status: 'failed',
+        message: 'Admin not found'
+      });
+    }
+
+    const isMatch = await admin.comparePassword(currentPassword);
+    if (!isMatch) {
+      return res.status(401).json({
+        status: 'failed',
+        message: 'Current password is incorrect'
+      });
+    }
+
+    admin.admin_password = newPassword;
+    await admin.save();
+
+    await AuditLogs.create({
+      actor: {
+        id: req.user._id,
+        ip_address: req.ip
+      },
+      target: {
+        id: req.user._id,
+        user_type: 'Admin'
+      },
+      action: 'ADMIN_PASSWORD_CHANGE',
+      reasson: 'Admin changed their password'
+    });
+
+    res.status(200).json({
+      status: 'success',
+      message: 'Password changed successfully'
+    });
+  } catch (err) {
+    res.status(400).json({
+      status: 'failed',
+      message: err.message
+    });
+  }
+}
+
+// Delete admin account
+exports.deleteMyAccount = async (req, res) => {
+  try {
+    const { password, reason } = req.body;
+
+    if (!password) {
+      return res.status(400).json({
+        status: 'failed',
+        message: 'Password is required to delete account'
+      });
+    }
+
+    if (!reason) {
+      return res.status(400).json({
+        status: 'failed',
+        message: 'Reason is required to delete account'
+      });
+    }
+
+    const admin = await Admin.findById(req.user._id);
+    if (!admin) {
+      return res.status(404).json({
+        status: 'failed',
+        message: 'Admin not found'
+      });
+    }
+
+    const isMatch = await admin.comparePassword(password);
+    if (!isMatch) {
+      return res.status(401).json({
+        status: 'failed',
+        message: 'Password is incorrect'
+      });
+    }
+
+    await AuditLogs.create({
+      actor: {
+        id: req.user._id,
+        ip_address: req.ip
+      },
+      target: {
+        id: req.user._id,
+        user_type: 'Admin'
+      },
+      action: 'ADMIN_ACCOUNT_DELETE',
+      reasson: reason
+    });
+
+    await Admin.findByIdAndDelete(req.user._id);
+
+    res.status(200).json({
+      status: 'success',
+      message: 'Account deleted successfully'
+    });
+  } catch (err) {
+    res.status(400).json({
+      status: 'failed',
+      message: err.message
+    });
+  }
+}
