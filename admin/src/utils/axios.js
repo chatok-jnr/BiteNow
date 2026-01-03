@@ -2,7 +2,7 @@ import axios from 'axios';
 
 // Create axios instance with base configuration
 const axiosInstance = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE_URL || 'https://bite-now-backend.onrender.com',
+  baseURL: import.meta.env.VITE_API_BASE_URL || 'https://bite-now-backend.onrender.com/api/v1',
   headers: {
     'Content-Type': 'application/json',
   },

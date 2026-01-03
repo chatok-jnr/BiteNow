@@ -20,15 +20,27 @@ app.use(morgan("dev"));
 // app.use(cors());
 
 // Cors for production
-const whiteList = ['https://bite-now-admin.netlify.app'];
+const whiteList = [
+  'https://bite-now-admin.netlify.app',
+  'http://localhost:5173',
+  'http://localhost:5174'
+];
+
 const corsOption = {
   origin: function(origin, callback) {
-    if(whiteList.indexOf(origin) !== -1) {
-      callback(null,true);
+    // Allow requests with no origin (like mobile apps, Postman, or curl requests)
+    if (!origin) return callback(null, true);
+    
+    if (whiteList.indexOf(origin) !== -1) {
+      callback(null, true);
     } else {
-      callback(new Error ('not allowed by cors'));
+      console.log('Blocked by CORS:', origin);
+      callback(new Error('Not allowed by CORS'));
     }
-  }
+  },
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
 }
 
 app.use(cors(corsOption));
