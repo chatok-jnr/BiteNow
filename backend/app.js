@@ -14,9 +14,25 @@ const customerRoutes = require("./routes/customerRoutes");
 const locationRoutes = require("./routes/locationRoutes");
 
 const app = express();
-
 app.use(morgan("dev"));
-app.use(cors());
+
+// Cors for development
+// app.use(cors());
+
+// Cors for production
+const whiteList = ['https://bite-now-admin.netlify.app'];
+const corsOption = {
+  origin: function(origin, callback) {
+    if(whiteList.indexOf(origin) !== -1) {
+      callback(null,true);
+    } else {
+      callback(new Error ('not allowed by cors'));
+    }
+  }
+}
+
+app.use(cors(corsOption));
+
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 app.use(express.static(`${__dirname}/public`));
