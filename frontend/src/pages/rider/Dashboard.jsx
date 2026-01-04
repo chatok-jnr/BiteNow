@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import PendingDeliveries from "./components/PendingDeliveries";
 import ActiveDelivery from "./components/ActiveDelivery";
@@ -35,12 +36,6 @@ function RiderDashboard() {
       fetchPendingRequests();
       fetchActiveDeliveries();
       fetchRiderStats();
-      
-      // Add mock rider ID for profile visualization
-      if (!parsedUser.id && !parsedUser._id) {
-        parsedUser._id = "mock_rider_id_12345";
-        localStorage.setItem("user", JSON.stringify(parsedUser));
-      }
     }
   }, [navigate]);
 
@@ -61,28 +56,32 @@ function RiderDashboard() {
   const fetchPendingRequests = async () => {
     try {
       const response = await axiosInstance.get("/api/v1/order/rider");
-      
+
       if (response.data.status === "success" && response.data.data.needRider) {
         // Transform API data to match component expectations
-        const transformedRequests = response.data.data.needRider.map(order => ({
-          id: order._id,
-          _id: order._id,
-          order_id: order.order_id,
-          restaurant_name: order.restaurant_id?.restaurant_name || "Unknown Restaurant",
-          restaurant_address: order.restaurant_id?.restaurant_address || "Unknown Address",
-          customer_name: "Customer", // API doesn't provide customer name
-          customer_address: `${order.delivery_address.street}, ${order.delivery_address.city}, ${order.delivery_address.state}, ${order.delivery_address.zip_code}`,
-          food_cost: order.subtotal,
-          delivery_charge: order.delivery_charge,
-          total_amount: order.total_amount,
-          pin1: "1234", // TODO: Get from API when available
-          pin2: "5678", // TODO: Get from API when available
-          estimated_delivery_time: order.estimated_delivery_time,
-          items: order.items,
-          payment_status: order.payment_status,
-          order_status: order.order_status,
-        }));
-        
+        const transformedRequests = response.data.data.needRider.map(
+          (order) => ({
+            id: order._id,
+            _id: order._id,
+            order_id: order.order_id,
+            restaurant_name:
+              order.restaurant_id?.restaurant_name || "Unknown Restaurant",
+            restaurant_address:
+              order.restaurant_id?.restaurant_address || "Unknown Address",
+            customer_name: "Customer", // API doesn't provide customer name
+            customer_address: `${order.delivery_address.street}, ${order.delivery_address.city}, ${order.delivery_address.state}, ${order.delivery_address.zip_code}`,
+            food_cost: order.subtotal,
+            delivery_charge: order.delivery_charge,
+            total_amount: order.total_amount,
+            pin1: "1234", // TODO: Get from API when available
+            pin2: "5678", // TODO: Get from API when available
+            estimated_delivery_time: order.estimated_delivery_time,
+            items: order.items,
+            payment_status: order.payment_status,
+            order_status: order.order_status,
+          })
+        );
+
         setPendingRequests(transformedRequests);
       }
     } catch (error) {
@@ -95,18 +94,22 @@ function RiderDashboard() {
   const fetchActiveDeliveries = async () => {
     try {
       const response = await axiosInstance.get("/api/v1/order/rider/my-order");
-      
+
       console.log("🚀 Active Deliveries API Response:", response.data);
-      
+
       if (response.data.status === "success" && response.data.myOrder) {
         // Transform API data to match component expectations
-        const transformedDeliveries = response.data.myOrder.map(order => ({
+        const transformedDeliveries = response.data.myOrder.map((order) => ({
           id: order._id,
           _id: order._id,
           order_id: order.order_id, // Use actual order_id from API
-          restaurant_name: order.restaurant_id?.restaurant_name || "Unknown Restaurant",
-          restaurant_address: order.restaurant_id?.restaurant_address || 
-            (order.restaurant_location ? "Restaurant Location Available" : "Unknown Address"),
+          restaurant_name:
+            order.restaurant_id?.restaurant_name || "Unknown Restaurant",
+          restaurant_address:
+            order.restaurant_id?.restaurant_address ||
+            (order.restaurant_location
+              ? "Restaurant Location Available"
+              : "Unknown Address"),
           customer_name: "Customer", // API doesn't provide customer name
           customer_address: `${order.delivery_address.street}, ${order.delivery_address.city}, ${order.delivery_address.state}, ${order.delivery_address.zip_code}`,
           delivery_address: `${order.delivery_address.street}, ${order.delivery_address.city}, ${order.delivery_address.state}, ${order.delivery_address.zip_code}`,
@@ -125,7 +128,7 @@ function RiderDashboard() {
           updatedAt: order.updatedAt,
           restaurant_id: order.restaurant_id, // Preserve full restaurant object
         }));
-        
+
         console.log("✅ Transformed Deliveries:", transformedDeliveries);
         setActiveDeliveries(transformedDeliveries);
       } else {
@@ -142,15 +145,20 @@ function RiderDashboard() {
 
   const fetchRiderStats = async () => {
     try {
-      // TODO: Replace with actual API to fetch rider stats
-      // This could come from the rider profile endpoint
-      const mockStats = {
-        deliveries: 8,
-        earnings: 400,
-        hours: 6.5,
-        rating: 4.9,
+      // Calculate stats from actual completed deliveries
+      const totalDeliveries = completedDeliveries.length;
+      const totalEarnings = completedDeliveries.reduce(
+        (sum, delivery) => sum + (delivery.delivery_charge || 0),
+        0
+      );
+
+      const stats = {
+        deliveries: totalDeliveries,
+        earnings: totalEarnings,
+        hours: 0, // Will be calculated from actual delivery times in future
+        rating: 0, // Will come from backend rating system
       };
-      setRiderStats(mockStats);
+      setRiderStats(stats);
     } catch (error) {
       console.error("Error fetching rider stats:", error);
     }
@@ -160,7 +168,7 @@ function RiderDashboard() {
     try {
       // Get rider ID from user object
       const riderId = user._id || user.id;
-      
+
       if (!riderId) {
         console.error("Rider ID not found");
         alert("Error: Rider ID not found. Please log in again.");
@@ -171,7 +179,7 @@ function RiderDashboard() {
       const response = await axiosInstance.patch(
         `/api/v1/order/rider/${request._id || request.id}`,
         {
-          rider_id: riderId
+          rider_id: riderId,
         }
       );
 
@@ -183,7 +191,10 @@ function RiderDashboard() {
       }
     } catch (error) {
       console.error("Error accepting delivery request:", error);
-      alert(error.response?.data?.message || "Failed to accept delivery request. Please try again.");
+      alert(
+        error.response?.data?.message ||
+          "Failed to accept delivery request. Please try again."
+      );
     }
   };
 
@@ -203,31 +214,31 @@ function RiderDashboard() {
       ...delivery,
       status: "Completed",
       completed_at: new Date().toISOString(),
-      rating: 5, // Mock rating, will come from customer in real implementation
+      rating: 0, // Rating will come from customer after completion
     };
-    
+
     // Remove from active deliveries
     setActiveDeliveries(activeDeliveries.filter((d) => d.id !== delivery.id));
-    
+
     // Add to completed deliveries
     setCompletedDeliveries([completedDelivery, ...completedDeliveries]);
-    
+
     // Clean up delivery step for this delivery
     const newDeliverySteps = { ...deliverySteps };
     delete newDeliverySteps[delivery.id];
     setDeliverySteps(newDeliverySteps);
-    
+
     // Update stats
     setRiderStats({
       ...riderStats,
       deliveries: riderStats.deliveries + 1,
       earnings: riderStats.earnings + 50,
     });
-    
+
     // Refresh active deliveries and pending requests
     fetchActiveDeliveries();
     fetchPendingRequests();
-    
+
     if (activeDeliveries.length <= 1) {
       setActiveTab("history");
     }
@@ -400,8 +411,8 @@ function RiderDashboard() {
 
         {/* History Tab */}
         {activeTab === "history" && (
-          <DeliveryHistory 
-            riderId={user?.id || user?._id} 
+          <DeliveryHistory
+            riderId={user?.id || user?._id}
             completedDeliveries={completedDeliveries}
           />
         )}

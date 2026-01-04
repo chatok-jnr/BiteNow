@@ -87,6 +87,10 @@ function Login() {
             Object.assign(userData, response.data.data.user);
             // Ensure we have a consistent 'id' field
             userData.id = response.data.data.user.customer_id;
+          } else if (formData.role === "rider" && response.data.data.user) {
+            // For rider role, map rider_id to id for consistency
+            Object.assign(userData, response.data.data.user);
+            userData.id = response.data.data.user.rider_id;
           } else {
             Object.assign(userData, response.data.data);
           }
