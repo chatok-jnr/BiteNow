@@ -67,15 +67,25 @@ exports.createCustomer = async (req, res) => {
     Your Customer account verification code is ${otp}</p>
     <p>This code will expires in 5 minutes</p>
   `;
-    await sendEmail(req.body.customer_email, "Verify your account", htmlTemplate);
+    
+    // Try to send email, but don't fail the request if it fails
+    let emailSent = true;
+    try {
+      await sendEmail(req.body.customer_email, "Verify your account", htmlTemplate);
+    } catch (emailError) {
+      console.error("Failed to send verification email:", emailError.message);
+      emailSent = false;
+    }
 
     res.status(201).json({
       status: "success",
-      message:
-        "To active your account please enter the verification code sent to you email address",
+      message: emailSent 
+        ? "To active your account please enter the verification code sent to you email address"
+        : "Account created successfully. However, we couldn't send the verification email. Please contact support or try requesting a new OTP.",
       data: {
         newCustomer,
       },
+      emailSent,
     });
   } catch (err) {
     res.status(400).json({
@@ -308,14 +318,25 @@ exports.createRider = async (req, res) => {
       </p>
       <p>This code will Expire in 5 minute</p>
     `;
-    await sendEmail(req.body.rider_email, "Verify your account", htmlTemplate);
+    
+    // Try to send email, but don't fail the request if it fails
+    let emailSent = true;
+    try {
+      await sendEmail(req.body.rider_email, "Verify your account", htmlTemplate);
+    } catch (emailError) {
+      console.error("Failed to send verification email:", emailError.message);
+      emailSent = false;
+    }
 
     res.status(201).json({
       status: "success",
-      message: "To Active your account please enter the otp send to your email",
+      message: emailSent 
+        ? "To Active your account please enter the otp send to your email"
+        : "Account created successfully. However, we couldn't send the verification email. Please contact support or try requesting a new OTP.",
       data: {
         newRider,
       },
+      emailSent,
     });
   } catch (err) {
     res.status(400).json({
@@ -545,17 +566,27 @@ exports.createRestaurantOwner = async (req, res) => {
       <p>Your Restaurant owner verification code is ${otp}</p>
       <p>This code will expires in 5 minutes</p>
     `;
-    await sendEmail(
-      req.body.restaurant_owner_email,
-      "Verify Your Restaurant Owner Account",
-      htmlTemlate
-    );
+    
+    // Try to send email, but don't fail the request if it fails
+    let emailSent = true;
+    try {
+      await sendEmail(
+        req.body.restaurant_owner_email,
+        "Verify Your Restaurant Owner Account",
+        htmlTemlate
+      );
+    } catch (emailError) {
+      console.error("Failed to send verification email:", emailError.message);
+      emailSent = false;
+    }
 
     res.status(201).json({
       status: "success",
-      message:
-        "To Active your account Enter the otp code send to your email address",
+      message: emailSent
+        ? "To Active your account Enter the otp code send to your email address"
+        : "Account created successfully. However, we couldn't send the verification email. Please contact support or try requesting a new OTP.",
       data: newRestaurantOwner,
+      emailSent,
     });
   } catch (err) {
     return res.status(400).json({
