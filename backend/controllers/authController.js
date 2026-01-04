@@ -686,8 +686,10 @@ exports.loginRestaurantOwner = async (req, res) => {
         message: "Wrong Password",
       });
     }
+    
+    console.log(`Debug = ${sts}`);
 
-    if (sts !== "Active") {
+    if (sts !== "Approved") {
       let msg = "Your account is not acitve yet";
       if (sts === "Suspended")
         msg =

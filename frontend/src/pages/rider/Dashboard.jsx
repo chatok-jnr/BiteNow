@@ -97,12 +97,14 @@ function RiderDashboard() {
     try {
       const response = await axiosInstance.get("/api/v1/order/rider/my-order");
       
+      console.log("🚀 Active Deliveries API Response:", response.data);
+      
       if (response.data.status === "success" && response.data.myOrder) {
         // Transform API data to match component expectations
         const transformedDeliveries = response.data.myOrder.map(order => ({
           id: order._id,
           _id: order._id,
-          order_id: order._id,
+          order_id: order.order_id, // Use actual order_id from API
           restaurant_name: order.restaurant_id?.restaurant_name || "Unknown Restaurant",
           restaurant_address: order.restaurant_id?.restaurant_address || 
             (order.restaurant_location ? "Restaurant Location Available" : "Unknown Address"),
@@ -110,20 +112,30 @@ function RiderDashboard() {
           customer_address: `${order.delivery_address.street}, ${order.delivery_address.city}, ${order.delivery_address.state}, ${order.delivery_address.zip_code}`,
           delivery_address: `${order.delivery_address.street}, ${order.delivery_address.city}, ${order.delivery_address.state}, ${order.delivery_address.zip_code}`,
           food_cost: order.subtotal,
+          subtotal: order.subtotal,
           delivery_charge: order.delivery_charge,
           total_amount: order.total_amount,
           pin1: order.rider_pin || "N/A", // Rider PIN from API
+          rider_pin: order.rider_pin, // Keep original field
           pin2: order.rider_pin || "N/A", // Using same PIN (adjust if different PIN needed)
           estimated_delivery_time: order.estimated_delivery_time,
           items: order.items,
           payment_status: order.payment_status,
           order_status: order.order_status,
+          createdAt: order.createdAt, // Preserve createdAt for display
+          updatedAt: order.updatedAt,
+          restaurant_id: order.restaurant_id, // Preserve full restaurant object
         }));
         
+        console.log("✅ Transformed Deliveries:", transformedDeliveries);
         setActiveDeliveries(transformedDeliveries);
+      } else {
+        console.log("⚠️ No active deliveries found or invalid response");
+        setActiveDeliveries([]);
       }
     } catch (error) {
-      console.error("Error fetching active deliveries:", error);
+      console.error("❌ Error fetching active deliveries:", error);
+      console.error("Error details:", error.response?.data);
       // Fallback to empty array on error
       setActiveDeliveries([]);
     }
@@ -383,6 +395,7 @@ function RiderDashboard() {
             setDeliverySteps={setDeliverySteps}
             onDropRequest={handleDropRequest}
             onCompleteDelivery={handleCompleteDelivery}
+            onRefresh={fetchActiveDeliveries}
           />
         )}
 
