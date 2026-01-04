@@ -656,7 +656,7 @@ exports.loginRestaurantOwner = async (req, res) => {
       });
     }
 
-    if (sts !== "Active") {
+    if (sts !== "Approved") {
       let msg = "Your account is not acitve yet";
       if (sts === "Suspended")
         msg =
