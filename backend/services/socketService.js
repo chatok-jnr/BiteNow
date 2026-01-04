@@ -45,6 +45,7 @@ exports.emitNewOrderAlert = (nearbyRiderIds, orderData) => {
     nearbyRiderIds.forEach((riderId) => {
       io.to(`user: ${riderId}`).emit("order:new:nearby", {
         orderId: orderData._id,
+        customOrderId: orderData.order_id,
         restaurant: {
           id: orderData.restaurant_id._id,
           name: orderData.restaurant_id.restaurant_name,

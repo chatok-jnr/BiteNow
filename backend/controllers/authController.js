@@ -67,7 +67,11 @@ exports.createCustomer = async (req, res) => {
     Your Customer account verification code is ${otp}</p>
     <p>This code will expires in 5 minutes</p>
   `;
-    await sendEmail(req.body.customer_email, "Verify your account", htmlTemplate);
+    await sendEmail(
+      req.body.customer_email,
+      "Verify your account",
+      htmlTemplate
+    );
 
     res.status(201).json({
       status: "success",
@@ -567,7 +571,6 @@ exports.createRestaurantOwner = async (req, res) => {
 //Verify account
 exports.restaurantOwnerVerification = async (req, res) => {
   try {
-
     const { email, user_type, otp } = req.body;
     if (!email || !user_type || !otp) {
       return res.status(404).json({
@@ -656,7 +659,9 @@ exports.loginRestaurantOwner = async (req, res) => {
       });
     }
 
-    if (sts !== "Active") {
+    console.log(`Debug = ${sts}`);
+
+    if (sts !== "Approved") {
       let msg = "Your account is not acitve yet";
       if (sts === "Suspended")
         msg =

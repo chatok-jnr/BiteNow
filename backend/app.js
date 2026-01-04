@@ -17,15 +17,19 @@ const app = express();
 
 app.use(morgan("dev"));
 app.use(cors());
-app.use(express.json({ limit: '10mb' }));
-app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+app.use(express.json({ limit: "10mb" }));
+app.use(express.urlencoded({ extended: true, limit: "10mb" }));
 app.use(express.static(`${__dirname}/public`));
 
 // Debug middleware to log all requests
 app.use((req, res, next) => {
   console.log(`${req.method} ${req.path}`);
-  if (req.method === 'POST' || req.method === 'PATCH') {
-    console.log('Body received:', Object.keys(req.body).length > 0 ? 'YES' : 'NO (EMPTY)');
+  if (req.method === "POST" || req.method === "PATCH") {
+    const hasBody =
+      req.body &&
+      typeof req.body === "object" &&
+      Object.keys(req.body).length > 0;
+    console.log("Body received:", hasBody ? "YES" : "NO (EMPTY or MULTIPART)");
   }
   next();
 });
@@ -37,7 +41,7 @@ app.use("/api/v1/riders", riderRoutes);
 app.use("/api/v1/food", foodRoutes);
 app.use("/api/v1/cart", cartRoutes);
 app.use("/api/v1/order", orderRoutes);
-app.use("/api/v1/restaurants-owner", restaurantOwnerRoutes);
+app.use("/api/v1/restaurant-owner", restaurantOwnerRoutes);
 app.use("/api/v1/customer", customerRoutes);
 app.use("/api/v1/location", locationRoutes);
 

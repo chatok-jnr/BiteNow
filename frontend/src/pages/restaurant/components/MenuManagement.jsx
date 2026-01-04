@@ -1,6 +1,7 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:8000";
+const API_BASE_URL =
+  import.meta.env.VITE_API_BASE_URL || "http://localhost:8000";
 
 function MenuManagement({ restaurantId, foodItems: initialFoodItems }) {
   const [foodItems, setFoodItems] = useState(initialFoodItems || []);
@@ -14,6 +15,14 @@ function MenuManagement({ restaurantId, foodItems: initialFoodItems }) {
   const [tagInput, setTagInput] = useState("");
   const [loading, setLoading] = useState(true);
 
+  // Image handling states
+  const [imageFile, setImageFile] = useState(null);
+  const [imagePreview, setImagePreview] = useState(null);
+  const [isUploadingImage, setIsUploadingImage] = useState(false);
+  const [successMessage, setSuccessMessage] = useState("");
+  const [errorMessage, setErrorMessage] = useState("");
+  const fileInputRef = useRef(null);
+
   const categories = ["all", "Appetizers", "Main Course", "Desserts", "Drinks"];
 
   const [formData, setFormData] = useState({
@@ -24,7 +33,6 @@ function MenuManagement({ restaurantId, foodItems: initialFoodItems }) {
     discount_percentage: "",
     tags: [],
     food_category: "Main Course",
-    food_image_url: null,
   });
 
   useEffect(() => {
@@ -36,26 +44,28 @@ function MenuManagement({ restaurantId, foodItems: initialFoodItems }) {
   const fetchFoodItems = async () => {
     try {
       setLoading(true);
-      const response = await fetch(`${API_BASE_URL}/api/v1/food/restaurant/${restaurantId}`);
-      
+      const response = await fetch(
+        `${API_BASE_URL}/api/v1/food/restaurant/${restaurantId}`
+      );
+
       if (!response.ok) {
-        throw new Error('Failed to fetch food items');
+        throw new Error("Failed to fetch food items");
       }
 
       const data = await response.json();
-      console.log('Food items response:', data);
-      
-      if (data.status === 'success' && data.data?.foods) {
+      console.log("Food items response:", data);
+
+      if (data.status === "success" && data.data?.foods) {
         // Add food_category for frontend filtering
-        const foodsWithCategory = data.data.foods.map(food => ({
+        const foodsWithCategory = data.data.foods.map((food) => ({
           ...food,
-          food_category: food.tags?.[0] || "Main Course"
+          food_category: food.tags?.[0] || "Main Course",
         }));
         setFoodItems(foodsWithCategory);
       } else {
         setFoodItems([]);
       }
-      
+
       setLoading(false);
     } catch (error) {
       console.error("Error fetching food items:", error);
@@ -66,13 +76,16 @@ function MenuManagement({ restaurantId, foodItems: initialFoodItems }) {
 
   const handleAddFood = async (e) => {
     e.preventDefault();
-    
+
     setIsSubmitting(true);
+    setErrorMessage("");
+    setSuccessMessage("");
+
     try {
       const token = localStorage.getItem("token");
-      
+
       if (!token) {
-        alert("Please login again");
+        setErrorMessage("Please login again");
         return;
       }
 
@@ -86,33 +99,73 @@ function MenuManagement({ restaurantId, foodItems: initialFoodItems }) {
         discount_percentage: parseInt(formData.discount_percentage) || 0,
       };
 
-      console.log('=== CREATING FOOD ITEM ===');
-      console.log('Restaurant ID:', restaurantId);
-      console.log('Request Body:', JSON.stringify(requestBody, null, 2));
+      console.log("=== CREATING FOOD ITEM ===");
+      console.log("Restaurant ID:", restaurantId);
+      console.log("Request Body:", JSON.stringify(requestBody, null, 2));
 
       const response = await fetch(`${API_BASE_URL}/api/v1/food`, {
-        method: 'POST',
-        headers: { 
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify(requestBody)
+        body: JSON.stringify(requestBody),
       });
 
       const data = await response.json();
-      
+
       if (!response.ok) {
-        throw new Error(data.message || 'Failed to create food item');
+        throw new Error(data.message || "Failed to create food item");
       }
-      
-      alert("Food item added successfully!");
+
+      const newFoodId = data.data.newFood._id;
+
+      // If there's an image file, upload it separately
+      if (imageFile) {
+        setIsUploadingImage(true);
+        try {
+          const imageFormData = new FormData();
+          imageFormData.append("image", imageFile);
+
+          const imageResponse = await fetch(
+            `${API_BASE_URL}/api/v1/food/${newFoodId}/image`,
+            {
+              method: "POST",
+              headers: {
+                Authorization: `Bearer ${token}`,
+              },
+              body: imageFormData,
+            }
+          );
+
+          const imageData = await imageResponse.json();
+
+          if (!imageResponse.ok) {
+            console.error("Image upload failed:", imageData.message);
+            setErrorMessage(
+              `Food created but image upload failed: ${imageData.message}`
+            );
+          }
+        } catch (imgError) {
+          console.error("Image upload error:", imgError);
+          setErrorMessage(
+            `Food created but image upload failed: ${imgError.message}`
+          );
+        } finally {
+          setIsUploadingImage(false);
+        }
+      }
+
+      setSuccessMessage("Food item added successfully!");
       // Refetch the food list to ensure consistency
       await fetchFoodItems();
       setShowAddModal(false);
       resetForm();
     } catch (error) {
       console.error("Error adding food item:", error);
-      alert(error.message || "Failed to create food item. Please try again.");
+      setErrorMessage(
+        error.message || "Failed to create food item. Please try again."
+      );
     } finally {
       setIsSubmitting(false);
     }
@@ -120,13 +173,16 @@ function MenuManagement({ restaurantId, foodItems: initialFoodItems }) {
 
   const handleEditFood = async (e) => {
     e.preventDefault();
-    
+
     setIsSubmitting(true);
+    setErrorMessage("");
+    setSuccessMessage("");
+
     try {
       const token = localStorage.getItem("token");
-      
+
       if (!token) {
-        alert("Please login again");
+        setErrorMessage("Please login again");
         return;
       }
 
@@ -139,29 +195,75 @@ function MenuManagement({ restaurantId, foodItems: initialFoodItems }) {
         discount_percentage: parseInt(formData.discount_percentage) || 0,
       };
 
-      const response = await fetch(`${API_BASE_URL}/api/v1/food/${selectedFood._id}`, {
-        method: 'PATCH',
-        headers: { 
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify(requestBody)
-      });
+      const response = await fetch(
+        `${API_BASE_URL}/api/v1/food/${selectedFood._id}`,
+        {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify(requestBody),
+        }
+      );
 
       const data = await response.json();
-      
+
       if (!response.ok) {
-        throw new Error(data.message || 'Failed to update food item');
+        throw new Error(data.message || "Failed to update food item");
       }
-      
-      alert("Food item updated successfully!");
+
+      // If there's a new image file, upload/update it
+      if (imageFile) {
+        setIsUploadingImage(true);
+        try {
+          const imageFormData = new FormData();
+          imageFormData.append("image", imageFile);
+
+          // Determine if we should POST (upload new) or PATCH (update existing)
+          const hasExistingImage =
+            selectedFood.food_image && selectedFood.food_image.public_id;
+          const imageMethod = hasExistingImage ? "PATCH" : "POST";
+
+          const imageResponse = await fetch(
+            `${API_BASE_URL}/api/v1/food/${selectedFood._id}/image`,
+            {
+              method: imageMethod,
+              headers: {
+                Authorization: `Bearer ${token}`,
+              },
+              body: imageFormData,
+            }
+          );
+
+          const imageData = await imageResponse.json();
+
+          if (!imageResponse.ok) {
+            console.error("Image upload failed:", imageData.message);
+            setErrorMessage(
+              `Food updated but image upload failed: ${imageData.message}`
+            );
+          }
+        } catch (imgError) {
+          console.error("Image upload error:", imgError);
+          setErrorMessage(
+            `Food updated but image upload failed: ${imgError.message}`
+          );
+        } finally {
+          setIsUploadingImage(false);
+        }
+      }
+
+      setSuccessMessage("Food item updated successfully!");
       await fetchFoodItems();
       setShowEditModal(false);
       setSelectedFood(null);
       resetForm();
     } catch (error) {
       console.error("Error updating food item:", error);
-      alert(error.message || "Failed to update food item. Please try again.");
+      setErrorMessage(
+        error.message || "Failed to update food item. Please try again."
+      );
     } finally {
       setIsSubmitting(false);
     }
@@ -169,28 +271,29 @@ function MenuManagement({ restaurantId, foodItems: initialFoodItems }) {
 
   const handleDeleteFood = async (foodId) => {
     if (!window.confirm("Are you sure you want to delete this item?")) return;
-    
+
     try {
       const token = localStorage.getItem("token");
-      
+
       if (!token) {
         alert("Please login again");
         return;
       }
 
       const response = await fetch(`${API_BASE_URL}/api/v1/food/${foodId}`, {
-        method: 'DELETE',
-        headers: { 
-          'Authorization': `Bearer ${token}`
-        }
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
       });
 
-      const data = await response.json();
-      
       if (!response.ok) {
-        throw new Error(data.message || 'Failed to delete food item');
+        const data = await response.json();
+        throw new Error(data.message || "Failed to delete food item");
       }
-      
+
+      // 204 No Content response has no body to parse
+
       alert("Food item deleted successfully!");
       await fetchFoodItems();
     } catch (error) {
@@ -202,33 +305,35 @@ function MenuManagement({ restaurantId, foodItems: initialFoodItems }) {
   const handleToggleAvailability = async (foodId) => {
     try {
       const token = localStorage.getItem("token");
-      
+
       if (!token) {
         alert("Please login again");
         return;
       }
 
-      const currentFood = foodItems.find(item => item._id === foodId);
-      
+      const currentFood = foodItems.find((item) => item._id === foodId);
+
       const response = await fetch(`${API_BASE_URL}/api/v1/food/${foodId}`, {
-        method: 'PATCH',
-        headers: { 
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ is_available: !currentFood.is_available })
+        body: JSON.stringify({ is_available: !currentFood.is_available }),
       });
 
       const data = await response.json();
-      
+
       if (!response.ok) {
-        throw new Error(data.message || 'Failed to update availability');
+        throw new Error(data.message || "Failed to update availability");
       }
-      
+
       await fetchFoodItems();
     } catch (error) {
       console.error("Error updating availability:", error);
-      alert(error.message || "Failed to update availability. Please try again.");
+      alert(
+        error.message || "Failed to update availability. Please try again."
+      );
     }
   };
 
@@ -237,30 +342,33 @@ function MenuManagement({ restaurantId, foodItems: initialFoodItems }) {
       alert("Please enter a valid quantity");
       return;
     }
-    
+
     try {
       const token = localStorage.getItem("token");
-      
+
       if (!token) {
         alert("Please login again");
         return;
       }
 
-      const response = await fetch(`${API_BASE_URL}/api/v1/food/${selectedFood._id}/restock`, {
-        method: 'PATCH',
-        headers: { 
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({ quantity: parseInt(restockQuantity) })
-      });
+      const response = await fetch(
+        `${API_BASE_URL}/api/v1/food/${selectedFood._id}/restock`,
+        {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({ quantity: parseInt(restockQuantity) }),
+        }
+      );
 
       const data = await response.json();
-      
+
       if (!response.ok) {
-        throw new Error(data.message || 'Failed to restock food item');
+        throw new Error(data.message || "Failed to restock food item");
       }
-      
+
       alert("Food item restocked successfully!");
       await fetchFoodItems();
       setShowRestockModal(false);
@@ -284,9 +392,98 @@ function MenuManagement({ restaurantId, foodItems: initialFoodItems }) {
       discount_percentage: "",
       tags: [],
       food_category: "Main Course",
-      food_image_url: null,
     });
     setTagInput("");
+    setImageFile(null);
+    setImagePreview(null);
+    setSuccessMessage("");
+    setErrorMessage("");
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
+  };
+
+  // Handle image file selection
+  const handleImageSelect = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      // Validate file type
+      if (!file.type.startsWith("image/")) {
+        setErrorMessage("Please select a valid image file");
+        return;
+      }
+
+      // Validate file size (max 5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        setErrorMessage("Image size should be less than 5MB");
+        return;
+      }
+
+      setImageFile(file);
+      setErrorMessage("");
+
+      // Create preview URL
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImagePreview(reader.result);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  // Clear selected image
+  const clearSelectedImage = () => {
+    setImageFile(null);
+    setImagePreview(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
+  };
+
+  // Delete food image
+  const handleDeleteFoodImage = async (foodId) => {
+    if (!window.confirm("Are you sure you want to delete this image?")) return;
+
+    try {
+      const token = localStorage.getItem("token");
+
+      if (!token) {
+        setErrorMessage("Please login again");
+        return;
+      }
+
+      const response = await fetch(
+        `${API_BASE_URL}/api/v1/food/${foodId}/image`,
+        {
+          method: "DELETE",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || "Failed to delete image");
+      }
+
+      setSuccessMessage("Image deleted successfully!");
+      await fetchFoodItems();
+
+      // Update selected food if in edit modal
+      if (selectedFood && selectedFood._id === foodId) {
+        setSelectedFood({
+          ...selectedFood,
+          food_image: { url: null, public_id: null, altText: "Food image" },
+        });
+      }
+    } catch (error) {
+      console.error("Error deleting image:", error);
+      setErrorMessage(
+        error.message || "Failed to delete image. Please try again."
+      );
+    }
   };
 
   const addTag = (tag) => {
@@ -316,8 +513,12 @@ function MenuManagement({ restaurantId, foodItems: initialFoodItems }) {
       discount_percentage: food.discount_percentage.toString(),
       tags: food.tags || [],
       food_category: food.food_category,
-      food_image_url: null,
     });
+    // Reset image states
+    setImageFile(null);
+    setImagePreview(null);
+    setErrorMessage("");
+    setSuccessMessage("");
     setShowEditModal(true);
   };
 
@@ -331,7 +532,9 @@ function MenuManagement({ restaurantId, foodItems: initialFoodItems }) {
       ? foodItems
       : foodItems.filter((item) => item.food_category === filterCategory);
 
-  const discountedItems = foodItems.filter((item) => item.discount_percentage > 0);
+  const discountedItems = foodItems.filter(
+    (item) => item.discount_percentage > 0
+  );
 
   if (loading) {
     return (
@@ -345,7 +548,8 @@ function MenuManagement({ restaurantId, foodItems: initialFoodItems }) {
   }
 
   return (
-    <div className="space-y-6">{/* Header */}
+    <div className="space-y-6">
+      {/* Header */}
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
@@ -356,8 +560,18 @@ function MenuManagement({ restaurantId, foodItems: initialFoodItems }) {
           onClick={() => setShowAddModal(true)}
           className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 flex items-center gap-2"
         >
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+          <svg
+            className="w-5 h-5"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M12 4v16m8-8H4"
+            />
           </svg>
           Add New Item
         </button>
@@ -383,7 +597,9 @@ function MenuManagement({ restaurantId, foodItems: initialFoodItems }) {
         </div>
         <div className="bg-white p-4 rounded-lg shadow-sm border">
           <p className="text-sm text-gray-500">On Discount</p>
-          <p className="text-2xl font-bold text-primary">{discountedItems.length}</p>
+          <p className="text-2xl font-bold text-primary">
+            {discountedItems.length}
+          </p>
         </div>
       </div>
 
@@ -407,11 +623,25 @@ function MenuManagement({ restaurantId, foodItems: initialFoodItems }) {
       {/* Food Items Grid */}
       {filteredItems.length === 0 ? (
         <div className="bg-white rounded-lg shadow-sm border p-12 text-center">
-          <svg className="w-16 h-16 text-gray-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+          <svg
+            className="w-16 h-16 text-gray-400 mx-auto mb-4"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M12 6v6m0 0v6m0-6h6m-6 0H6"
+            />
           </svg>
-          <h3 className="text-lg font-medium text-gray-900 mb-2">No menu items yet</h3>
-          <p className="text-gray-500 mb-6">Get started by adding your first food item to the menu</p>
+          <h3 className="text-lg font-medium text-gray-900 mb-2">
+            No menu items yet
+          </h3>
+          <p className="text-gray-500 mb-6">
+            Get started by adding your first food item to the menu
+          </p>
           <button
             onClick={() => setShowAddModal(true)}
             className="px-6 py-2 text-sm font-medium text-white bg-primary rounded-lg hover:bg-primary/90"
@@ -422,126 +652,184 @@ function MenuManagement({ restaurantId, foodItems: initialFoodItems }) {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredItems.map((food) => (
-          <div
-            key={food._id}
-            className={`bg-white rounded-lg shadow-sm border-2 p-6 ${
-              !food.is_available ? "border-red-200 bg-red-50" : "border-gray-200"
-            }`}
-          >
-            <div className="flex justify-between items-start mb-3">
-              <div className="flex-1">
-                <h3 className="font-bold text-lg text-gray-900">{food.food_name}</h3>
-                <p className="text-sm text-gray-600 mt-1">{food.food_description}</p>
-                <span className="inline-block mt-2 px-2 py-1 text-xs bg-gray-100 text-gray-700 rounded">
-                  {food.food_category}
-                </span>
+            <div
+              key={food._id}
+              className={`bg-white rounded-lg shadow-sm border-2 overflow-hidden ${
+                !food.is_available
+                  ? "border-red-200 bg-red-50"
+                  : "border-gray-200"
+              }`}
+            >
+              {/* Food Image */}
+              <div className="relative h-48 bg-gray-100">
+                {food.food_image && food.food_image.url ? (
+                  <img
+                    src={food.food_image.url}
+                    alt={food.food_image.altText || food.food_name}
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center">
+                    <svg
+                      className="w-16 h-16 text-gray-300"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={1.5}
+                        d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+                      />
+                    </svg>
+                  </div>
+                )}
+                {!food.is_available && (
+                  <div className="absolute top-2 right-2">
+                    <span className="px-2 py-1 bg-red-100 text-red-700 text-xs font-semibold rounded-full">
+                      Unavailable
+                    </span>
+                  </div>
+                )}
+                {food.discount_percentage > 0 && (
+                  <div className="absolute top-2 left-2">
+                    <span className="px-2 py-1 bg-red-500 text-white text-xs font-semibold rounded">
+                      -{food.discount_percentage}% OFF
+                    </span>
+                  </div>
+                )}
               </div>
-              {!food.is_available && (
-                <span className="px-2 py-1 bg-red-100 text-red-700 text-xs font-semibold rounded-full">
-                  Unavailable
-                </span>
-              )}
-            </div>
 
-            <div className="flex items-center gap-2 mb-4">
-              <div className="flex items-center gap-1 text-yellow-500">
-                <svg className="w-4 h-4 fill-current" viewBox="0 0 20 20">
-                  <path d="M10 15l-5.878 3.09 1.123-6.545L.489 6.91l6.572-.955L10 0l2.939 5.955 6.572.955-4.756 4.635 1.123 6.545z" />
-                </svg>
-                <span className="text-sm font-medium text-gray-900">{food.average_rating.toFixed(1)}</span>
-              </div>
-              <span className="text-sm text-gray-500">({food.rating_count} reviews)</span>
-            </div>
-
-            <div className="flex items-baseline gap-2 mb-4">
-              {food.discount_percentage > 0 ? (
-                <>
-                  <span className="text-2xl font-bold text-primary">
-                    ৳{(food.food_price * (1 - food.discount_percentage / 100)).toFixed(2)}
+              <div className="p-4">
+                <div className="mb-3">
+                  <h3 className="font-bold text-lg text-gray-900">
+                    {food.food_name}
+                  </h3>
+                  <p className="text-sm text-gray-600 mt-1 line-clamp-2">
+                    {food.food_description}
+                  </p>
+                  <span className="inline-block mt-2 px-2 py-1 text-xs bg-gray-100 text-gray-700 rounded">
+                    {food.food_category}
                   </span>
-                  <span className="text-sm text-gray-500 line-through">৳{food.food_price}</span>
-                  <span className="px-2 py-1 bg-red-100 text-primary text-xs font-semibold rounded">
-                    -{food.discount_percentage}%
+                </div>
+
+                <div className="flex items-center gap-2 mb-3">
+                  <div className="flex items-center gap-1 text-yellow-500">
+                    <svg className="w-4 h-4 fill-current" viewBox="0 0 20 20">
+                      <path d="M10 15l-5.878 3.09 1.123-6.545L.489 6.91l6.572-.955L10 0l2.939 5.955 6.572.955-4.756 4.635 1.123 6.545z" />
+                    </svg>
+                    <span className="text-sm font-medium text-gray-900">
+                      {food.average_rating.toFixed(1)}
+                    </span>
+                  </div>
+                  <span className="text-sm text-gray-500">
+                    ({food.rating_count} reviews)
                   </span>
-                </>
-              ) : (
-                <span className="text-2xl font-bold text-gray-900">৳{food.food_price}</span>
-              )}
-            </div>
+                </div>
 
-            <div className="mb-4">
-              <div className="flex justify-between items-center mb-1">
-                <span className="text-sm text-gray-600">Stock:</span>
-                <span
-                  className={`text-sm font-semibold ${
-                    food.food_quantity === 0
-                      ? "text-red-600"
-                      : food.food_quantity < 10
-                      ? "text-yellow-600"
-                      : "text-green-600"
-                  }`}
-                >
-                  {food.food_quantity} units
-                </span>
+                <div className="flex items-baseline gap-2 mb-3">
+                  {food.discount_percentage > 0 ? (
+                    <>
+                      <span className="text-xl font-bold text-primary">
+                        ৳
+                        {(
+                          food.food_price *
+                          (1 - food.discount_percentage / 100)
+                        ).toFixed(2)}
+                      </span>
+                      <span className="text-sm text-gray-500 line-through">
+                        ৳{food.food_price}
+                      </span>
+                    </>
+                  ) : (
+                    <span className="text-xl font-bold text-gray-900">
+                      ৳{food.food_price}
+                    </span>
+                  )}
+                </div>
+
+                <div className="mb-4">
+                  <div className="flex justify-between items-center mb-1">
+                    <span className="text-sm text-gray-600">Stock:</span>
+                    <span
+                      className={`text-sm font-semibold ${
+                        food.food_quantity === 0
+                          ? "text-red-600"
+                          : food.food_quantity < 10
+                          ? "text-yellow-600"
+                          : "text-green-600"
+                      }`}
+                    >
+                      {food.food_quantity} units
+                    </span>
+                  </div>
+                  {food.food_quantity < 10 && food.food_quantity > 0 && (
+                    <p className="text-xs text-yellow-600">Low stock!</p>
+                  )}
+                </div>
+
+                <div className="grid grid-cols-2 gap-2 mb-2">
+                  <button
+                    onClick={() => openEditModal(food)}
+                    className="px-3 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 text-sm font-medium"
+                  >
+                    Edit
+                  </button>
+                  <button
+                    onClick={() => openRestockModal(food)}
+                    className="px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm font-medium"
+                  >
+                    Restock
+                  </button>
+                </div>
+
+                <div className="grid grid-cols-2 gap-2">
+                  <button
+                    onClick={() => handleToggleAvailability(food._id)}
+                    className={`px-3 py-2 rounded-lg text-sm font-medium ${
+                      food.is_available
+                        ? "bg-red-100 text-red-700 hover:bg-red-200"
+                        : "bg-green-100 text-green-700 hover:bg-green-200"
+                    }`}
+                  >
+                    {food.is_available ? "Mark Unavailable" : "Mark Available"}
+                  </button>
+                  <button
+                    onClick={() => handleDeleteFood(food._id)}
+                    className="px-3 py-2 border border-red-300 text-red-700 rounded-lg hover:bg-red-50 text-sm font-medium"
+                  >
+                    Delete
+                  </button>
+                </div>
               </div>
-              {food.food_quantity < 10 && food.food_quantity > 0 && (
-                <p className="text-xs text-yellow-600">Low stock!</p>
-              )}
             </div>
-
-            <div className="grid grid-cols-2 gap-2 mb-2">
-              <button
-                onClick={() => openEditModal(food)}
-                className="px-3 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 text-sm font-medium"
-              >
-                Edit
-              </button>
-              <button
-                onClick={() => openRestockModal(food)}
-                className="px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm font-medium"
-              >
-                Restock
-              </button>
-            </div>
-
-            <div className="grid grid-cols-2 gap-2">
-              <button
-                onClick={() => handleToggleAvailability(food._id)}
-                className={`px-3 py-2 rounded-lg text-sm font-medium ${
-                  food.is_available
-                    ? "bg-red-100 text-red-700 hover:bg-red-200"
-                    : "bg-green-100 text-green-700 hover:bg-green-200"
-                }`}
-              >
-                {food.is_available ? "Mark Unavailable" : "Mark Available"}
-              </button>
-              <button
-                onClick={() => handleDeleteFood(food._id)}
-                className="px-3 py-2 border border-red-300 text-red-700 rounded-lg hover:bg-red-50 text-sm font-medium"
-              >
-                Delete
-              </button>
-            </div>
-          </div>
-        ))}
+          ))}
         </div>
       )}
 
       {/* Add Food Modal */}
       {showAddModal && (
-        <div 
+        <div
           className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50"
           onClick={() => setShowAddModal(false)}
         >
-          <div className="bg-white rounded-lg max-w-2xl w-full p-6 max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+          <div
+            className="bg-white rounded-lg max-w-2xl w-full p-6 max-h-[90vh] overflow-y-auto"
+            onClick={(e) => e.stopPropagation()}
+          >
             <h2 className="text-2xl font-bold mb-4">Add New Food Item</h2>
             <form onSubmit={handleAddFood} className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Food Name *</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Food Name *
+                </label>
                 <input
                   type="text"
                   value={formData.food_name}
-                  onChange={(e) => setFormData({ ...formData, food_name: e.target.value })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, food_name: e.target.value })
+                  }
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary"
                   placeholder="e.g., Opu vai er vat"
                   required
@@ -549,10 +837,17 @@ function MenuManagement({ restaurantId, foodItems: initialFoodItems }) {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Description *</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Description *
+                </label>
                 <textarea
                   value={formData.food_description}
-                  onChange={(e) => setFormData({ ...formData, food_description: e.target.value })}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      food_description: e.target.value,
+                    })
+                  }
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary"
                   rows={3}
                   placeholder="e.g., lets try again"
@@ -561,7 +856,9 @@ function MenuManagement({ restaurantId, foodItems: initialFoodItems }) {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Tags</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Tags
+                </label>
                 <div className="flex flex-wrap gap-2 mb-2">
                   {formData.tags.map((tag) => (
                     <span
@@ -585,7 +882,7 @@ function MenuManagement({ restaurantId, foodItems: initialFoodItems }) {
                     value={tagInput}
                     onChange={(e) => setTagInput(e.target.value)}
                     onKeyPress={(e) => {
-                      if (e.key === 'Enter') {
+                      if (e.key === "Enter") {
                         e.preventDefault();
                         addTag(tagInput.trim());
                       }
@@ -601,47 +898,81 @@ function MenuManagement({ restaurantId, foodItems: initialFoodItems }) {
                     Add Tag
                   </button>
                 </div>
-                <p className="text-xs text-gray-500 mt-1">Press Enter or click Add Tag to add tags</p>
+                <p className="text-xs text-gray-500 mt-1">
+                  Press Enter or click Add Tag to add tags
+                </p>
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Food Image (Optional)</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Food Image (Optional)
+                </label>
+
+                {/* Image Preview */}
+                {imagePreview && (
+                  <div className="mb-3 relative inline-block">
+                    <img
+                      src={imagePreview}
+                      alt="Preview"
+                      className="w-32 h-32 object-cover rounded-lg border"
+                    />
+                    <button
+                      type="button"
+                      onClick={clearSelectedImage}
+                      className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center hover:bg-red-600"
+                    >
+                      ×
+                    </button>
+                  </div>
+                )}
+
                 <input
+                  ref={fileInputRef}
                   type="file"
                   accept="image/*"
-                  onChange={(e) => {
-                    const file = e.target.files[0];
-                    if (file) {
-                      setFormData({ ...formData, food_image_url: file });
-                    }
-                  }}
+                  onChange={handleImageSelect}
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary"
                 />
-                <p className="text-xs text-gray-500 mt-1">Image can be uploaded later</p>
+                <p className="text-xs text-gray-500 mt-1">
+                  Max size: 5MB. Supported: JPG, PNG, GIF, WebP
+                </p>
               </div>
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Category *</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Category *
+                  </label>
                   <select
                     value={formData.food_category}
-                    onChange={(e) => setFormData({ ...formData, food_category: e.target.value })}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        food_category: e.target.value,
+                      })
+                    }
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary"
                   >
-                    {categories.filter((c) => c !== "all").map((cat) => (
-                      <option key={cat} value={cat}>
-                        {cat}
-                      </option>
-                    ))}
+                    {categories
+                      .filter((c) => c !== "all")
+                      .map((cat) => (
+                        <option key={cat} value={cat}>
+                          {cat}
+                        </option>
+                      ))}
                   </select>
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Price (৳) *</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Price (৳) *
+                  </label>
                   <input
                     type="number"
                     value={formData.food_price}
-                    onChange={(e) => setFormData({ ...formData, food_price: e.target.value })}
+                    onChange={(e) =>
+                      setFormData({ ...formData, food_price: e.target.value })
+                    }
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary"
                     min="0"
                     step="0.01"
@@ -652,11 +983,18 @@ function MenuManagement({ restaurantId, foodItems: initialFoodItems }) {
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Initial Quantity *</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Initial Quantity *
+                  </label>
                   <input
                     type="number"
                     value={formData.food_quantity}
-                    onChange={(e) => setFormData({ ...formData, food_quantity: e.target.value })}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        food_quantity: e.target.value,
+                      })
+                    }
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary"
                     min="0"
                     required
@@ -664,17 +1002,36 @@ function MenuManagement({ restaurantId, foodItems: initialFoodItems }) {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Discount (%)</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Discount (%)
+                  </label>
                   <input
                     type="number"
                     value={formData.discount_percentage}
-                    onChange={(e) => setFormData({ ...formData, discount_percentage: e.target.value })}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        discount_percentage: e.target.value,
+                      })
+                    }
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary"
                     min="0"
                     max="100"
                   />
                 </div>
               </div>
+
+              {/* Error and Success Messages */}
+              {errorMessage && (
+                <div className="p-3 bg-red-50 border border-red-200 rounded-lg">
+                  <p className="text-sm text-red-600">{errorMessage}</p>
+                </div>
+              )}
+              {successMessage && (
+                <div className="p-3 bg-green-50 border border-green-200 rounded-lg">
+                  <p className="text-sm text-green-600">{successMessage}</p>
+                </div>
+              )}
 
               <div className="flex justify-end gap-3 mt-6">
                 <button
@@ -684,16 +1041,38 @@ function MenuManagement({ restaurantId, foodItems: initialFoodItems }) {
                     resetForm();
                   }}
                   className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50"
-                  disabled={isSubmitting}
+                  disabled={isSubmitting || isUploadingImage}
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed"
-                  disabled={isSubmitting}
+                  className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                  disabled={isSubmitting || isUploadingImage}
                 >
-                  {isSubmitting ? "Adding..." : "Add Item"}
+                  {(isSubmitting || isUploadingImage) && (
+                    <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24">
+                      <circle
+                        className="opacity-25"
+                        cx="12"
+                        cy="12"
+                        r="10"
+                        stroke="currentColor"
+                        strokeWidth="4"
+                        fill="none"
+                      />
+                      <path
+                        className="opacity-75"
+                        fill="currentColor"
+                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                      />
+                    </svg>
+                  )}
+                  {isSubmitting
+                    ? "Adding..."
+                    : isUploadingImage
+                    ? "Uploading Image..."
+                    : "Add Item"}
                 </button>
               </div>
             </form>
@@ -703,29 +1082,43 @@ function MenuManagement({ restaurantId, foodItems: initialFoodItems }) {
 
       {/* Edit Food Modal */}
       {showEditModal && (
-        <div 
+        <div
           className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50"
           onClick={() => setShowEditModal(false)}
         >
-          <div className="bg-white rounded-lg max-w-2xl w-full p-6 max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+          <div
+            className="bg-white rounded-lg max-w-2xl w-full p-6 max-h-[90vh] overflow-y-auto"
+            onClick={(e) => e.stopPropagation()}
+          >
             <h2 className="text-2xl font-bold mb-4">Edit Food Item</h2>
             <form onSubmit={handleEditFood} className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Food Name *</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Food Name *
+                </label>
                 <input
                   type="text"
                   value={formData.food_name}
-                  onChange={(e) => setFormData({ ...formData, food_name: e.target.value })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, food_name: e.target.value })
+                  }
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary"
                   required
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Description *</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Description *
+                </label>
                 <textarea
                   value={formData.food_description}
-                  onChange={(e) => setFormData({ ...formData, food_description: e.target.value })}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      food_description: e.target.value,
+                    })
+                  }
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary"
                   rows={3}
                   required
@@ -733,7 +1126,9 @@ function MenuManagement({ restaurantId, foodItems: initialFoodItems }) {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Tags</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Tags
+                </label>
                 <div className="flex flex-wrap gap-2 mb-2">
                   {formData.tags.map((tag) => (
                     <span
@@ -757,7 +1152,7 @@ function MenuManagement({ restaurantId, foodItems: initialFoodItems }) {
                     value={tagInput}
                     onChange={(e) => setTagInput(e.target.value)}
                     onKeyPress={(e) => {
-                      if (e.key === 'Enter') {
+                      if (e.key === "Enter") {
                         e.preventDefault();
                         addTag(tagInput.trim());
                       }
@@ -773,47 +1168,113 @@ function MenuManagement({ restaurantId, foodItems: initialFoodItems }) {
                     Add Tag
                   </button>
                 </div>
-                <p className="text-xs text-gray-500 mt-1">Press Enter or click Add Tag to add tags</p>
+                <p className="text-xs text-gray-500 mt-1">
+                  Press Enter or click Add Tag to add tags
+                </p>
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Food Image (Optional)</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Food Image
+                </label>
+
+                {/* Current Image */}
+                {selectedFood?.food_image?.url && !imagePreview && (
+                  <div className="mb-3">
+                    <p className="text-xs text-gray-500 mb-2">Current Image:</p>
+                    <div className="relative inline-block">
+                      <img
+                        src={selectedFood.food_image.url}
+                        alt={
+                          selectedFood.food_image.altText ||
+                          "Current food image"
+                        }
+                        className="w-32 h-32 object-cover rounded-lg border"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => handleDeleteFoodImage(selectedFood._id)}
+                        className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center hover:bg-red-600"
+                        title="Delete image"
+                      >
+                        ×
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+                {/* New Image Preview */}
+                {imagePreview && (
+                  <div className="mb-3">
+                    <p className="text-xs text-gray-500 mb-2">
+                      New Image Preview:
+                    </p>
+                    <div className="relative inline-block">
+                      <img
+                        src={imagePreview}
+                        alt="Preview"
+                        className="w-32 h-32 object-cover rounded-lg border"
+                      />
+                      <button
+                        type="button"
+                        onClick={clearSelectedImage}
+                        className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center hover:bg-red-600"
+                      >
+                        ×
+                      </button>
+                    </div>
+                  </div>
+                )}
+
                 <input
+                  ref={fileInputRef}
                   type="file"
                   accept="image/*"
-                  onChange={(e) => {
-                    const file = e.target.files[0];
-                    if (file) {
-                      setFormData({ ...formData, food_image_url: file });
-                    }
-                  }}
+                  onChange={handleImageSelect}
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary"
                 />
-                <p className="text-xs text-gray-500 mt-1">Upload new image or leave empty to keep existing</p>
+                <p className="text-xs text-gray-500 mt-1">
+                  {selectedFood?.food_image?.url
+                    ? "Select a new image to replace the current one"
+                    : "Max size: 5MB. Supported: JPG, PNG, GIF, WebP"}
+                </p>
               </div>
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Category *</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Category *
+                  </label>
                   <select
                     value={formData.food_category}
-                    onChange={(e) => setFormData({ ...formData, food_category: e.target.value })}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        food_category: e.target.value,
+                      })
+                    }
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary"
                   >
-                    {categories.filter((c) => c !== "all").map((cat) => (
-                      <option key={cat} value={cat}>
-                        {cat}
-                      </option>
-                    ))}
+                    {categories
+                      .filter((c) => c !== "all")
+                      .map((cat) => (
+                        <option key={cat} value={cat}>
+                          {cat}
+                        </option>
+                      ))}
                   </select>
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Price (৳) *</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Price (৳) *
+                  </label>
                   <input
                     type="number"
                     value={formData.food_price}
-                    onChange={(e) => setFormData({ ...formData, food_price: e.target.value })}
+                    onChange={(e) =>
+                      setFormData({ ...formData, food_price: e.target.value })
+                    }
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary"
                     min="0"
                     step="0.01"
@@ -824,11 +1285,18 @@ function MenuManagement({ restaurantId, foodItems: initialFoodItems }) {
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Current Quantity</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Current Quantity
+                  </label>
                   <input
                     type="number"
                     value={formData.food_quantity}
-                    onChange={(e) => setFormData({ ...formData, food_quantity: e.target.value })}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        food_quantity: e.target.value,
+                      })
+                    }
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary"
                     min="0"
                     required
@@ -836,17 +1304,36 @@ function MenuManagement({ restaurantId, foodItems: initialFoodItems }) {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Discount (%)</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Discount (%)
+                  </label>
                   <input
                     type="number"
                     value={formData.discount_percentage}
-                    onChange={(e) => setFormData({ ...formData, discount_percentage: e.target.value })}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        discount_percentage: e.target.value,
+                      })
+                    }
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary"
                     min="0"
                     max="100"
                   />
                 </div>
               </div>
+
+              {/* Error and Success Messages */}
+              {errorMessage && (
+                <div className="p-3 bg-red-50 border border-red-200 rounded-lg">
+                  <p className="text-sm text-red-600">{errorMessage}</p>
+                </div>
+              )}
+              {successMessage && (
+                <div className="p-3 bg-green-50 border border-green-200 rounded-lg">
+                  <p className="text-sm text-green-600">{successMessage}</p>
+                </div>
+              )}
 
               <div className="flex justify-end gap-3 mt-6">
                 <button
@@ -857,14 +1344,38 @@ function MenuManagement({ restaurantId, foodItems: initialFoodItems }) {
                     resetForm();
                   }}
                   className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50"
+                  disabled={isSubmitting || isUploadingImage}
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90"
+                  className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                  disabled={isSubmitting || isUploadingImage}
                 >
-                  Update Item
+                  {(isSubmitting || isUploadingImage) && (
+                    <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24">
+                      <circle
+                        className="opacity-25"
+                        cx="12"
+                        cy="12"
+                        r="10"
+                        stroke="currentColor"
+                        strokeWidth="4"
+                        fill="none"
+                      />
+                      <path
+                        className="opacity-75"
+                        fill="currentColor"
+                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                      />
+                    </svg>
+                  )}
+                  {isSubmitting
+                    ? "Updating..."
+                    : isUploadingImage
+                    ? "Uploading Image..."
+                    : "Update Item"}
                 </button>
               </div>
             </form>
@@ -880,10 +1391,15 @@ function MenuManagement({ restaurantId, foodItems: initialFoodItems }) {
             <p className="text-gray-600 mb-4">
               <strong>{selectedFood?.food_name}</strong>
               <br />
-              Current stock: <span className="font-semibold">{selectedFood?.food_quantity} units</span>
+              Current stock:{" "}
+              <span className="font-semibold">
+                {selectedFood?.food_quantity} units
+              </span>
             </p>
             <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-700 mb-2">Add Quantity</label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Add Quantity
+              </label>
               <input
                 type="number"
                 value={restockQuantity}
@@ -897,7 +1413,11 @@ function MenuManagement({ restaurantId, foodItems: initialFoodItems }) {
               <div className="bg-blue-50 p-3 rounded-lg mb-4">
                 <p className="text-sm text-blue-800">
                   New stock will be:{" "}
-                  <strong>{selectedFood?.food_quantity + parseInt(restockQuantity || 0)} units</strong>
+                  <strong>
+                    {selectedFood?.food_quantity +
+                      parseInt(restockQuantity || 0)}{" "}
+                    units
+                  </strong>
                 </p>
               </div>
             )}

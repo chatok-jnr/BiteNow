@@ -61,13 +61,13 @@ function Login() {
 
       if (response.data.status === "success") {
         console.log("✅ Login successful, storing credentials...");
-        
+
         // CRITICAL: Store token FIRST before any API calls
         if (response.data.token) {
           localStorage.setItem("token", response.data.token);
           console.log("✅ Token stored in localStorage");
         }
-        
+
         // Store user info in localStorage
         const userData = {
           email: formData.email,
@@ -76,14 +76,28 @@ function Login() {
         };
 
         // Handle different response structures for different roles
-        if (formData.role === "restaurant" && response.data.data.ownerResponse) {
+        if (
+          formData.role === "restaurant" &&
+          response.data.data.ownerResponse
+        ) {
           Object.assign(userData, response.data.data.ownerResponse);
         } else if (response.data.data) {
-          Object.assign(userData, response.data.data);
+          // For customer role, the data is nested under 'user' key
+          if (formData.role === "customer" && response.data.data.user) {
+            Object.assign(userData, response.data.data.user);
+            // Ensure we have a consistent 'id' field
+            userData.id = response.data.data.user.customer_id;
+          } else {
+            Object.assign(userData, response.data.data);
+          }
         }
 
         localStorage.setItem("user", JSON.stringify(userData));
-        console.log("✅ User data stored in localStorage");
+        console.log("✅ User data stored in localStorage:", {
+          role: userData.role,
+          id: userData.id || userData.customer_id || userData._id,
+          email: userData.email,
+        });
 
         // Migrate guest cart to user account if customer
         // This must happen AFTER token is stored
@@ -92,12 +106,12 @@ function Login() {
             console.log("🔄 Starting cart migration...");
             const migratedCart = await cartService.migrateGuestCart();
             if (migratedCart) {
-              console.log('✅ Guest cart migrated successfully:', {
+              console.log("✅ Guest cart migrated successfully:", {
                 cartId: migratedCart._id,
-                itemCount: migratedCart.items?.length || 0
+                itemCount: migratedCart.items?.length || 0,
               });
             } else {
-              console.log('ℹ️ No guest cart to migrate');
+              console.log("ℹ️ No guest cart to migrate");
             }
           } catch (migrationError) {
             console.error("❌ Cart migration failed:", migrationError);
@@ -113,9 +127,11 @@ function Login() {
           localStorage.removeItem("intendedDestination");
           navigate("/rider-dashboard");
         } else if (formData.role === "customer") {
-          const intendedDestination = localStorage.getItem("intendedDestination");
+          const intendedDestination = localStorage.getItem(
+            "intendedDestination"
+          );
           console.log("Intended destination:", intendedDestination);
-          
+
           if (intendedDestination) {
             localStorage.removeItem("intendedDestination");
             navigate(intendedDestination);
@@ -129,9 +145,9 @@ function Login() {
     } catch (err) {
       console.error("Login error:", err);
       setError(
-        err.response?.data?.message || 
-        err.response?.data?.error || 
-        "Invalid email or password. Please try again."
+        err.response?.data?.message ||
+          err.response?.data?.error ||
+          "Invalid email or password. Please try again."
       );
     } finally {
       setIsLoading(false);
