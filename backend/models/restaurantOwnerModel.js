@@ -70,7 +70,7 @@ const restaurantOwnerSchema = new mongoose.Schema(
     },
     restaurant_owner_is_verified:{
       type:Boolean,
-      default:false
+      default:true
     },
     restaurant_owner_dob: {
       type: Date,

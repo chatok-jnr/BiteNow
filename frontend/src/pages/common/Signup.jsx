@@ -232,14 +232,17 @@ function Signup() {
         );
       }
 
-      // If registration successful, store email and redirect to OTP page
+      // If registration successful, redirect to login page
       if (response && response.data) {
-        // Store email in sessionStorage for OTP verification
-        sessionStorage.setItem('registrationEmail', email);
-        sessionStorage.setItem('userType', selectedRole === 'restaurant' ? 'restaurant_owner' : selectedRole);
+        // Clear any previous session data
+        sessionStorage.removeItem('registrationEmail');
+        sessionStorage.removeItem('userType');
         
         setIsLoading(false);
-        navigate("/otp");
+        
+        // Show success message and redirect to login
+        alert(`Registration successful! Please login with your credentials.`);
+        navigate("/login");
       }
 
     } catch (error) {

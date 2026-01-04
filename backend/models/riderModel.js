@@ -29,7 +29,7 @@ const riderSchema = new mongoose.Schema(
     },
     rider_is_verified: {
       type: Boolean,
-      default: false,
+      default: true,
     },
     rider_pass_change_at: Date,
     rider_date_of_birth: {

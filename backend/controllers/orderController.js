@@ -126,7 +126,8 @@ exports.getUserOrders = async (req, res) => {
     
     const orders = await Order.find({customer_id:user_id})
       .populate('restaurant_id', 'name')
-      .populate('items.food_id', 'food_name');
+      .populate('items.food_id', 'food_name')
+      .select('-rider_pin');
 
     res.status(200).json({
       status: 'success',
@@ -343,10 +344,8 @@ exports.getMyOrderList = async (req, res) => {
     const riderId = req.user._id;
     let myOrder = await Order.find({
       rider_id:riderId, 
-      order_status: { $in: ['ready_for_pickup', 'preparing'] }
-    })
-      .select('-customer_pin');
-
+      order_status: { $in: ['ready_for_pickup', 'preparing', 'out_for_delivery'] }
+    }).select('-customer_pin');
     
     res.status(200).json({
       status:'success',
