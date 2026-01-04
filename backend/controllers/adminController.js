@@ -862,7 +862,7 @@ exports.getAllAdmin = async (req, res) => {
     for(let i = 0; i < admins.length; i++) {
       admins[i] = admins[i].toObject();
       const myActions = await AuditLogs.find({
-        "actor.id":req.user._id
+        "actor.id":admins[i]._id
       }).select('action target.user_type');
       admins[i].myActions = myActions
     }

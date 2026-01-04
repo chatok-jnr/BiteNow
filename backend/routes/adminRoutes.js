@@ -1,6 +1,7 @@
 const express = require('express');
 
 const adminController = require('./../controllers/adminController');
+const {createAdmin, deleteAdmin} = require('./../controllers/authController');
 const { adminUploader } = require('./../utils/cloudinary');
 
 const {protect, restrictTo} = require('./../middleware/authMiddleware');
@@ -67,6 +68,12 @@ router
   .patch(adminController.banUnbanRider);
 
 // Admins ----------------------------------------------------
+
+// add new admin
+router
+  .route('/super-admin')
+  .post(createAdmin)
+  .delete(deleteAdmin);
 
 router
   .route('/announcement')
