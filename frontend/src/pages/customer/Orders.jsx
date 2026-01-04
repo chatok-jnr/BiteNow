@@ -56,7 +56,8 @@ function Orders() {
                 hour: '2-digit',
                 minute: '2-digit'
               })
-            : null
+            : null,
+          customerPin: order.customer_pin
         }));
         
         setOrders(apiOrders);
@@ -152,11 +153,9 @@ function Orders() {
           <div className="mb-4">
             <div className="flex justify-between text-xs text-gray-600 mb-2">
               <span>{statusConfig?.message}</span>
-              {order.pin && (
-                <span className="font-bold text-green-700">
-                  PIN: {order.pin}
-                </span>
-              )}
+              <span className={`font-bold ${order.customerPin ? 'text-green-700' : 'text-orange-600'}`}>
+                {order.customerPin ? `PIN: ${order.customerPin}` : 'Rider Not Found Yet'}
+              </span>
             </div>
             <div className="w-full bg-gray-200 rounded-full h-2">
               <div
