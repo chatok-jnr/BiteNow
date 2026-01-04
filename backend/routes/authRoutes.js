@@ -1,5 +1,5 @@
 const express = require('express');
-const sendEmail = require('./../utils/sendEmail');
+// const sendEmail = require('./../utils/sendEmail');
 const authController = require('./../controllers/authController');
 
 const router = express.Router();
@@ -8,9 +8,9 @@ const router = express.Router();
 router
   .route('/register/admin')
   .post(authController.createAdmin);
-router
-  .route('/verify-admin')
-  .post(authController.verifyAdmin);
+// router
+//   .route('/verify-admin')
+//   .post(authController.verifyAdmin);
 router
   .route('/login/admin')
   .post(authController.adminLogin);
@@ -20,9 +20,9 @@ router
   .route('/register/customer')
   .post(authController.createCustomer);
 
-router
-  .route('/verify-otp/customer')
-  .post(authController.verifyCustomerOtp);
+// router
+//   .route('/verify-otp/customer')
+//   .post(authController.verifyCustomerOtp);
 
 router  
   .route('/login/customer')
@@ -37,25 +37,25 @@ router
   .route('/login/rider')
   .post(authController.loginRider);
 
-router
-  .route('/verify-otp/rider')
-  .post(authController.verifyRiderOtp);
+// router
+//   .route('/verify-otp/rider')
+//   .post(authController.verifyRiderOtp);
 
 //For restaurant Owner
 router
   .route('/register/restaurant-owner')
   .post(authController.createRestaurantOwner);
 
-router
-  .route('/verify-otp/restaurant-owner')
-  .post(authController.restaurantOwnerVerification);
+// router
+//   .route('/verify-otp/restaurant-owner')
+//   .post(authController.restaurantOwnerVerification);
 
 router  
   .route('/login/restaurant-owner')
   .post(authController.loginRestaurantOwner);
 
-router
-  .route('/new-otp')
-  .post(authController.newOtp);
+// router
+//   .route('/new-otp')
+//   .post(authController.newOtp);
 
 module.exports = router;
