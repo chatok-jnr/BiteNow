@@ -32,6 +32,10 @@ export default function AdminLogin() {
       if (response.data.status === 'success') {
         // Store token and admin data
         localStorage.setItem('adminToken', response.data.token);
+        
+        // Log the response to check if is_super is included
+        console.log('🔍 Backend Login Response:', response.data.data.adminResponse);
+        
         localStorage.setItem('adminData', JSON.stringify(response.data.data.adminResponse));
         
         // Redirect to dashboard
