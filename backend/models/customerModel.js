@@ -89,7 +89,7 @@ const customerSchema = new mongoose.Schema(
     },
     customer_is_verified: {
       type: Boolean,
-      default: false,
+      default: true,
     },
     passwordChangedAt: Date,
     // passwordResetToken: String,
