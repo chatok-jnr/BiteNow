@@ -750,6 +750,15 @@ exports.loginRestaurantOwner = async (req, res) => {
 //Admin---------------------------------------------------------
 exports.createAdmin = async (req, res) => {
   try {
+    const superAdmin = await Admin.findById(req.user._id);
+
+    if(superAdmin.is_super === false) {
+      return res.status(403).json({
+        status:'failed',
+        message:'Only super admin are authroized to perform this operation'
+      });
+    }
+
     const requiredFields = [
       "admin_name",
       "admin_email",
@@ -797,16 +806,21 @@ exports.createAdmin = async (req, res) => {
       admin_address: req.body.admin_address || "",
       admin_photo: req.body.admin_photo || "",
     };
-
     // await sendEmail(
     //   req.body.admin_email,
     //   "Admin Account Verification Code",
     //   htmlTemplate
     // );
-    await Admin.create(adminData);
+    const newAdmin = await Admin.create(adminData);
+    if(!newAdmin) {
+      return res.status(400).json({
+        status:'failed',
+        message:'Failed to create new admin'
+      });
+    }
     res.status(201).json({
       status: "Success",
-      message: "Enter the otp to activate your account",
+      message: "New Admin Added successfully",
     });
   } catch (err) {
     res.status(400).json({
@@ -859,6 +873,7 @@ exports.adminLogin = async (req, res) => {
       admin_address: admin.admin_address || "",
       role: admin.role,
       admin_photo: admin.admin_photo || "",
+      is_super: admin.is_super || false,
     };
 
     res.status(200).json({
@@ -876,6 +891,52 @@ exports.adminLogin = async (req, res) => {
     });
   }
 };
+exports.deleteAdmin = async (req, res) => {
+  try{
+
+    const {is_super} = await Admin.findById(req.user._id);
+    if(!is_super) {
+      return res.status(403).json({
+        status:'failed',
+        message:'You are not authorized to perform this operation'
+      });
+    }
+
+    if(!req.body.target_id) {
+      return res.status(400).json({
+        status:'failed',
+        message:'You need an target id to perfomr this opeartion'
+      });
+    }
+
+    const targetUser = await Admin.findById(req.body.target_id);
+    if(!targetUser) {
+      return res.status(404).json({
+        status:'failed',
+        message:'No admin found with the given id'
+      });
+    }
+
+    const dltAdmin = await Admin.findByIdAndDelete(req.body.target_id);
+    if(!dltAdmin) {
+      return res.status(400).json({
+        status:'failed',
+        message:'Failed to delete this admin'
+      });
+    }
+
+    res.status(204).json({
+      status:'no-content'
+    });
+
+  } catch(err) {
+    res.status(400).json({
+      status:'failed',
+      message:err.message
+    });
+  }
+};
+
 // exports.verifyAdmin = async (req, res) => {
 //   try {
 //     const { email, user_type, otp } = req.body;
