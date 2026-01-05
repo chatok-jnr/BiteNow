@@ -95,7 +95,7 @@ const customerSchema = new mongoose.Schema(
       },
       altText: {
         type: String,
-        default: "Rider image",
+        default: "Customer image",
       },
       public_id: {
         type: String,
@@ -165,7 +165,6 @@ customerSchema.methods.changedPasswordAfter = function (JWTTimestamps) {
   }
   return false;
 };
-
 
 /*
 The password reset generator
