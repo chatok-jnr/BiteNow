@@ -13,6 +13,8 @@ import Restaurants from "./pages/Restaurants";
 import Riders from "./pages/Riders";
 import AuditLogs from "./pages/AuditLogs";
 import AdminList from "./pages/AdminList";
+import Announcement from "./pages/Announcement";
+import Profile from "./pages/Profile";
 
 function App() {
   return (
@@ -34,6 +36,8 @@ function App() {
             <Route path="/rider" element={<PrivateRoute><Riders /></PrivateRoute>} />
             <Route path="/admin-list" element={<PrivateRoute><AdminList /></PrivateRoute>} />
             <Route path="/audit-log" element={<PrivateRoute><AuditLogs /></PrivateRoute>} />
+            <Route path="/announcement" element={<PrivateRoute><Announcement /></PrivateRoute>} />
+            <Route path="/profile" element={<PrivateRoute><Profile /></PrivateRoute>} />
           </Routes>
         </main>
         {/* <Footer /> */}

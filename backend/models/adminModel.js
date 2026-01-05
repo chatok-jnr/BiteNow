@@ -7,7 +7,8 @@ const adminSchema = new mongoose.Schema({
     type:String,
     required:true,
     min:5,
-    max:50
+    max:50,
+    trim:true
   },
   admin_email:{
     type:String,
@@ -44,10 +45,16 @@ const adminSchema = new mongoose.Schema({
   },
   admin_is_verified:{
     type:Boolean,
-    default:false
+    default:false,
+    required:true
   },
   admin_address:{
     type:String
+  },
+  is_super:{
+    type:Boolean,
+    default:false,
+    required:true
   },
   role:{
     type:String,
@@ -72,7 +79,6 @@ adminSchema.pre('save', async function(next){
     next(error);
   }
 }); 
-
 
 // Check if the password is correct
 adminSchema.methods.comparePassword = async function(candidatePassword) {

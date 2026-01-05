@@ -53,33 +53,40 @@ exports.createCustomer = async (req, res) => {
     const newCustomer = await Customer.create(customerData);
 
     //Send otp
-    const otp = Math.floor(1000 + Math.random() * 9000).toString();
-    await OTP.create({
-      email: req.body.customer_email,
-      user_type: "customer",
-      otp,
-      expiresAt: Date.now() + 5 * 60 * 1000,
-    });
+  //   const otp = Math.floor(1000 + Math.random() * 9000).toString();
+  //   await OTP.create({
+  //     email: req.body.customer_email,
+  //     user_type: "customer",
+  //     otp,
+  //     expiresAt: Date.now() + 5 * 60 * 1000,
+  //   });
 
-    const htmlTemplate = `
-    <h2>Your BiteNow Verification Code</h2>
-    <p style = "font-size:22px>
-    Your Customer account verification code is ${otp}</p>
-    <p>This code will expires in 5 minutes</p>
-  `;
-    await sendEmail(
-      req.body.customer_email,
-      "Verify your account",
-      htmlTemplate
-    );
+  //   const htmlTemplate = `
+  //   <h2>Your BiteNow Verification Code</h2>
+  //   <p style = "font-size:22px>
+  //   Your Customer account verification code is ${otp}</p>
+  //   <p>This code will expires in 5 minutes</p>
+  // `;
+    
+  //   // Try to send email, but don't fail the request if it fails
+  //   let emailSent = true;
+  //   try {
+  //     await sendEmail(req.body.customer_email, "Verify your account", htmlTemplate);
+  //   } catch (emailError) {
+  //     console.error("Failed to send verification email:", emailError.message);
+  //     emailSent = false;
+  //   }
 
     res.status(201).json({
       status: "success",
-      message:
-        "To active your account please enter the verification code sent to you email address",
+      // message: emailSent 
+      //   ? "To active your account please enter the verification code sent to you email address"
+      //   : "Account created successfully. However, we couldn't send the verification email. Please contact support or try requesting a new OTP.",
+      message:`Account Created`,
       data: {
         newCustomer,
       },
+      //emailSent,
     });
   } catch (err) {
     res.status(400).json({
@@ -89,73 +96,73 @@ exports.createCustomer = async (req, res) => {
   }
 };
 //verify-account
-exports.verifyCustomerOtp = async (req, res) => {
-  try {
-    const { email, user_type, otp } = req.body;
+// exports.verifyCustomerOtp = async (req, res) => {
+//   try {
+//     const { email, user_type, otp } = req.body;
 
-    const record = await OTP.find({ email, user_type })
-      .sort("-createdAt")
-      .limit(1);
+//     const record = await OTP.find({ email, user_type })
+//       .sort("-createdAt")
+//       .limit(1);
 
-    if (!record) {
-      return res.status(404).json({
-        status: "failed",
-        message: "Otp not found",
-      });
-    }
+//     if (!record) {
+//       return res.status(404).json({
+//         status: "failed",
+//         message: "Otp not found",
+//       });
+//     }
 
-    if (record[0].expiresAt < Date.now()) {
-      return res.status(400).json({
-        status: "failed",
-        message: "Your otp has been expired please request for a new one",
-      });
-    }
+//     if (record[0].expiresAt < Date.now()) {
+//       return res.status(400).json({
+//         status: "failed",
+//         message: "Your otp has been expired please request for a new one",
+//       });
+//     }
 
-    if (record[0].otp !== otp) {
-      return res.status(400).json({
-        status: "failed",
-        message: "Inavlid otp",
-      });
-    }
+//     if (record[0].otp !== otp) {
+//       return res.status(400).json({
+//         status: "failed",
+//         message: "Inavlid otp",
+//       });
+//     }
 
-    const newCustomer = await Customer.findOneAndUpdate(
-      {
-        customer_email: email,
-      },
-      {
-        customer_is_verified: true,
-      },
-      {
-        new: true,
-        runValidators: true,
-      }
-    );
+//     const newCustomer = await Customer.findOneAndUpdate(
+//       {
+//         customer_email: email,
+//       },
+//       {
+//         customer_is_verified: true,
+//       },
+//       {
+//         new: true,
+//         runValidators: true,
+//       }
+//     );
 
-    await OTP.deleteMany({ email, user_type });
+//     await OTP.deleteMany({ email, user_type });
 
-    const token = jwt.sign(
-      {
-        id: newCustomer._id,
-        role: "customer",
-        email,
-      },
-      process.env.JWT_SECRET,
-      {
-        expiresIn: process.env.JWT_EXPIRES_IN || "7d",
-      }
-    );
+//     const token = jwt.sign(
+//       {
+//         id: newCustomer._id,
+//         role: "customer",
+//         email,
+//       },
+//       process.env.JWT_SECRET,
+//       {
+//         expiresIn: process.env.JWT_EXPIRES_IN || "7d",
+//       }
+//     );
 
-    res.status(201).json({
-      status: "success",
-      message: "Welcome to BiteNow",
-    });
-  } catch (err) {
-    res.status(400).json({
-      status: "failed",
-      message: err.message,
-    });
-  }
-};
+//     res.status(201).json({
+//       status: "success",
+//       message: "Welcome to BiteNow",
+//     });
+//   } catch (err) {
+//     res.status(400).json({
+//       status: "failed",
+//       message: err.message,
+//     });
+//   }
+// };
 //login
 exports.loginCustomer = async (req, res) => {
   try {
@@ -287,7 +294,6 @@ exports.createRider = async (req, res) => {
       rider_password: req.body.rider_password,
       rider_date_of_birth: req.body.rider_date_of_birth,
       rider_gender: req.body.rider_gender,
-      rider_is_verified: false,
       rider_location: {
         type: "Point",
         coordinates: req.body.coordinates,
@@ -297,29 +303,41 @@ exports.createRider = async (req, res) => {
     const newRider = await Rider.create(riderData);
 
     // Send otp
-    const otp = Math.floor(1000 + Math.random() * 90000).toString();
-    await OTP.create({
-      email: req.body.rider_email,
-      user_type: "rider",
-      otp,
-      expiresAt: Date.now() + 5 * 60 * 1000,
-    });
+    // const otp = Math.floor(1000 + Math.random() * 90000).toString();
+    // await OTP.create({
+    //   email: req.body.rider_email,
+    //   user_type: "rider",
+    //   otp,
+    //   expiresAt: Date.now() + 5 * 60 * 1000,
+    // });
 
-    const htmlTemplate = `
-      <h2>Your BiteNow verification code</h2>
-      <p style = "font-size:22px">
-      Your Rider Account verification code is <b>${otp}</b>
-      </p>
-      <p>This code will Expire in 5 minute</p>
-    `;
-    await sendEmail(req.body.rider_email, "Verify your account", htmlTemplate);
+    // const htmlTemplate = `
+    //   <h2>Your BiteNow verification code</h2>
+    //   <p style = "font-size:22px">
+    //   Your Rider Account verification code is <b>${otp}</b>
+    //   </p>
+    //   <p>This code will Expire in 5 minute</p>
+    // `;
+    
+    // // Try to send email, but don't fail the request if it fails
+    // let emailSent = true;
+    // try {
+    //   await sendEmail(req.body.rider_email, "Verify your account", htmlTemplate);
+    // } catch (emailError) {
+    //   console.error("Failed to send verification email:", emailError.message);
+    //   emailSent = false;
+    // }
 
     res.status(201).json({
       status: "success",
-      message: "To Active your account please enter the otp send to your email",
+      // message: emailSent 
+      //   ? "To Active your account please enter the otp send to your email"
+      //   : "Account created successfully. However, we couldn't send the verification email. Please contact support or try requesting a new OTP.",
+      message:'Your Rider Account created successfully, Now wait for the Admin Approval',
       data: {
         newRider,
       },
+      //emailSent,
     });
   } catch (err) {
     res.status(400).json({
@@ -329,72 +347,73 @@ exports.createRider = async (req, res) => {
   }
 };
 //Verify accounut
-exports.verifyRiderOtp = async (req, res) => {
-  try {
-    const { email, user_type, otp } = req.body;
+// exports.verifyRiderOtp = async (req, res) => {
+//   try {
+//     const { email, user_type, otp } = req.body;
 
-    const record = await OTP.find({ email, user_type })
-      .sort("-createdAt")
-      .limit(1);
+//     const record = await OTP.find({ email, user_type })
+//       .sort("-createdAt")
+//       .limit(1);
 
-    if (!record) {
-      return res.status(404).json({
-        status: "failed",
-        message: "Otp not found",
-      });
-    }
+//     if (!record) {
+//       return res.status(404).json({
+//         status: "failed",
+//         message: "Otp not found",
+//       });
+//     }
 
-    if (record[0].expiresAt < Date.now()) {
-      return res.status(400).json({
-        status: "failed",
-        message: "Your otp has been expired please request for a new one",
-      });
-    }
+//     if (record[0].expiresAt < Date.now()) {
+//       return res.status(400).json({
+//         status: "failed",
+//         message: "Your otp has been expired please request for a new one",
+//       });
+//     }
 
-    if (record[0].otp !== otp) {
-      return res.status(400).json({
-        status: "failed",
-        message: "Invalid Otp",
-      });
-    }
+//     if (record[0].otp !== otp) {
+//       return res.status(400).json({
+//         status: "failed",
+//         message: "Invalid Otp",
+//       });
+//     }
 
-    const newRider = await Rider.findOneAndUpdate(
-      {
-        rider_email: email,
-      },
-      {
-        rider_is_verified: true,
-      },
-      {
-        new: true,
-        runValidators: true,
-      }
-    );
+//     const newRider = await Rider.findOneAndUpdate(
+//       {
+//         rider_email: email,
+//       },
+//       {
+//         rider_is_verified: true,
+//       },
+//       {
+//         new: true,
+//         runValidators: true,
+//       }
+//     );
 
-    await OTP.deleteMany({ email, user_type });
+//     await OTP.deleteMany({ email, user_type });
 
-    const token = jwt.sign(
-      {
-        id: newRider._id,
-        role: "rider",
-        email,
-      },
-      process.env.JWT_SECRET,
-      { expiresIn: process.env.JWT_EXPIRES_IN || "7d" }
-    );
+//     const token = jwt.sign(
+//       {
+//         id: newRider._id,
+//         role: "rider",
+//         email,
+//       },
+//       process.env.JWT_SECRET,
+//       { expiresIn: process.env.JWT_EXPIRES_IN || "7d" }
+//     );
 
-    res.status(201).json({
-      status: "success",
-      message:
-        "If all is ok Admin will send a email to your about the confirmation of you as a rider",
-    });
-  } catch (err) {
-    res.status(400).json({
-      status: "failed",
-      message: err.message,
-    });
-  }
-};
+//     res.status(201).json({
+//       status: "success",
+//       message:
+//         "If all is ok Admin will send a email to your about the confirmation of you as a rider",
+//     });
+//   } catch (err) {
+//     res.status(400).json({
+//       status: "failed",
+//       message: err.message,
+//     });
+//   }
+// };
+
 //Login
 exports.loginRider = async (req, res) => {
   try {
@@ -536,30 +555,42 @@ exports.createRestaurantOwner = async (req, res) => {
       restaurantOwnerData
     );
 
-    const otp = Math.floor(1000 + Math.random() * 90000).toString();
-    await OTP.create({
-      email: req.body.restaurant_owner_email,
-      user_type: "restaurant_owner",
-      otp,
-      expiresAt: Date.now() + 5 * 60 * 1000,
-    });
+    //Send otp
+    // const otp = Math.floor(1000 + Math.random() * 90000).toString();
+    // await OTP.create({
+    //   email: req.body.restaurant_owner_email,
+    //   user_type: "restaurant_owner",
+    //   otp,
+    //   expiresAt: Date.now() + 5 * 60 * 1000,
+    // });
 
-    const htmlTemlate = `
-      <h2>Your BiteNow Verification code</h2>
-      <p>Your Restaurant owner verification code is ${otp}</p>
-      <p>This code will expires in 5 minutes</p>
-    `;
-    await sendEmail(
-      req.body.restaurant_owner_email,
-      "Verify Your Restaurant Owner Account",
-      htmlTemlate
-    );
+    // const htmlTemlate = `
+    //   <h2>Your BiteNow Verification code</h2>
+    //   <p>Your Restaurant owner verification code is ${otp}</p>
+    //   <p>This code will expires in 5 minutes</p>
+    // `;
+    
+    // // Try to send email, but don't fail the request if it fails
+    // let emailSent = true;
+    // try {
+    //   await sendEmail(
+    //     req.body.restaurant_owner_email,
+    //     "Verify Your Restaurant Owner Account",
+    //     htmlTemlate
+    //   );
+    // } catch (emailError) {
+    //   console.error("Failed to send verification email:", emailError.message);
+    //   emailSent = false;
+    // }
 
     res.status(201).json({
       status: "success",
-      message:
-        "To Active your account Enter the otp code send to your email address",
+      // message: emailSent
+      //   ? "To Active your account Enter the otp code send to your email address"
+      //   : "Account created successfully. However, we couldn't send the verification email. Please contact support or try requesting a new OTP.",
+      message:'Your Restauratn Owner Account created successfully',
       data: newRestaurantOwner,
+      //emailSent,
     });
   } catch (err) {
     return res.status(400).json({
@@ -568,60 +599,62 @@ exports.createRestaurantOwner = async (req, res) => {
     });
   }
 };
-//Verify account
-exports.restaurantOwnerVerification = async (req, res) => {
-  try {
-    const { email, user_type, otp } = req.body;
-    if (!email || !user_type || !otp) {
-      return res.status(404).json({
-        status: "failed",
-        message: "Please enter the email, user_type and otp",
-      });
-    }
+// //Verify account
+// exports.restaurantOwnerVerification = async (req, res) => {
+//   try {
 
-    const record = await OTP.find({ email: email, user_type: user_type })
-      .sort("-createdAt")
-      .limit(1);
+//     const { email, user_type, otp } = req.body;
+//     if (!email || !user_type || !otp) {
+//       return res.status(404).json({
+//         status: "failed",
+//         message: "Please enter the email, user_type and otp",
+//       });
+//     }
 
-    if (record.length === 0) {
-      return res.status(404).json({
-        status: "failed",
-        message: "Invalid email or user_type",
-      });
-    }
+//     const record = await OTP.find({ email: email, user_type: user_type })
+//       .sort("-createdAt")
+//       .limit(1);
 
-    if (req.body.otp !== record[0].otp) {
-      return res.status(400).json({
-        status: "failed",
-        message: "Invalid OTP",
-      });
-    }
+//     if (record.length === 0) {
+//       return res.status(404).json({
+//         status: "failed",
+//         message: "Invalid email or user_type",
+//       });
+//     }
 
-    await RestaurantOwner.findOneAndUpdate(
-      {
-        restaurant_owner_email: email,
-      },
-      {
-        restaurant_owner_is_verified: true,
-      },
-      {
-        new: true,
-        runValidators: true,
-      }
-    );
+//     if (req.body.otp !== record[0].otp) {
+//       return res.status(400).json({
+//         status: "failed",
+//         message: "Invalid OTP",
+//       });
+//     }
 
-    res.status(200).json({
-      status: "success",
-      message:
-        "Your Account is verified. Now Please wait for the admin approval",
-    });
-  } catch (err) {
-    res.status(400).json({
-      status: "failed",
-      message: err.message,
-    });
-  }
-};
+//     await RestaurantOwner.findOneAndUpdate(
+//       {
+//         restaurant_owner_email: email,
+//       },
+//       {
+//         restaurant_owner_is_verified: true,
+//       },
+//       {
+//         new: true,
+//         runValidators: true,
+//       }
+//     );
+
+//     res.status(200).json({
+//       status: "success",
+//       message:
+//         "Your Account is verified. Now Please wait for the admin approval",
+//     });
+//   } catch (err) {
+//     res.status(400).json({
+//       status: "failed",
+//       message: err.message,
+//     });
+//   }
+// };
+
 //Login
 exports.loginRestaurantOwner = async (req, res) => {
   try {
@@ -658,8 +691,7 @@ exports.loginRestaurantOwner = async (req, res) => {
         message: "Wrong Password",
       });
     }
-
-    console.log(`Debug = ${sts}`);
+    
 
     if (sts !== "Approved") {
       let msg = "Your account is not acitve yet";
@@ -718,6 +750,15 @@ exports.loginRestaurantOwner = async (req, res) => {
 //Admin---------------------------------------------------------
 exports.createAdmin = async (req, res) => {
   try {
+    const superAdmin = await Admin.findById(req.user._id);
+
+    if(superAdmin.is_super === false) {
+      return res.status(403).json({
+        status:'failed',
+        message:'Only super admin are authroized to perform this operation'
+      });
+    }
+
     const requiredFields = [
       "admin_name",
       "admin_email",
@@ -740,18 +781,20 @@ exports.createAdmin = async (req, res) => {
       });
     }
 
-    const otp = Math.floor(1000 + Math.random() * 90000).toString();
-    const htmlTemplate = `
-      <h2>Your Admin Account Verification OTP</h2>
-      <p>Your otp is ${otp}</p>
-      <p>This otp will expires in 5 minutes</p>
-    `;
-    await OTP.create({
-      email: req.body.admin_email,
-      user_type: "admin",
-      otp,
-      expiresAt: Date.now() + 5 * 60 * 1000,
-    });
+
+    // Send OTP
+    // const otp = Math.floor(1000 + Math.random() * 90000).toString();
+    // const htmlTemplate = `
+    //   <h2>Your Admin Account Verification OTP</h2>
+    //   <p>Your otp is ${otp}</p>
+    //   <p>This otp will expires in 5 minutes</p>
+    // `;
+    // await OTP.create({
+    //   email: req.body.admin_email,
+    //   user_type: "admin",
+    //   otp,
+    //   expiresAt: Date.now() + 5 * 60 * 1000,
+    // });
 
     const adminData = {
       admin_name: req.body.admin_name,
@@ -763,16 +806,21 @@ exports.createAdmin = async (req, res) => {
       admin_address: req.body.admin_address || "",
       admin_photo: req.body.admin_photo || "",
     };
-
-    await sendEmail(
-      req.body.admin_email,
-      "Admin Account Verification Code",
-      htmlTemplate
-    );
-    await Admin.create(adminData);
+    // await sendEmail(
+    //   req.body.admin_email,
+    //   "Admin Account Verification Code",
+    //   htmlTemplate
+    // );
+    const newAdmin = await Admin.create(adminData);
+    if(!newAdmin) {
+      return res.status(400).json({
+        status:'failed',
+        message:'Failed to create new admin'
+      });
+    }
     res.status(201).json({
       status: "Success",
-      message: "Enter the otp to activate your account",
+      message: "New Admin Added successfully",
     });
   } catch (err) {
     res.status(400).json({
@@ -825,6 +873,7 @@ exports.adminLogin = async (req, res) => {
       admin_address: admin.admin_address || "",
       role: admin.role,
       admin_photo: admin.admin_photo || "",
+      is_super: admin.is_super || false,
     };
 
     res.status(200).json({
@@ -842,118 +891,240 @@ exports.adminLogin = async (req, res) => {
     });
   }
 };
-exports.verifyAdmin = async (req, res) => {
-  try {
-    const { email, user_type, otp } = req.body;
-    if (!email || !user_type || !otp) {
-      return res.status(400).json({
-        status: "failed",
-        message: "Please enter email, user_type and otp",
+exports.deleteAdmin = async (req, res) => {
+  try{
+
+    const {is_super} = await Admin.findById(req.user._id);
+    if(!is_super) {
+      return res.status(403).json({
+        status:'failed',
+        message:'You are not authorized to perform this operation'
       });
     }
 
-    const record = await OTP.find({
-      email: email,
-      user_type: user_type,
-    })
-      .sort("-createdAt")
-      .limit(1);
+    if(!req.body.target_id) {
+      return res.status(400).json({
+        status:'failed',
+        message:'You need an target id to perfomr this opeartion'
+      });
+    }
 
-    if (record.length === 0) {
+    const targetUser = await Admin.findById(req.body.target_id);
+    if(!targetUser) {
       return res.status(404).json({
-        status: "failed",
-        message: "Wrong Data",
+        status:'failed',
+        message:'No admin found with the given id'
       });
     }
 
-    if (record[0].otp !== otp) {
+    const dltAdmin = await Admin.findByIdAndDelete(req.body.target_id);
+    if(!dltAdmin) {
       return res.status(400).json({
-        status: "failed",
-        message: "Wrong OTP",
+        status:'failed',
+        message:'Failed to delete this admin'
       });
     }
 
-    if (record[0].expiresAt < Date.now()) {
-      return res.status(400).json({
-        status: "failed",
-        message: "Otp has been expired please request for a new one",
-      });
-    }
-
-    await OTP.deleteMany({ email: email, user_type: user_type });
-    await Admin.findOneAndUpdate(
-      {
-        admin_email: email,
-      },
-      {
-        admin_is_verified: true,
-      }
-    );
-
-    res.status(200).json({
-      status: "success",
-      message: "You account is activated successfully",
+    res.status(204).json({
+      status:'no-content'
     });
-  } catch (err) {
+
+  } catch(err) {
     res.status(400).json({
-      status: "success",
-      message: err.message,
+      status:'failed',
+      message:err.message
     });
   }
 };
 
-exports.newOtp = async (req, res) => {
+// exports.verifyAdmin = async (req, res) => {
+//   try {
+//     const { email, user_type, otp } = req.body;
+//     if (!email || !user_type || !otp) {
+//       return res.status(400).json({
+//         status: "failed",
+//         message: "Please enter email, user_type and otp",
+//       });
+//     }
+
+//     const record = await OTP.find({
+//       email: email,
+//       user_type: user_type,
+//     })
+//       .sort("-createdAt")
+//       .limit(1);
+
+//     if (record.length === 0) {
+//       return res.status(404).json({
+//         status: "failed",
+//         message: "Wrong Data",
+//       });
+//     }
+
+//     if (record[0].otp !== otp) {
+//       return res.status(400).json({
+//         status: "failed",
+//         message: "Wrong OTP",
+//       });
+//     }
+
+//     if (record[0].expiresAt < Date.now()) {
+//       return res.status(400).json({
+//         status: "failed",
+//         message: "Otp has been expired please request for a new one",
+//       });
+//     }
+
+//     await OTP.deleteMany({ email: email, user_type: user_type });
+//     await Admin.findOneAndUpdate(
+//       {
+//         admin_email: email,
+//       },
+//       {
+//         admin_is_verified: true,
+//       }
+//     );
+
+//     res.status(200).json({
+//       status: "success",
+//       message: "You account is activated successfully",
+//     });
+//   } catch (err) {
+//     res.status(400).json({
+//       status: "success",
+//       message: err.message,
+//     });
+//   }
+// };
+
+// exports.newOtp = async (req, res) => {
+//   try {
+//     const { email, user_type } = req.body;
+
+//     const record = await OTP.find({ email, user_type })
+//       .sort("-createdAt")
+//       .limit(1);
+
+//     if (!record) {
+//       return res.status(400).json({
+//         status: "failed",
+//         message: "Invalid Email address",
+//       });
+//     }
+
+//     const lastUpdate = record[0];
+
+//     if (lastUpdate.expiresAt >= Date.now()) {
+//       return res.status(400).json({
+//         status: "failed",
+//         message: "You can request for a new code only if the last one expired",
+//       });
+//     }
+
+//     const nOtp = Math.floor(1000 + Math.random() * 90000).toString();
+
+//     await OTP.findOneAndUpdate(
+//       {
+//         email: lastUpdate.email,
+//         otp: lastUpdate.otp,
+//       },
+//       {
+//         expiresAt: Date.now() + 5 * 60 * 1000,
+//       }
+//     );
+
+//     const htmlTemplate = `
+//       <h1>Your New Otp is ${nOtp}</h1>
+//       <p>Expires in 5 minute</p>
+//     `;
+//     await sendEmail(email, "New Otp", htmlTemplate);
+//     res.status(200).json({
+//       status: "success",
+//       message: "new otp sent",
+//       data: {
+//         nOtp,
+//       },
+//     });
+//   } catch (err) {
+//     res.status(400).json({
+//       status: "failed",
+//       message: err.message,
+//     });
+//   }
+// };
+
+// Google OAuth Success Handler - Customer
+exports.googleAuthSuccessCustomer = async (req, res) => {
   try {
-    const { email, user_type } = req.body;
+    const customer = req.user;
 
-    const record = await OTP.find({ email, user_type })
-      .sort("-createdAt")
-      .limit(1);
-
-    if (!record) {
-      return res.status(400).json({
-        status: "failed",
-        message: "Invalid Email address",
-      });
-    }
-
-    const lastUpdate = record[0];
-
-    if (lastUpdate.expiresAt >= Date.now()) {
-      return res.status(400).json({
-        status: "failed",
-        message: "You can request for a new code only if the last one expired",
-      });
-    }
-
-    const nOtp = Math.floor(1000 + Math.random() * 90000).toString();
-
-    await OTP.findOneAndUpdate(
-      {
-        email: lastUpdate.email,
-        otp: lastUpdate.otp,
+    const token = jwt.sign(
+      { 
+        id: customer._id,
+        email: customer.customer_email,
+        role: "customer"
       },
-      {
-        expiresAt: Date.now() + 5 * 60 * 1000,
-      }
+      process.env.JWT_SECRET,
+      { expiresIn: process.env.JWT_EXPIRES_IN }
     );
 
-    const htmlTemplate = `
-      <h1>Your New Otp is ${nOtp}</h1>
-      <p>Expires in 5 minute</p>
-    `;
-    await sendEmail(email, "New Otp", htmlTemplate);
-    res.status(200).json({
-      status: "success",
-      message: "new otp sent",
-      data: {
-        nOtp,
-      },
-    });
+    const redirectUrl = `${process.env.FRONTEND_URL || "http://localhost:5173"}/auth/google/success?token=${token}&userId=${customer._id}&role=customer`;
+    res.redirect(redirectUrl);
   } catch (err) {
-    res.status(400).json({
-      status: "failed",
-      message: err.message,
-    });
+    const errorUrl = `${process.env.FRONTEND_URL || "http://localhost:5173"}/login?error=google_auth_failed`;
+    res.redirect(errorUrl);
   }
+};
+
+// Google OAuth Success Handler - Restaurant Owner
+exports.googleAuthSuccessRestaurant = async (req, res) => {
+  try {
+    const restaurantOwner = req.user;
+
+    const token = jwt.sign(
+      { 
+        id: restaurantOwner._id,
+        email: restaurantOwner.restaurant_owner_email,
+        role: "restaurant"
+      },
+      process.env.JWT_SECRET,
+      { expiresIn: process.env.JWT_EXPIRES_IN }
+    );
+
+    const redirectUrl = `${process.env.FRONTEND_URL || "http://localhost:5173"}/auth/google/success?token=${token}&userId=${restaurantOwner._id}&role=restaurant`;
+        
+    res.redirect(redirectUrl);
+  } catch (err) {
+    const errorUrl = `${process.env.FRONTEND_URL || "http://localhost:5173"}/login?error=google_auth_failed`;
+    res.redirect(errorUrl);
+  }
+};
+
+// Google OAuth Success Handler - Rider
+exports.googleAuthSuccessRider = async (req, res) => {
+  try {
+    const rider = req.user;
+
+    const token = jwt.sign(
+      { 
+        id: rider._id,
+        email: rider.rider_email,
+        role: "rider"
+      },
+      process.env.JWT_SECRET,
+      { expiresIn: process.env.JWT_EXPIRES_IN }
+    );
+
+    const redirectUrl = `${process.env.FRONTEND_URL || "http://localhost:5173"}/auth/google/success?token=${token}&userId=${rider._id}&role=rider`;
+    res.redirect(redirectUrl);
+  } catch (err) {
+    const errorUrl = `${process.env.FRONTEND_URL || "http://localhost:5173"}/login?error=google_auth_failed`;
+    res.redirect(errorUrl);
+  }
+};
+
+// Google OAuth Failure Handler
+exports.googleAuthFailure = (req, res) => {
+  const errorUrl = `${process.env.FRONTEND_URL || "http://localhost:5173"}/login?error=google_auth_failed`;
+  res.redirect(errorUrl);
 };

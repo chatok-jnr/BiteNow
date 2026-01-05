@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import Sidebar from '../components/Sidebar';
 import { Search, X, FileText, User, Shield, Calendar, AlertCircle } from 'lucide-react';
+import axiosInstance from '../utils/axios';
 
 export default function AuditLogs() {
   const [searchQuery, setSearchQuery] = useState('');
@@ -10,286 +11,28 @@ export default function AuditLogs() {
   const [showDetailModal, setShowDetailModal] = useState(false);
   const [loading, setLoading] = useState(true);
 
-  // Fetch audit logs from API or use dummy data
+  // Fetch audit logs from API
   useEffect(() => {
-    // Using dummy data for now
-    loadDummyData();
-    // Uncomment below to fetch from API
-    // fetchAuditLogs();
+    fetchAuditLogs();
   }, []);
-
-  const loadDummyData = () => {
-    setLoading(true);
-    // Simulate API delay
-    setTimeout(() => {
-      const dummyLogs = [
-        {
-          _id: '1',
-          actor: {
-            id: '67890abc12345def67890abc',
-            name: 'Sarah Johnson',
-            ip_address: '192.168.1.105'
-          },
-          target: {
-            id: '12345abc67890def12345abc',
-            name: 'Marco\'s Italian Kitchen',
-            user_type: 'RestaurantOwner'
-          },
-          action: 'OWNER_APPROVE',
-          reasson: 'All documents verified successfully. Restaurant license is valid and business registration is complete. Owner has good credit history.',
-          createdAt: '2024-12-31T10:30:00Z'
-        },
-        {
-          _id: '2',
-          actor: {
-            id: '67890abc12345def67890abc',
-            name: 'Sarah Johnson',
-            ip_address: '192.168.1.105'
-          },
-          target: {
-            id: '98765fed43210cba98765fed',
-            name: 'David Martinez',
-            user_type: 'Rider'
-          },
-          action: 'RIDER_APPROVE',
-          reasson: 'Driver license verified. Background check passed. Vehicle registration is valid.',
-          createdAt: '2024-12-31T09:15:00Z'
-        },
-        {
-          _id: '3',
-          actor: {
-            id: '11111abc22222def33333abc',
-            name: 'Michael Chen',
-            ip_address: '192.168.1.108'
-          },
-          target: {
-            id: '54321fed09876cba54321fed',
-            name: 'Robert Williams',
-            user_type: 'Customer'
-          },
-          action: 'CUSTOMER_BAN',
-          reasson: 'Multiple reports of abusive behavior towards delivery riders. Customer has violated terms of service repeatedly with offensive language and threatening behavior.',
-          createdAt: '2024-12-30T16:45:00Z'
-        },
-        {
-          _id: '4',
-          actor: {
-            id: '67890abc12345def67890abc',
-            name: 'Sarah Johnson',
-            ip_address: '192.168.1.105'
-          },
-          target: {
-            id: '77777abc88888def99999abc',
-            name: 'Golden Dragon Restaurant',
-            user_type: 'RestaurantOwner'
-          },
-          action: 'OWNER_REJECT',
-          reasson: 'Incomplete documentation. Business license has expired. Unable to verify ownership of the restaurant premises.',
-          createdAt: '2024-12-30T14:20:00Z'
-        },
-        {
-          _id: '5',
-          actor: {
-            id: '11111abc22222def33333abc',
-            name: 'Michael Chen',
-            ip_address: '192.168.1.108'
-          },
-          target: {
-            id: '33333fed44444cba55555fed',
-            name: 'James Anderson',
-            user_type: 'Rider'
-          },
-          action: 'RIDER_BAN',
-          reasson: 'Multiple customer complaints about late deliveries and unprofessional conduct. GPS tracking shows rider not following assigned routes.',
-          createdAt: '2024-12-29T11:30:00Z'
-        },
-        {
-          _id: '6',
-          actor: {
-            id: '67890abc12345def67890abc',
-            name: 'Sarah Johnson',
-            ip_address: '192.168.1.105'
-          },
-          target: {
-            id: '22222abc33333def44444abc',
-            name: 'Emily Davis',
-            user_type: 'Customer'
-          },
-          action: 'CUSTOMER_UNBAN',
-          reasson: 'Appeal approved. Customer apologized and committed to following community guidelines. Previous ban duration completed.',
-          createdAt: '2024-12-29T09:00:00Z'
-        },
-        {
-          _id: '7',
-          actor: {
-            id: '11111abc22222def33333abc',
-            name: 'Michael Chen',
-            ip_address: '192.168.1.108'
-          },
-          target: {
-            id: '66666fed77777cba88888fed',
-            name: 'Christopher Lee',
-            user_type: 'Rider'
-          },
-          action: 'RIDER_REJECT',
-          reasson: 'Failed background check. Driver license is suspended in state records.',
-          createdAt: '2024-12-28T15:10:00Z'
-        },
-        {
-          _id: '8',
-          actor: {
-            id: '67890abc12345def67890abc',
-            name: 'Sarah Johnson',
-            ip_address: '192.168.1.105'
-          },
-          target: {
-            id: '11111abc22222def33333abc',
-            name: 'Sunset Grill & Bar',
-            user_type: 'RestaurantOwner'
-          },
-          action: 'OWNER_PASS_RESET',
-          reasson: 'Owner requested password reset due to suspected account compromise. Security verification completed via phone.',
-          createdAt: '2024-12-28T10:25:00Z'
-        },
-        {
-          _id: '9',
-          actor: {
-            id: '11111abc22222def33333abc',
-            name: 'Michael Chen',
-            ip_address: '192.168.1.108'
-          },
-          target: {
-            id: '99999fed00000cba11111fed',
-            name: 'Jennifer Taylor',
-            user_type: 'Customer'
-          },
-          action: 'CUSTOMER_DELETE',
-          reasson: 'Customer requested permanent account deletion per GDPR regulations. All personal data has been removed from the system.',
-          createdAt: '2024-12-27T13:40:00Z'
-        },
-        {
-          _id: '10',
-          actor: {
-            id: '67890abc12345def67890abc',
-            name: 'Sarah Johnson',
-            ip_address: '192.168.1.105'
-          },
-          target: {
-            id: '55555abc66666def77777abc',
-            name: 'Spice Paradise',
-            user_type: 'RestaurantOwner'
-          },
-          action: 'OWNER_UNBAN',
-          reasson: 'Restaurant has resolved all outstanding health code violations. New inspection passed with excellent rating.',
-          createdAt: '2024-12-27T08:15:00Z'
-        },
-        {
-          _id: '11',
-          actor: {
-            id: '11111abc22222def33333abc',
-            name: 'Michael Chen',
-            ip_address: '192.168.1.108'
-          },
-          target: {
-            id: null,
-            name: null,
-            user_type: 'All'
-          },
-          action: 'ANNOUNCEMENT',
-          reasson: 'System-wide announcement: Platform will undergo scheduled maintenance on January 1st, 2025 from 2:00 AM to 6:00 AM. All services will be temporarily unavailable.',
-          createdAt: '2024-12-26T17:00:00Z'
-        },
-        {
-          _id: '12',
-          actor: {
-            id: '67890abc12345def67890abc',
-            name: 'Sarah Johnson',
-            ip_address: '192.168.1.105'
-          },
-          target: {
-            id: '88888fed99999cba00000fed',
-            name: 'Daniel Brown',
-            user_type: 'Rider'
-          },
-          action: 'RIDER_UNBAN',
-          reasson: 'Completed required training program. Demonstrated improved professionalism and time management skills.',
-          createdAt: '2024-12-26T12:30:00Z'
-        },
-        {
-          _id: '13',
-          actor: {
-            id: '11111abc22222def33333abc',
-            name: 'Michael Chen',
-            ip_address: '192.168.1.108'
-          },
-          target: {
-            id: '44444abc55555def66666abc',
-            name: 'Amanda Wilson',
-            user_type: 'Customer'
-          },
-          action: 'CUSTOMER_PASS_RESET',
-          reasson: 'Password reset requested by customer. Verified via email confirmation and security questions.',
-          createdAt: '2024-12-25T20:15:00Z'
-        },
-        {
-          _id: '14',
-          actor: {
-            id: '67890abc12345def67890abc',
-            name: 'Sarah Johnson',
-            ip_address: '192.168.1.105'
-          },
-          target: {
-            id: '33333abc44444def55555abc',
-            name: 'Ocean Breeze Seafood',
-            user_type: 'RestaurantOwner'
-          },
-          action: 'OWNER_BAN',
-          reasson: 'Serious food safety violations reported. Health department inspection failed. Restaurant must address critical issues before reactivation.',
-          createdAt: '2024-12-25T14:00:00Z'
-        },
-        {
-          _id: '15',
-          actor: {
-            id: '11111abc22222def33333abc',
-            name: 'Michael Chen',
-            ip_address: '192.168.1.108'
-          },
-          target: {
-            id: null,
-            name: null,
-            user_type: null
-          },
-          action: 'ANNOUNCEMENT',
-          reasson: 'Happy Holidays! Special promotion: Free delivery on all orders over $30 from December 24th to December 26th.',
-          createdAt: '2024-12-24T09:00:00Z'
-        }
-      ];
-      
-      setAuditLogs(dummyLogs);
-      setFilteredLogs(dummyLogs);
-      setLoading(false);
-    }, 800);
-  };
 
   const fetchAuditLogs = async () => {
     try {
       setLoading(true);
-      const token = localStorage.getItem('token');
-      const response = await fetch('http://localhost:8000/api/v1/admin/auditLogs', {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        }
-      });
+      const response = await axiosInstance.get('/admin/auditLogs');
       
-      const data = await response.json();
-      
-      if (data.status === 'success') {
-        setAuditLogs(data.data);
-        setFilteredLogs(data.data);
+      if (response.data.status === 'success') {
+        setAuditLogs(response.data.data);
+        setFilteredLogs(response.data.data);
       }
     } catch (error) {
       console.error('Error fetching audit logs:', error);
+      // Show error message to user
+      if (error.response?.status === 401) {
+        // Handle unauthorized - redirect to login
+        localStorage.removeItem('adminToken');
+        window.location.href = '/login';
+      }
     } finally {
       setLoading(false);
     }
@@ -468,14 +211,14 @@ export default function AuditLogs() {
                   <div className="grid grid-cols-2 gap-4 text-sm">
                     <div>
                       <p className="text-gray-500 mb-1">Admin</p>
-                      <p className="text-gray-300 font-medium">{log.actor.name}</p>
-                      <p className="text-gray-600 font-mono text-xs mt-0.5">{log.actor.id}</p>
+                      <p className="text-gray-300 font-medium">{log.actor.id.admin_name}</p>
+                      <p className="text-gray-600 font-mono text-xs mt-0.5">{log.actor.id._id}</p>
                     </div>
                     {log.target?.id ? (
                       <div>
                         <p className="text-gray-500 mb-1">Target User</p>
-                        <p className="text-gray-300 font-medium">{log.target.name}</p>
-                        <p className="text-gray-600 font-mono text-xs mt-0.5">{log.target.id}</p>
+                        <p className="text-gray-300 font-medium font-mono text-sm">{log.target.id}</p>
+                        <p className="text-gray-600 text-xs mt-0.5">{log.target.user_type}</p>
                       </div>
                     ) : (
                       <div>
@@ -542,11 +285,11 @@ export default function AuditLogs() {
                   <div className="space-y-2">
                     <div>
                       <p className="text-xs text-gray-500">Admin Name</p>
-                      <p className="text-gray-300 font-medium">{selectedLog.actor.name}</p>
+                      <p className="text-gray-300 font-medium">{selectedLog.actor.id.admin_name}</p>
                     </div>
                     <div>
                       <p className="text-xs text-gray-500">Admin ID</p>
-                      <p className="text-gray-300 font-mono text-sm">{selectedLog.actor.id}</p>
+                      <p className="text-gray-300 font-mono text-sm">{selectedLog.actor.id._id}</p>
                     </div>
                     <div>
                       <p className="text-xs text-gray-500">IP Address</p>
@@ -568,10 +311,6 @@ export default function AuditLogs() {
                         <span className={`inline-block px-3 py-1 rounded-full text-xs font-medium mt-1 ${getUserTypeBadgeColor(selectedLog.target.user_type)}`}>
                           {selectedLog.target.user_type}
                         </span>
-                      </div>
-                      <div>
-                        <p className="text-xs text-gray-500">User Name</p>
-                        <p className="text-gray-300 font-medium">{selectedLog.target.name}</p>
                       </div>
                       <div>
                         <p className="text-xs text-gray-500">User ID</p>

@@ -18,7 +18,7 @@ const auditSchema = new mongoose.Schema({
     },
     user_type:{
       type:String,
-      enum:['Customer', 'RestaurantOwner', 'Rider', 'Restaurant', 'All'],
+      enum:['Customer', 'RestaurantOwner', 'Restaurant', 'Rider', 'Restaurant', 'All'],
     }
   },
   action:{
@@ -27,6 +27,7 @@ const auditSchema = new mongoose.Schema({
     enum:[
       'CUSTOMER_BAN', 'CUSTOMER_DELETE', 'CUSTOMER_UNBAN', 'CUSTOMER_PASS_RESET',
       'OWNER_APPROVE', 'OWNER_REJECT', 'OWNER_BAN', 'OWNER_UNBAN', 'OWNER_DELETE', 'OWNER_PASS_RESET',
+      'RESTAURANT_APPROVE', 'RESTAURANT_REJECT', 'RESTAURANT_BAN', 'RESTAURANT_UNBAN', 'RESTAURANT_DELETE',
       'RIDER_APPROVE', 'RIDER_REJECT', 'RIDER_BAN', 'RIDER_UNBAN', 'RIDER_DELETE', 'RIDER_PASS_RESET',
       'ANNOUNCEMENT'
     ]

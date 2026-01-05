@@ -103,13 +103,9 @@ function RiderDashboard() {
           id: order._id,
           _id: order._id,
           order_id: order.order_id, // Use actual order_id from API
-          restaurant_name:
-            order.restaurant_id?.restaurant_name || "Unknown Restaurant",
-          restaurant_address:
-            order.restaurant_id?.restaurant_address ||
-            (order.restaurant_location
-              ? "Restaurant Location Available"
-              : "Unknown Address"),
+          restaurant_name: order.restaurant_id?.restaurant_name || "Unknown Restaurant",
+          restaurant_address: order.restaurant_id?.restaurant_address || 
+            (order.restaurant_location ? "Restaurant Location Available" : "Unknown Address"),
           customer_name: "Customer", // API doesn't provide customer name
           customer_address: `${order.delivery_address.street}, ${order.delivery_address.city}, ${order.delivery_address.state}, ${order.delivery_address.zip_code}`,
           delivery_address: `${order.delivery_address.street}, ${order.delivery_address.city}, ${order.delivery_address.state}, ${order.delivery_address.zip_code}`,
@@ -128,7 +124,7 @@ function RiderDashboard() {
           updatedAt: order.updatedAt,
           restaurant_id: order.restaurant_id, // Preserve full restaurant object
         }));
-
+        
         console.log("✅ Transformed Deliveries:", transformedDeliveries);
         setActiveDeliveries(transformedDeliveries);
       } else {

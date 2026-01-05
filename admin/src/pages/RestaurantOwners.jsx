@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import Sidebar from '../components/Sidebar';
 import { Search, MoreVertical, X, FileText, ExternalLink, Store } from 'lucide-react';
+import axiosInstance from '../utils/axios';
 
 export default function RestaurantOwners() {
   const [activeTab, setActiveTab] = useState('All');
@@ -12,153 +13,52 @@ export default function RestaurantOwners() {
   const [showActionMenu, setShowActionMenu] = useState(null);
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [pendingAction, setPendingAction] = useState(null);
+  const [actionReason, setActionReason] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
 
-  // Mock data - Replace with actual API call
+  // Fetch restaurant owners from API
   useEffect(() => {
-    const mockOwners = [
-      {
-        id: 'RO001',
-        name: 'Ahmed Hassan',
-        email: 'ahmed.hassan@example.com',
-        phone: '+8801712345678',
-        status: 'Approved',
-        verified: true,
-        photo: 'https://i.pravatar.cc/150?img=33',
-        birthDate: '1985-03-15',
-        gender: 'Male',
-        address: 'Dhanmondi, Dhaka',
-        joinedDate: '2024-01-10',
-        totalRestaurants: 3,
-        documents: [
-          { type: 'Trade License', url: 'https://example.com/trade-license-1.pdf', uploadedAt: '2024-01-10' },
-          { type: 'NID', url: 'https://example.com/nid-1.pdf', uploadedAt: '2024-01-10' },
-          { type: 'Tax Certificate', url: 'https://example.com/tax-cert-1.pdf', uploadedAt: '2024-01-10' },
-          { type: 'Business Registration', url: 'https://example.com/business-reg-1.pdf', uploadedAt: '2024-01-10' }
-        ],
-        restaurants: [
-          { id: 'REST001', name: 'Spice Garden' },
-          { id: 'REST002', name: 'Royal Kitchen' },
-          { id: 'REST003', name: 'Dhaka Delights' }
-        ]
-      },
-      {
-        id: 'RO002',
-        name: 'Fatima Rahman',
-        email: 'fatima.rahman@example.com',
-        phone: '+8801823456789',
-        status: 'Pending',
-        verified: false,
-        photo: 'https://i.pravatar.cc/150?img=47',
-        birthDate: '1990-07-22',
-        gender: 'Female',
-        address: 'Gulshan, Dhaka',
-        joinedDate: '2024-03-20',
-        totalRestaurants: 1,
-        documents: [
-          { type: 'Trade License', url: 'https://example.com/trade-license-2.pdf', uploadedAt: '2024-03-20' },
-          { type: 'NID', url: 'https://example.com/nid-2.pdf', uploadedAt: '2024-03-20' }
-        ],
-        restaurants: [
-          { id: 'REST004', name: 'Fusion Café' }
-        ]
-      },
-      {
-        id: 'RO003',
-        name: 'Karim Uddin',
-        email: 'karim.uddin@example.com',
-        phone: '+8801934567890',
-        status: 'Approved',
-        verified: true,
-        photo: 'https://i.pravatar.cc/150?img=52',
-        birthDate: '1982-11-08',
-        gender: 'Male',
-        address: 'Uttara, Dhaka',
-        joinedDate: '2023-12-05',
-        totalRestaurants: 5,
-        documents: [
-          { type: 'Trade License', url: 'https://example.com/trade-license-3.pdf', uploadedAt: '2023-12-05' },
-          { type: 'NID', url: 'https://example.com/nid-3.pdf', uploadedAt: '2023-12-05' },
-          { type: 'Tax Certificate', url: 'https://example.com/tax-cert-3.pdf', uploadedAt: '2023-12-05' },
-          { type: 'Business Registration', url: 'https://example.com/business-reg-3.pdf', uploadedAt: '2023-12-05' },
-          { type: 'Food Safety Certificate', url: 'https://example.com/food-safety-3.pdf', uploadedAt: '2023-12-05' }
-        ],
-        restaurants: [
-          { id: 'REST005', name: 'Heritage Restaurant' },
-          { id: 'REST006', name: 'Biryani House' },
-          { id: 'REST007', name: 'Street Food Corner' },
-          { id: 'REST008', name: 'Premium Grill' },
-          { id: 'REST009', name: 'Fast Bites' }
-        ]
-      },
-      {
-        id: 'RO004',
-        name: 'Nusrat Jahan',
-        email: 'nusrat.jahan@example.com',
-        phone: '+8801645678901',
-        status: 'Suspended',
-        verified: true,
-        photo: 'https://i.pravatar.cc/150?img=44',
-        birthDate: '1988-05-30',
-        gender: 'Female',
-        address: 'Banani, Dhaka',
-        joinedDate: '2023-10-15',
-        totalRestaurants: 2,
-        documents: [
-          { type: 'Trade License', url: 'https://example.com/trade-license-4.pdf', uploadedAt: '2023-10-15' },
-          { type: 'NID', url: 'https://example.com/nid-4.pdf', uploadedAt: '2023-10-15' },
-          { type: 'Tax Certificate', url: 'https://example.com/tax-cert-4.pdf', uploadedAt: '2023-10-15' }
-        ],
-        restaurants: [
-          { id: 'REST010', name: 'Green Curry' },
-          { id: 'REST011', name: 'Dessert Paradise' }
-        ]
-      },
-      {
-        id: 'RO005',
-        name: 'Rahim Mia',
-        email: 'rahim.mia@example.com',
-        phone: '+8801556789012',
-        status: 'Approved',
-        verified: false,
-        photo: 'https://i.pravatar.cc/150?img=60',
-        birthDate: '1992-09-12',
-        gender: 'Male',
-        address: 'Mirpur, Dhaka',
-        joinedDate: '2024-02-18',
-        totalRestaurants: 1,
-        documents: [
-          { type: 'Trade License', url: 'https://example.com/trade-license-5.pdf', uploadedAt: '2024-02-18' },
-          { type: 'NID', url: 'https://example.com/nid-5.pdf', uploadedAt: '2024-02-18' }
-        ],
-        restaurants: [
-          { id: 'REST012', name: 'Budget Bites' }
-        ]
-      },
-      {
-        id: 'RO006',
-        name: 'Shabnam Akter',
-        email: 'shabnam.akter@example.com',
-        phone: '+8801467890123',
-        status: 'Pending',
-        verified: false,
-        photo: 'https://i.pravatar.cc/150?img=45',
-        birthDate: '1995-01-20',
-        gender: 'Female',
-        address: 'Mohammadpur, Dhaka',
-        joinedDate: '2024-03-25',
-        totalRestaurants: 1,
-        documents: [
-          { type: 'Trade License', url: 'https://example.com/trade-license-6.pdf', uploadedAt: '2024-03-25' },
-          { type: 'NID', url: 'https://example.com/nid-6.pdf', uploadedAt: '2024-03-25' },
-          { type: 'Business Registration', url: 'https://example.com/business-reg-6.pdf', uploadedAt: '2024-03-25' }
-        ],
-        restaurants: [
-          { id: 'REST013', name: 'Sweet Treats' }
-        ]
-      }
-    ];
-    setOwners(mockOwners);
+    fetchOwners();
   }, []);
+
+  const fetchOwners = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const response = await axiosInstance.get('/admin/owner');
+      
+      if (response.data.status === 'success') {
+        // Transform API data to match component structure
+        const transformedOwners = response.data.owners.map(owner => ({
+          id: owner._id,
+          name: owner.restaurant_owner_name,
+          email: owner.restaurant_owner_email,
+          phone: owner.restaurant_owner_phone,
+          status: owner.restaurant_owner_status, // Use backend value directly
+          verified: owner.restaurant_owner_is_verified,
+          photo: owner.restaurant_owner_image?.url,
+          birthDate: owner.restaurant_owner_dob 
+            ? new Date(owner.restaurant_owner_dob).toLocaleDateString('en-CA')
+            : 'N/A',
+          gender: owner.restaurant_owner_gender,
+          address: owner.restaurant_owner_address || 'No address provided',
+          joinedDate: owner.restaurant_owner_created_at 
+            ? new Date(owner.restaurant_owner_created_at).toLocaleDateString('en-CA')
+            : 'N/A',
+          totalRestaurants: owner.restaurants?.length || 0,
+          documents: owner.restaurant_owner_documents || [],
+          restaurants: owner.restaurants || []
+        }));
+        setOwners(transformedOwners);
+      }
+    } catch (err) {
+      console.error('Error fetching owners:', err);
+      setError(err.response?.data?.message || 'Failed to fetch restaurant owners');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   // Filter owners based on active tab and search
   useEffect(() => {
@@ -204,36 +104,66 @@ export default function RestaurantOwners() {
     setShowActionMenu(null);
   };
 
-  const confirmAction = () => {
+  const confirmAction = async () => {
+    if (!actionReason.trim()) {
+      alert('Please provide a reason for this action.');
+      return;
+    }
+
     const { action, owner } = pendingAction;
     
-    // Update owner status
-    setOwners(prev => prev.map(o => {
-      if (o.id === owner.id) {
-        if (action === 'Delete') {
-          return null; // Will be filtered out
-        } else if (action === 'Approve') {
-          return { ...o, status: 'Approved' };
-        } else if (action === 'Suspend') {
-          return { ...o, status: 'Suspended' };
-        } else if (action === 'Verify') {
-          return { ...o, verified: true };
-        } else if (action === 'Unverify') {
-          return { ...o, verified: false };
+    try {
+      setLoading(true);
+      
+      // Handle different actions with appropriate API calls
+      if (action === 'Delete') {
+        // Delete owner
+        await axiosInstance.delete(`/admin/owner/${owner.id}`, {
+          data: { reasson: actionReason }
+        });
+      } else if (action === 'Approve' || action === 'Reject') {
+        // Check if it's a pending owner (use approve-reject endpoint) or suspended (use regular endpoint)
+        if (owner.status === 'Pending') {
+          await axiosInstance.patch(`/admin/owner/approve-reject/${owner.id}`, {
+            owner_status: action === 'Approve' ? 'Approved' : 'Rejected',
+            reasson: actionReason
+          });
+        } else {
+          // For suspended owners being approved
+          await axiosInstance.patch(`/admin/owner/${owner.id}`, {
+            owner_status: 'Approved',
+            reasson: actionReason
+          });
         }
+      } else if (action === 'Suspend') {
+        // Suspend owner
+        await axiosInstance.patch(`/admin/owner/${owner.id}`, {
+          owner_status: 'Suspended',
+          reasson: actionReason
+        });
       }
-      return o;
-    }).filter(Boolean));
-
-    // Close dialogs
-    setShowConfirmDialog(false);
-    setPendingAction(null);
-    setShowDetailModal(false);
+      
+      // Refresh the owner list
+      await fetchOwners();
+      
+      // Close dialogs and reset
+      setShowConfirmDialog(false);
+      setPendingAction(null);
+      setActionReason('');
+      setShowDetailModal(false);
+      
+    } catch (err) {
+      console.error('Error performing action:', err);
+      alert(err.response?.data?.message || 'Failed to perform action');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const cancelAction = () => {
     setShowConfirmDialog(false);
     setPendingAction(null);
+    setActionReason('');
   };
 
   const tabs = ['All', 'Pending', 'Approved', 'Suspended', 'Verified'];
@@ -283,7 +213,25 @@ export default function RestaurantOwners() {
           </div>
 
           {/* Owner Cards Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {loading ? (
+            <div className="flex items-center justify-center py-16">
+              <div className="text-center">
+                <div className="inline-block w-12 h-12 border-4 border-orange-500/20 border-t-orange-500 rounded-full animate-spin mb-4"></div>
+                <p className="text-gray-400">Loading restaurant owners...</p>
+              </div>
+            </div>
+          ) : error ? (
+            <div className="bg-red-500/10 border border-red-500/20 rounded-2xl p-6 text-center">
+              <p className="text-red-400 mb-4">{error}</p>
+              <button
+                onClick={fetchOwners}
+                className="px-6 py-2 bg-red-500/20 text-red-400 rounded-xl hover:bg-red-500/30 transition-colors"
+              >
+                Try Again
+              </button>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredOwners.map((owner) => (
               <div
                 key={owner.id}
@@ -303,6 +251,28 @@ export default function RestaurantOwners() {
                   {showActionMenu === owner.id && (
                     <div className="absolute right-0 mt-2 w-48 bg-[#1f1f2a] border border-white/10 rounded-xl shadow-2xl overflow-hidden z-20">
                       {owner.status === 'Pending' && (
+                        <>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleAction('Approve', owner);
+                            }}
+                            className="w-full px-4 py-3 text-left text-sm text-green-400 hover:bg-white/5 transition-colors"
+                          >
+                            Approve
+                          </button>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleAction('Reject', owner);
+                            }}
+                            className="w-full px-4 py-3 text-left text-sm text-red-400 hover:bg-white/5 transition-colors"
+                          >
+                            Reject
+                          </button>
+                        </>
+                      )}
+                      {owner.status === 'Suspended' && (
                         <button
                           onClick={(e) => {
                             e.stopPropagation();
@@ -313,17 +283,7 @@ export default function RestaurantOwners() {
                           Approve
                         </button>
                       )}
-                      {owner.status === 'Suspended' ? (
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleAction('Approve', owner);
-                          }}
-                          className="w-full px-4 py-3 text-left text-sm text-green-400 hover:bg-white/5 transition-colors"
-                        >
-                          Activate
-                        </button>
-                      ) : (
+                      {owner.status === 'Approved' && (
                         <button
                           onClick={(e) => {
                             e.stopPropagation();
@@ -332,27 +292,6 @@ export default function RestaurantOwners() {
                           className="w-full px-4 py-3 text-left text-sm text-yellow-400 hover:bg-white/5 transition-colors"
                         >
                           Suspend
-                        </button>
-                      )}
-                      {!owner.verified ? (
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleAction('Verify', owner);
-                          }}
-                          className="w-full px-4 py-3 text-left text-sm text-blue-400 hover:bg-white/5 transition-colors"
-                        >
-                          Mark as Verified
-                        </button>
-                      ) : (
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleAction('Unverify', owner);
-                          }}
-                          className="w-full px-4 py-3 text-left text-sm text-gray-400 hover:bg-white/5 transition-colors"
-                        >
-                          Remove Verification
                         </button>
                       )}
                       <button
@@ -371,11 +310,17 @@ export default function RestaurantOwners() {
                 {/* Owner Photo */}
                 <div className="flex justify-center mb-4">
                   <div className="relative">
-                    <img
-                      src={owner.photo}
-                      alt={owner.name}
-                      className="w-24 h-24 rounded-full border-4 border-white/10 group-hover:border-orange-500/50 transition-colors"
-                    />
+                    {owner.photo ? (
+                      <img
+                        src={owner.photo}
+                        alt={owner.name}
+                        className="w-24 h-24 rounded-full border-4 border-white/10 group-hover:border-orange-500/50 transition-colors object-cover"
+                      />
+                    ) : (
+                      <div className="w-24 h-24 rounded-full border-4 border-white/10 group-hover:border-orange-500/50 transition-colors bg-gradient-to-br from-orange-500/20 to-purple-500/20 flex items-center justify-center text-5xl">
+                        {owner.gender === 'Male' ? '👨' : owner.gender === 'Female' ? '👩' : '👤'}
+                      </div>
+                    )}
                     <div className={`absolute bottom-0 right-0 w-5 h-5 rounded-full border-2 border-[#1a1a22] ${
                       owner.status === 'Approved' ? 'bg-green-500' : 
                       owner.status === 'Pending' ? 'bg-yellow-500' : 'bg-red-500'
@@ -434,6 +379,7 @@ export default function RestaurantOwners() {
               </div>
             ))}
           </div>
+          )}
 
           {/* Empty State */}
           {filteredOwners.length === 0 && (
@@ -476,11 +422,17 @@ export default function RestaurantOwners() {
             <div className="p-6">
               {/* Profile Section */}
               <div className="flex items-center gap-6 mb-8 pb-6 border-b border-white/10">
-                <img
-                  src={selectedOwner.photo}
-                  alt={selectedOwner.name}
-                  className="w-24 h-24 rounded-full border-4 border-white/10"
-                />
+                {selectedOwner.photo ? (
+                  <img
+                    src={selectedOwner.photo}
+                    alt={selectedOwner.name}
+                    className="w-24 h-24 rounded-full border-4 border-white/10 object-cover"
+                  />
+                ) : (
+                  <div className="w-24 h-24 rounded-full border-4 border-white/10 bg-gradient-to-br from-orange-500/20 to-purple-500/20 flex items-center justify-center text-5xl">
+                    {selectedOwner.gender === 'Male' ? '👨' : selectedOwner.gender === 'Female' ? '👩' : '👤'}
+                  </div>
+                )}
                 <div className="flex-1">
                   <div className="flex items-center gap-2 mb-1">
                     <h4 className="text-2xl font-bold text-gray-100">{selectedOwner.name}</h4>
@@ -533,28 +485,43 @@ export default function RestaurantOwners() {
               {/* Documents Section */}
               <div className="mb-6">
                 <label className="text-sm font-medium text-gray-400 mb-3 block">Documents</label>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {selectedOwner.documents.map((doc, index) => (
-                    <a
-                      key={index}
-                      href={doc.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex items-center justify-between p-4 bg-[#111116] border border-white/10 rounded-xl hover:border-orange-500/50 transition-all group"
-                    >
-                      <div className="flex items-center gap-3">
-                        <div className="p-2 bg-orange-500/10 rounded-lg">
-                          <FileText className="w-5 h-5 text-orange-400" />
+                {selectedOwner.documents.length > 0 ? (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {selectedOwner.documents.map((doc, index) => (
+                      <a
+                        key={index}
+                        href={doc.url || '#'}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center justify-between p-4 bg-[#111116] border border-white/10 rounded-xl hover:border-orange-500/50 transition-all group"
+                        onClick={(e) => !doc.url && e.preventDefault()}
+                      >
+                        <div className="flex items-center gap-3">
+                          <div className="p-2 bg-orange-500/10 rounded-lg">
+                            <FileText className="w-5 h-5 text-orange-400" />
+                          </div>
+                          <div>
+                            <p className="text-sm font-medium text-gray-200">{doc.type || 'Document'}</p>
+                            <p className="text-xs text-gray-500">
+                              {doc.uploadedAt 
+                                ? `Uploaded: ${new Date(doc.uploadedAt).toLocaleDateString('en-CA')}`
+                                : 'No date available'
+                              }
+                            </p>
+                          </div>
                         </div>
-                        <div>
-                          <p className="text-sm font-medium text-gray-200">{doc.type}</p>
-                          <p className="text-xs text-gray-500">Uploaded: {doc.uploadedAt}</p>
-                        </div>
-                      </div>
-                      <ExternalLink className="w-4 h-4 text-gray-400 group-hover:text-orange-400 transition-colors" />
-                    </a>
-                  ))}
-                </div>
+                        {doc.url && (
+                          <ExternalLink className="w-4 h-4 text-gray-400 group-hover:text-orange-400 transition-colors" />
+                        )}
+                      </a>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-8 bg-[#111116] border border-white/10 rounded-xl">
+                    <FileText className="w-12 h-12 text-gray-600 mx-auto mb-2" />
+                    <p className="text-gray-500 text-sm">No documents uploaded</p>
+                  </div>
+                )}
               </div>
 
               {/* Restaurants Section */}
@@ -562,29 +529,55 @@ export default function RestaurantOwners() {
                 <label className="text-sm font-medium text-gray-400 mb-3 block">
                   Owned Restaurants ({selectedOwner.restaurants.length})
                 </label>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                  {selectedOwner.restaurants.map((restaurant) => (
-                    <div
-                      key={restaurant.id}
-                      className="flex items-center justify-between p-4 bg-[#111116] border border-white/10 rounded-xl hover:border-orange-500/50 transition-all"
-                    >
-                      <div className="flex items-center gap-3">
-                        <div className="p-2 bg-green-500/10 rounded-lg">
-                          <Store className="w-5 h-5 text-green-400" />
-                        </div>
-                        <div>
-                          <p className="text-sm font-medium text-gray-200">{restaurant.name}</p>
-                          <p className="text-xs text-gray-500 font-mono">{restaurant.id}</p>
+                {selectedOwner.restaurants.length > 0 ? (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    {selectedOwner.restaurants.map((restaurant) => (
+                      <div
+                        key={restaurant._id || restaurant.id}
+                        className="flex items-center justify-between p-4 bg-[#111116] border border-white/10 rounded-xl hover:border-orange-500/50 transition-all"
+                      >
+                        <div className="flex items-center gap-3">
+                          <div className="p-2 bg-green-500/10 rounded-lg">
+                            <Store className="w-5 h-5 text-green-400" />
+                          </div>
+                          <div>
+                            <p className="text-sm font-medium text-gray-200">{restaurant.restaurant_name || restaurant.name}</p>
+                            <p className="text-xs text-gray-500 font-mono">{restaurant._id || restaurant.id}</p>
+                            {restaurant.fullAddress && restaurant.fullAddress !== 'No address!' && (
+                              <p className="text-xs text-gray-600 mt-1">{restaurant.fullAddress}</p>
+                            )}
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  ))}
-                </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-8 bg-[#111116] border border-white/10 rounded-xl">
+                    <Store className="w-12 h-12 text-gray-600 mx-auto mb-2" />
+                    <p className="text-gray-500 text-sm">No restaurants registered yet</p>
+                  </div>
+                )}
               </div>
 
               {/* Action Buttons */}
               <div className="flex gap-3 pt-4 border-t border-white/10 flex-wrap">
                 {selectedOwner.status === 'Pending' && (
+                  <>
+                    <button
+                      onClick={() => handleAction('Approve', selectedOwner)}
+                      className="flex-1 min-w-[200px] px-4 py-3 bg-green-500/10 text-green-400 border border-green-500/20 rounded-xl font-medium hover:bg-green-500/20 transition-colors"
+                    >
+                      Approve Owner
+                    </button>
+                    <button
+                      onClick={() => handleAction('Reject', selectedOwner)}
+                      className="flex-1 min-w-[200px] px-4 py-3 bg-red-500/10 text-red-400 border border-red-500/20 rounded-xl font-medium hover:bg-red-500/20 transition-colors"
+                    >
+                      Reject Owner
+                    </button>
+                  </>
+                )}
+                {selectedOwner.status === 'Suspended' && (
                   <button
                     onClick={() => handleAction('Approve', selectedOwner)}
                     className="flex-1 min-w-[200px] px-4 py-3 bg-green-500/10 text-green-400 border border-green-500/20 rounded-xl font-medium hover:bg-green-500/20 transition-colors"
@@ -592,34 +585,12 @@ export default function RestaurantOwners() {
                     Approve Owner
                   </button>
                 )}
-                {selectedOwner.status === 'Suspended' ? (
-                  <button
-                    onClick={() => handleAction('Approve', selectedOwner)}
-                    className="flex-1 min-w-[200px] px-4 py-3 bg-green-500/10 text-green-400 border border-green-500/20 rounded-xl font-medium hover:bg-green-500/20 transition-colors"
-                  >
-                    Activate Owner
-                  </button>
-                ) : selectedOwner.status === 'Approved' && (
+                {selectedOwner.status === 'Approved' && (
                   <button
                     onClick={() => handleAction('Suspend', selectedOwner)}
                     className="flex-1 min-w-[200px] px-4 py-3 bg-yellow-500/10 text-yellow-400 border border-yellow-500/20 rounded-xl font-medium hover:bg-yellow-500/20 transition-colors"
                   >
                     Suspend Owner
-                  </button>
-                )}
-                {!selectedOwner.verified ? (
-                  <button
-                    onClick={() => handleAction('Verify', selectedOwner)}
-                    className="flex-1 min-w-[200px] px-4 py-3 bg-blue-500/10 text-blue-400 border border-blue-500/20 rounded-xl font-medium hover:bg-blue-500/20 transition-colors"
-                  >
-                    Mark as Verified
-                  </button>
-                ) : (
-                  <button
-                    onClick={() => handleAction('Unverify', selectedOwner)}
-                    className="flex-1 min-w-[200px] px-4 py-3 bg-gray-500/10 text-gray-400 border border-gray-500/20 rounded-xl font-medium hover:bg-gray-500/20 transition-colors"
-                  >
-                    Remove Verification
                   </button>
                 )}
                 <button
@@ -639,30 +610,45 @@ export default function RestaurantOwners() {
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-[60] p-4">
           <div className="bg-[#1a1a22] border border-white/10 rounded-2xl max-w-md w-full p-6">
             <h3 className="text-xl font-bold text-gray-100 mb-2">Confirm Action</h3>
-            <p className="text-gray-400 mb-6">
+            <p className="text-gray-400 mb-4">
               Are you sure you want to <span className="font-semibold text-orange-400">{pendingAction.action.toLowerCase()}</span> restaurant owner{' '}
               <span className="font-semibold text-gray-200">{pendingAction.owner.name}</span>?
             </p>
+            
+            {/* Reason Input */}
+            <div className="mb-6">
+              <label className="text-sm font-medium text-gray-400 mb-2 block">Reason for this action *</label>
+              <textarea
+                value={actionReason}
+                onChange={(e) => setActionReason(e.target.value)}
+                placeholder="Please provide a reason for this action..."
+                rows="4"
+                className="w-full px-4 py-3 bg-[#111116] border border-white/10 rounded-xl text-sm text-gray-300 placeholder-gray-600 focus:outline-none focus:border-orange-500/50 resize-none"
+              />
+            </div>
+            
             <div className="flex gap-3">
               <button
                 onClick={cancelAction}
-                className="flex-1 px-4 py-3 bg-white/5 text-gray-300 border border-white/10 rounded-xl font-medium hover:bg-white/10 transition-colors"
+                disabled={loading}
+                className="flex-1 px-4 py-3 bg-white/5 text-gray-300 border border-white/10 rounded-xl font-medium hover:bg-white/10 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 Cancel
               </button>
               <button
                 onClick={confirmAction}
-                className={`flex-1 px-4 py-3 rounded-xl font-medium transition-colors ${
-                  pendingAction.action === 'Delete'
+                disabled={loading}
+                className={`flex-1 px-4 py-3 rounded-xl font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${
+                  pendingAction.action === 'Delete' || pendingAction.action === 'Reject'
                     ? 'bg-red-500/10 text-red-400 border border-red-500/20 hover:bg-red-500/20'
                     : pendingAction.action === 'Suspend'
                     ? 'bg-yellow-500/10 text-yellow-400 border border-yellow-500/20 hover:bg-yellow-500/20'
-                    : pendingAction.action === 'Verify' || pendingAction.action === 'Approve'
+                    : pendingAction.action === 'Approve'
                     ? 'bg-green-500/10 text-green-400 border border-green-500/20 hover:bg-green-500/20'
                     : 'bg-blue-500/10 text-blue-400 border border-blue-500/20 hover:bg-blue-500/20'
                 }`}
               >
-                Confirm
+                {loading ? 'Processing...' : 'Confirm'}
               </button>
             </div>
           </div>
