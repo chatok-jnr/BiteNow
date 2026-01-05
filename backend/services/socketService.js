@@ -1,6 +1,6 @@
 const { getIO } = require("./../configuration/socket");
 
-//emit orer status update
+//emit order status update
 exports.emitOrderStatusUpdate = (orderId, status, additionalData = {}) => {
   try {
     const io = getIO();
