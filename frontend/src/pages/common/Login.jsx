@@ -1,261 +1,104 @@
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
-import axiosInstance, { API_BASE_URL } from "../../utils/axios";
-import * as cartService from "../../utils/cartService";
+import { Link } from "react-router-dom";
+import GoogleLoginButton from "../../components/GoogleLoginButton";
 
 function Login() {
-  const navigate = useNavigate();
-  const [formData, setFormData] = useState({
-    email: "",
-    password: "",
-    role: "customer", // default role
-  });
   const [error, setError] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
+  const [selectedRole, setSelectedRole] = useState(null);
 
-  const handleInputChange = (e) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value,
-    });
+  const roles = [
+    {
+      id: "customer",
+      title: "Customer",
+      description: "Order delicious food from your favorite restaurants",
+      icon: "🍔",
+    },
+    {
+      id: "restaurant",
+      title: "Restaurant Owner",
+      description: "Manage your restaurant and reach more customers",
+      icon: "🏪",
+    },
+    {
+      id: "rider",
+      title: "Rider",
+      description: "Deliver food and earn money on your schedule",
+      icon: "🏍️",
+    },
+  ];
+
+  const handleRoleSelect = (roleId) => {
+    setSelectedRole(roleId);
     setError("");
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setError("");
-    setIsLoading(true);
-
-    try {
-      let apiEndpoint = "";
-      let requestBody = {};
-
-      // Determine API endpoint and request body based on role
-      if (formData.role === "customer") {
-        apiEndpoint = `${API_BASE_URL}/api/v1/auth/login/customer`;
-        requestBody = {
-          customer_email: formData.email,
-          customer_password: formData.password,
-        };
-      } else if (formData.role === "restaurant") {
-        apiEndpoint = `${API_BASE_URL}/api/v1/auth/login/restaurant-owner`;
-        requestBody = {
-          restaurant_owner_email: formData.email,
-          restaurant_owner_password: formData.password,
-        };
-      } else if (formData.role === "rider") {
-        apiEndpoint = `${API_BASE_URL}/api/v1/auth/login/rider`;
-        requestBody = {
-          rider_email: formData.email,
-          rider_password: formData.password,
-        };
-      }
-
-      console.log("Login attempt - Role:", formData.role);
-      console.log("Login attempt - Email:", formData.email);
-      console.log("API Endpoint:", apiEndpoint);
-
-      const response = await axiosInstance.post(apiEndpoint, requestBody);
-
-      console.log("Login response:", response.data);
-
-      if (response.data.status === "success") {
-        console.log("✅ Login successful, storing credentials...");
-        
-        // CRITICAL: Store token FIRST before any API calls
-        if (response.data.token) {
-          localStorage.setItem("token", response.data.token);
-          console.log("✅ Token stored in localStorage");
-        }
-        
-        // Store user info in localStorage
-        const userData = {
-          email: formData.email,
-          role: formData.role,
-          token: response.data.token,
-        };
-
-        // Handle different response structures for different roles
-        if (formData.role === "restaurant" && response.data.data.ownerResponse) {
-          Object.assign(userData, response.data.data.ownerResponse);
-        } else if (response.data.data) {
-          Object.assign(userData, response.data.data);
-        }
-
-        localStorage.setItem("user", JSON.stringify(userData));
-        console.log("✅ User data stored in localStorage");
-
-        // Migrate guest cart to user account if customer
-        // This must happen AFTER token is stored
-        if (formData.role === "customer") {
-          try {
-            console.log("🔄 Starting cart migration...");
-            const migratedCart = await cartService.migrateGuestCart();
-            if (migratedCart) {
-              console.log('✅ Guest cart migrated successfully:', {
-                cartId: migratedCart._id,
-                itemCount: migratedCart.items?.length || 0
-              });
-            } else {
-              console.log('ℹ️ No guest cart to migrate');
-            }
-          } catch (migrationError) {
-            console.error("❌ Cart migration failed:", migrationError);
-            // Don't block login if cart migration fails
-          }
-        }
-
-        // Redirect based on role
-        if (formData.role === "restaurant") {
-          localStorage.removeItem("intendedDestination");
-          navigate("/owner-dashboard");
-        } else if (formData.role === "rider") {
-          localStorage.removeItem("intendedDestination");
-          navigate("/rider-dashboard");
-        } else if (formData.role === "customer") {
-          const intendedDestination = localStorage.getItem("intendedDestination");
-          console.log("Intended destination:", intendedDestination);
-          
-          if (intendedDestination) {
-            localStorage.removeItem("intendedDestination");
-            navigate(intendedDestination);
-          } else {
-            navigate("/customer-dashboard");
-          }
-        }
-      } else {
-        setError(response.data.message || "Login failed");
-      }
-    } catch (err) {
-      console.error("Login error:", err);
-      setError(
-        err.response?.data?.message || 
-        err.response?.data?.error || 
-        "Invalid email or password. Please try again."
-      );
-    } finally {
-      setIsLoading(false);
-    }
+  const handleBack = () => {
+    setSelectedRole(null);
   };
 
   return (
     <div className="min-h-screen bg-white flex items-center justify-center px-4 py-12">
-      <div className="max-w-md w-full space-y-8">
+      <div className="max-w-2xl w-full space-y-8">
         {/* Header */}
         <div className="text-center">
           <h2 className="text-4xl font-bold text-gray-900">Welcome Back</h2>
-          <p className="mt-2 text-gray-600">Log in to your account</p>
+          <p className="mt-2 text-gray-600">
+            {selectedRole ? "Sign in to your account" : "Choose your role to continue"}
+          </p>
         </div>
 
-        {/* Login Form */}
-        <form onSubmit={handleSubmit} className="space-y-4">
-          {/* Role Selection */}
-          <div>
-            <label
-              htmlFor="role"
-              className="block text-sm font-medium text-gray-700 mb-2"
-            >
-              I am a
-            </label>
-            <select
-              id="role"
-              name="role"
-              value={formData.role}
-              onChange={handleInputChange}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
-            >
-              <option value="customer">Customer</option>
-              <option value="restaurant">Restaurant Owner</option>
-              <option value="rider">Rider</option>
-            </select>
+        {/* Role Selection or Google Auth */}
+        {!selectedRole ? (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {roles.map((role) => (
+              <button
+                key={role.id}
+                onClick={() => handleRoleSelect(role.id)}
+                className="p-6 border-2 border-gray-200 rounded-xl hover:border-primary hover:shadow-lg transition-all duration-200 text-center group"
+              >
+                <div className="text-5xl mb-4">{role.icon}</div>
+                <h3 className="text-xl font-bold text-gray-900 mb-2 group-hover:text-primary">
+                  {role.title}
+                </h3>
+                <p className="text-sm text-gray-600">{role.description}</p>
+              </button>
+            ))}
           </div>
-
-          <div>
-            <label
-              htmlFor="email"
-              className="block text-sm font-medium text-gray-700 mb-2"
+        ) : (
+          <div className="max-w-md mx-auto space-y-6">
+            {/* Back Button */}
+            <button
+              onClick={handleBack}
+              className="flex items-center text-gray-600 hover:text-gray-900 mb-4"
             >
-              Email Address
-            </label>
-            <input
-              id="email"
-              name="email"
-              type="email"
-              required
-              value={formData.email}
-              onChange={handleInputChange}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
-              placeholder="Enter your email"
-            />
-          </div>
+              <span className="mr-2">←</span> Change role
+            </button>
 
-          <div>
-            <label
-              htmlFor="password"
-              className="block text-sm font-medium text-gray-700 mb-2"
-            >
-              Password
-            </label>
-            <input
-              id="password"
-              name="password"
-              type="password"
-              required
-              value={formData.password}
-              onChange={handleInputChange}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
-              placeholder="Enter your password"
-            />
-          </div>
-
-          <div className="flex items-center justify-between text-sm">
-            <label className="flex items-center">
-              <input
-                type="checkbox"
-                className="w-4 h-4 text-primary border-gray-300 rounded focus:ring-primary"
-              />
-              <span className="ml-2 text-gray-600">Remember me</span>
-            </label>
-            <a
-              href="#"
-              className="text-primary hover:text-primary/80 font-medium"
-            >
-              Forgot password?
-            </a>
-          </div>
-
-          {/* Demo credentials info
-          <div className="p-4 bg-green-50 border border-green-200 rounded-lg text-sm">
-            <p className="font-semibold text-green-900 mb-2">
-              ✅ Demo Credentials (Choose any):
-            </p>
-            <div className="space-y-1 text-green-800">
-              <p>
-                <strong>Customer:</strong> customer@test.com / customer123
-              </p>
-              <p>
-                <strong>Rider:</strong> rider@test.com / rider123
-              </p>
-              <p>
-                <strong>Restaurant:</strong> restaurant@test.com / restaurant123
+            {/* Selected Role Display */}
+            <div className="text-center p-4 bg-gray-50 rounded-lg">
+              <p className="text-sm text-gray-600">Logging in as</p>
+              <p className="text-xl font-bold text-primary">
+                {roles.find((r) => r.id === selectedRole)?.title}
               </p>
             </div>
-          </div> */}
 
-          {error && (
-            <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-red-600 text-sm">
-              {error}
+            {error && (
+              <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-red-600 text-sm">
+                {error}
+              </div>
+            )}
+
+            {/* Google Login Button */}
+            <GoogleLoginButton onError={setError} role={selectedRole} />
+
+            {/* Info Text */}
+            <div className="text-center">
+              <p className="text-sm text-gray-500">
+                We use Google authentication to keep your account secure
+              </p>
             </div>
-          )}
-
-          <button
-            type="submit"
-            disabled={isLoading}
-            className="w-full bg-primary text-white py-3 rounded-lg font-semibold hover:bg-primary/90 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {isLoading ? "Logging in..." : "Log In"}
-          </button>
-        </form>
+          </div>
+        )}
 
         {/* Sign Up Link */}
         <p className="text-center text-gray-600">

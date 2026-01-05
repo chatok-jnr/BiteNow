@@ -4,20 +4,29 @@ function CustomerNavbar() {
   const navigate = useNavigate();
   const location = useLocation();
   
-  // Clear non-customer users from localStorage
+  // Check authentication status
+  const token = localStorage.getItem("token");
   const userData = localStorage.getItem("user");
   let user = {};
+  
   if (userData) {
-    const parsedUser = JSON.parse(userData);
-    // Only keep customer users logged in, clear all other roles
-    if (parsedUser.role === "customer") {
-      user = parsedUser;
-    } else if (parsedUser.role && parsedUser.role !== "customer") {
+    try {
+      const parsedUser = JSON.parse(userData);
+      // Only keep customer users logged in, clear all other roles
+      if (parsedUser.role === "customer") {
+        user = parsedUser;
+      } else if (parsedUser.role && parsedUser.role !== "customer") {
+        localStorage.removeItem("user");
+        localStorage.removeItem("token");
+      }
+    } catch (error) {
+      console.error("Error parsing user data:", error);
       localStorage.removeItem("user");
     }
   }
   
-  const isAuthenticated = user && user.email;
+  // User is authenticated if they have a valid token
+  const isAuthenticated = !!token && Object.keys(user).length > 0;
 
   const handleLogout = () => {
     console.log('🚪 Logging out...');
@@ -104,7 +113,9 @@ function CustomerNavbar() {
             {isAuthenticated ? (
               <>
                 <span className="hidden sm:block text-sm text-gray-600">
-                  Hi, <span className="font-semibold text-gray-900">{user.name || "Customer"}</span>
+                  Hi, <span className="font-semibold text-gray-900">
+                    {user.customer_name || user.name || user.email?.split('@')[0] || "Customer"}
+                  </span>
                 </span>
                 <button
                   onClick={handleLogout}

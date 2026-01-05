@@ -1,6 +1,7 @@
 const express = require("express");
 const morgan = require("morgan");
 const cors = require("cors");
+const passport = require("./config/passport");
 
 const authRoutes = require("./routes/authRoutes");
 const adminRoutes = require("./routes/adminRoutes");
@@ -49,6 +50,9 @@ app.use(cors(corsOption));
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 app.use(express.static(`${__dirname}/public`));
+
+// Initialize Passport
+app.use(passport.initialize());
 
 // Debug middleware to log all requests
 app.use((req, res, next) => {
