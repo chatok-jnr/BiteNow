@@ -38,12 +38,12 @@ const riderSchema = new mongoose.Schema(
     },
     rider_gender: {
       type: String,
-      enum: ["Male", "Female"],
-      required: true,
+      enum: ["Male", "Female", "Other"],
+     // required: true,
     },
     rider_address: {
       type: String,
-      required: [true, "A rider must have a address"],
+      //required: [true, "A rider must have a address"],
       trim: true,
       maxLength: [50, "Rider address cannot exceed 50 characters"],
     },
@@ -100,7 +100,7 @@ const riderSchema = new mongoose.Schema(
     rider_contact_info: {
       emergency_contact: {
         type: String,
-        required: true,
+       // required: true,
       },
       alternative_phone: {
         type: String,

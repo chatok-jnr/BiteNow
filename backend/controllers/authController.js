@@ -1052,3 +1052,79 @@ exports.deleteAdmin = async (req, res) => {
 //     });
 //   }
 // };
+
+// Google OAuth Success Handler - Customer
+exports.googleAuthSuccessCustomer = async (req, res) => {
+  try {
+    const customer = req.user;
+
+    const token = jwt.sign(
+      { 
+        id: customer._id,
+        email: customer.customer_email,
+        role: "customer"
+      },
+      process.env.JWT_SECRET,
+      { expiresIn: process.env.JWT_EXPIRES_IN }
+    );
+
+    const redirectUrl = `${process.env.FRONTEND_URL || "http://localhost:5173"}/auth/google/success?token=${token}&userId=${customer._id}&role=customer`;
+    res.redirect(redirectUrl);
+  } catch (err) {
+    const errorUrl = `${process.env.FRONTEND_URL || "http://localhost:5173"}/login?error=google_auth_failed`;
+    res.redirect(errorUrl);
+  }
+};
+
+// Google OAuth Success Handler - Restaurant Owner
+exports.googleAuthSuccessRestaurant = async (req, res) => {
+  try {
+    const restaurantOwner = req.user;
+
+    const token = jwt.sign(
+      { 
+        id: restaurantOwner._id,
+        email: restaurantOwner.restaurant_owner_email,
+        role: "restaurant"
+      },
+      process.env.JWT_SECRET,
+      { expiresIn: process.env.JWT_EXPIRES_IN }
+    );
+
+    const redirectUrl = `${process.env.FRONTEND_URL || "http://localhost:5173"}/auth/google/success?token=${token}&userId=${restaurantOwner._id}&role=restaurant`;
+        
+    res.redirect(redirectUrl);
+  } catch (err) {
+    const errorUrl = `${process.env.FRONTEND_URL || "http://localhost:5173"}/login?error=google_auth_failed`;
+    res.redirect(errorUrl);
+  }
+};
+
+// Google OAuth Success Handler - Rider
+exports.googleAuthSuccessRider = async (req, res) => {
+  try {
+    const rider = req.user;
+
+    const token = jwt.sign(
+      { 
+        id: rider._id,
+        email: rider.rider_email,
+        role: "rider"
+      },
+      process.env.JWT_SECRET,
+      { expiresIn: process.env.JWT_EXPIRES_IN }
+    );
+
+    const redirectUrl = `${process.env.FRONTEND_URL || "http://localhost:5173"}/auth/google/success?token=${token}&userId=${rider._id}&role=rider`;
+    res.redirect(redirectUrl);
+  } catch (err) {
+    const errorUrl = `${process.env.FRONTEND_URL || "http://localhost:5173"}/login?error=google_auth_failed`;
+    res.redirect(errorUrl);
+  }
+};
+
+// Google OAuth Failure Handler
+exports.googleAuthFailure = (req, res) => {
+  const errorUrl = `${process.env.FRONTEND_URL || "http://localhost:5173"}/login?error=google_auth_failed`;
+  res.redirect(errorUrl);
+};
