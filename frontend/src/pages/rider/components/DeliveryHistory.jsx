@@ -23,49 +23,8 @@ function DeliveryHistory({ riderId, completedDeliveries = [] }) {
       //   }
       // );
 
-      // Use completedDeliveries from props, merge with mock data if needed
-      const mockDeliveries = completedDeliveries.length > 0 ? [] : [
-        {
-          id: "1",
-          order_id: "ORD123456",
-          restaurant_name: "Pizza Palace",
-          customer_name: "John Doe",
-          delivery_charge: 50,
-          food_cost: 450,
-          total_amount: 500,
-          status: "Completed",
-          completed_at: new Date().toISOString(),
-          rating: 5,
-        },
-        {
-          id: "2",
-          order_id: "ORD123455",
-          restaurant_name: "Burger House",
-          customer_name: "Jane Smith",
-          delivery_charge: 50,
-          food_cost: 350,
-          total_amount: 400,
-          status: "Completed",
-          completed_at: new Date(Date.now() - 3600000).toISOString(),
-          rating: 4,
-        },
-        {
-          id: "3",
-          order_id: "ORD123454",
-          restaurant_name: "Sushi Master",
-          customer_name: "Bob Wilson",
-          delivery_charge: 50,
-          food_cost: 650,
-          total_amount: 700,
-          status: "Completed",
-          completed_at: new Date(Date.now() - 7200000).toISOString(),
-          rating: 5,
-        },
-      ];
-
-      // Combine completed deliveries from props with mock data
-      const allDeliveries = [...completedDeliveries, ...mockDeliveries];
-      setDeliveries(allDeliveries);
+      // Use only real completed deliveries from props
+      setDeliveries(completedDeliveries);
     } catch (error) {
       console.error("Error fetching delivery history:", error);
     } finally {
@@ -157,9 +116,7 @@ function DeliveryHistory({ riderId, completedDeliveries = [] }) {
         </div>
       ) : (
         <div className="space-y-4">
-          <h2 className="text-2xl font-bold text-gray-900">
-            Delivery History
-          </h2>
+          <h2 className="text-2xl font-bold text-gray-900">Delivery History</h2>
           {deliveries.map((delivery, index) => (
             <div
               key={delivery.id}

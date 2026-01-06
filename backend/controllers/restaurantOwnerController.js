@@ -9,6 +9,50 @@ const {
   docsDeleteHelper,
 } = require("./../utils/cloudinary");
 
+// Get restaurant owner by ID
+exports.getRestaurantOwner = async (req, res) => {
+  try {
+    const ownerID = req.params.id;
+    const userID = req.user._id;
+
+    const restaurantOwner = await RestaurantOwner.findById(ownerID);
+
+    if (!restaurantOwner) {
+      return res.status(404).json({
+        status: "error",
+        message: "Invalid request! Restaurant owner not found",
+      });
+    }
+
+    // Authorization check
+    if (restaurantOwner._id.toString() !== userID.toString()) {
+      return res.status(403).json({
+        status: "error",
+        message: "You are not authorized to view this restaurant owner",
+      });
+    }
+
+    res.status(200).json({
+      status: "success",
+      data: {
+        restaurantOwner,
+      },
+    });
+  } catch (err) {
+    if (err.name === "CastError") {
+      return res.status(400).json({
+        status: "fail",
+        message: "Invalid restaurant owner ID",
+      });
+    }
+    res.status(500).json({
+      status: "fail",
+      message: "Failed to fetch restaurant owner",
+      error: err.message,
+    });
+  }
+};
+
 exports.updateRestaurantOwner = async (req, res) => {
   try {
     const ownerID = req.params.id;

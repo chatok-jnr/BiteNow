@@ -14,12 +14,20 @@ router
     restrictTo("restaurant_owner"),
     restaurantOwnerController.updateRestaurantOwner
   );
+
 router
   .route("/delete/:id")
   .delete(
     protect,
     restrictTo("restaurant_owner"),
     restaurantOwnerController.deleteRestaurantOwner
+  );
+router
+  .route("/:id")
+  .get(
+    protect,
+    restrictTo("restaurant_owner"),
+    restaurantOwnerController.getRestaurantOwner
   );
 
 //for image

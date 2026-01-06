@@ -1,6 +1,13 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import CustomerNavbar from "./CustomerNavbar";
+import {
+  getCustomerProfile,
+  updateCustomerProfile,
+  updateCustomerImage,
+  uploadCustomerImage,
+  deleteCustomerImage,
+} from "../../utils/customerService";
 
 function Profile() {
   const navigate = useNavigate();
@@ -8,35 +15,143 @@ function Profile() {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [deletePassword, setDeletePassword] = useState("");
   const [deleteError, setDeleteError] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [imageUploading, setImageUploading] = useState(false);
+  const [error, setError] = useState("");
+  const [successMessage, setSuccessMessage] = useState("");
+  const [customerId, setCustomerId] = useState(null);
+
   const [user, setUser] = useState({
-    name: "John Doe",
-    email: "customer@test.com",
-    phone: "+880 1712345678",
-    address: "House 123, Road 4, Dhanmondi, Dhaka",
-    birthDate: "1995-05-15",
+    name: "",
+    email: "",
+    phone: "",
+    address: "",
+    birthDate: "",
     gender: "Male",
-    joinedDate: "2024-01-15",
+    joinedDate: "",
+    status: "",
+    photo: {
+      url: null,
+      altText: "Customer image",
+      public_id: null,
+    },
   });
 
   const [formData, setFormData] = useState({ ...user });
+  const [selectedImage, setSelectedImage] = useState(null);
+  const [imagePreview, setImagePreview] = useState(null);
 
   useEffect(() => {
-    // Check authentication
-    const userData = localStorage.getItem("user");
-    if (!userData) {
-      localStorage.setItem("intendedDestination", "/customer-dashboard/profile");
-      navigate("/login");
-      return;
-    }
-    const parsedUser = JSON.parse(userData);
-    if (parsedUser.role !== "customer") {
-      localStorage.setItem("intendedDestination", "/customer-dashboard/profile");
-      navigate("/login");
-    }
-    
-    // Load user data (in real app, fetch from backend)
-    setUser({ ...user, ...parsedUser });
-    setFormData({ ...user, ...parsedUser });
+    const fetchCustomerProfile = async () => {
+      try {
+        // Check authentication
+        const userDataString = localStorage.getItem("user");
+        const token = localStorage.getItem("token");
+
+        if (!userDataString || !token) {
+          localStorage.setItem(
+            "intendedDestination",
+            "/customer-dashboard/profile"
+          );
+          navigate("/login");
+          return;
+        }
+
+        const parsedUser = JSON.parse(userDataString);
+
+        if (parsedUser.role !== "customer") {
+          localStorage.setItem(
+            "intendedDestination",
+            "/customer-dashboard/profile"
+          );
+          navigate("/login");
+          return;
+        }
+
+        // Extract customer ID - try multiple field names
+        const userId =
+          parsedUser.id ||
+          parsedUser.customer_id ||
+          parsedUser._id ||
+          parsedUser.userId;
+
+        if (!userId) {
+          console.error("No user ID found in localStorage:", parsedUser);
+          setError("User ID not found. Please login again.");
+          setTimeout(() => {
+            localStorage.removeItem("user");
+            localStorage.removeItem("token");
+            navigate("/login");
+          }, 2000);
+          return;
+        }
+
+        console.log("Fetching profile for user ID:", userId);
+        console.log("User data from localStorage:", parsedUser);
+        setCustomerId(userId);
+
+        // Fetch profile from backend
+        const response = await getCustomerProfile(userId);
+        const profileData = response.data.userRespone;
+
+        // Map backend response to frontend state
+        const profileState = {
+          name: profileData.name || "",
+          email: profileData.email || "",
+          phone: profileData.phone || "",
+          address: profileData.address || "",
+          birthDate: profileData.dob ? profileData.dob.split("T")[0] : "",
+          gender: profileData.gender || "Male",
+          joinedDate: profileData.createdAt || "",
+          status: profileData.status || "Active",
+          photo: profileData.photo || {
+            url: null,
+            altText: "Customer image",
+            public_id: null,
+          },
+        };
+
+        setUser(profileState);
+        setFormData(profileState);
+        setLoading(false);
+      } catch (err) {
+        console.error("Error fetching profile:", err);
+
+        // Show more specific error messages
+        let errorMessage = "Failed to load profile";
+        if (err.message === "You are not authorized to see this data") {
+          errorMessage =
+            "Authorization error. The user ID in your session doesn't match. Please login again.";
+          setTimeout(() => {
+            localStorage.removeItem("user");
+            localStorage.removeItem("token");
+            navigate("/login");
+          }, 3000);
+        } else if (err.status === 401) {
+          errorMessage = "Session expired. Please login again.";
+          setTimeout(() => {
+            localStorage.removeItem("user");
+            localStorage.removeItem("token");
+            navigate("/login");
+          }, 2000);
+        } else if (err.status === 403) {
+          errorMessage = "Access denied. Please login again.";
+          setTimeout(() => {
+            localStorage.removeItem("user");
+            localStorage.removeItem("token");
+            navigate("/login");
+          }, 2000);
+        } else {
+          errorMessage = err.message || "Failed to load profile";
+        }
+
+        setError(errorMessage);
+        setLoading(false);
+      }
+    };
+
+    fetchCustomerProfile();
   }, [navigate]);
 
   const handleInputChange = (e) => {
@@ -44,40 +159,168 @@ function Profile() {
       ...formData,
       [e.target.name]: e.target.value,
     });
+    setError("");
+    setSuccessMessage("");
   };
 
-  const handleSave = (e) => {
+  const handleImageSelect = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      // Validate file type
+      if (!file.type.startsWith("image/")) {
+        setError("Please select a valid image file");
+        return;
+      }
+
+      // Validate file size (max 5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        setError("Image size should be less than 5MB");
+        return;
+      }
+
+      setSelectedImage(file);
+
+      // Create preview
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImagePreview(reader.result);
+      };
+      reader.readAsDataURL(file);
+      setError("");
+    }
+  };
+
+  const handleRemoveImage = async () => {
+    if (!user.photo?.public_id) {
+      setError("No profile image to remove");
+      return;
+    }
+
+    if (
+      !window.confirm("Are you sure you want to remove your profile picture?")
+    ) {
+      return;
+    }
+
+    try {
+      setImageUploading(true);
+      await deleteCustomerImage(customerId);
+
+      setUser({
+        ...user,
+        photo: {
+          url: null,
+          altText: "Customer image",
+          public_id: null,
+        },
+      });
+
+      setSelectedImage(null);
+      setImagePreview(null);
+      setSuccessMessage("Profile picture removed successfully");
+      setImageUploading(false);
+    } catch (err) {
+      console.error("Error removing image:", err);
+      setError(err.message || "Failed to remove profile picture");
+      setImageUploading(false);
+    }
+  };
+
+  const handleSave = async (e) => {
     e.preventDefault();
-    setUser(formData);
-    
-    // Update localStorage
-    const storedUser = JSON.parse(localStorage.getItem("user"));
-    localStorage.setItem("user", JSON.stringify({ ...storedUser, ...formData }));
-    
-    setIsEditing(false);
-    alert("Profile updated successfully!");
+    setError("");
+    setSuccessMessage("");
+    setSaving(true);
+
+    try {
+      // Update profile data
+      await updateCustomerProfile(customerId, formData);
+
+      // Update user state
+      setUser(formData);
+
+      // Update localStorage
+      const storedUser = JSON.parse(localStorage.getItem("user"));
+      localStorage.setItem(
+        "user",
+        JSON.stringify({
+          ...storedUser,
+          name: formData.name,
+          phone: formData.phone,
+        })
+      );
+
+      // Handle image upload if selected
+      if (selectedImage) {
+        try {
+          setImageUploading(true);
+
+          // Check if user already has an image
+          if (user.photo?.public_id) {
+            // Update existing image
+            const imageResponse = await updateCustomerImage(
+              customerId,
+              selectedImage
+            );
+            setUser({
+              ...formData,
+              photo: imageResponse.data.image,
+            });
+          } else {
+            // Upload new image
+            const imageResponse = await uploadCustomerImage(
+              customerId,
+              selectedImage
+            );
+            setUser({
+              ...formData,
+              photo: imageResponse.data.images,
+            });
+          }
+
+          setSelectedImage(null);
+          setImagePreview(null);
+          setImageUploading(false);
+        } catch (imgErr) {
+          console.error("Error uploading image:", imgErr);
+          setError(imgErr.message || "Profile updated but image upload failed");
+          setImageUploading(false);
+          setSaving(false);
+          setIsEditing(false);
+          return;
+        }
+      }
+
+      setSuccessMessage("Profile updated successfully!");
+      setSaving(false);
+      setIsEditing(false);
+    } catch (err) {
+      console.error("Error updating profile:", err);
+      setError(err.message || "Failed to update profile");
+      setSaving(false);
+    }
   };
 
   const handleCancel = () => {
     setFormData(user);
+    setSelectedImage(null);
+    setImagePreview(null);
+    setError("");
+    setSuccessMessage("");
     setIsEditing(false);
   };
 
   const handleDeleteAccount = () => {
-    // Validate password (mock validation - checking against "customer123")
-    const storedUser = JSON.parse(localStorage.getItem("user") || "{}");
-    const correctPassword = storedUser.password || "customer123";
-    
-    if (deletePassword !== correctPassword) {
-      setDeleteError("Incorrect password. Please try again.");
-      return;
-    }
-    
-    // Password is correct, proceed with deletion
-    localStorage.removeItem("user");
-    localStorage.removeItem("customerOrders");
-    localStorage.removeItem("pendingCheckout");
-    navigate("/login");
+    // Note: Account deletion should be implemented with proper backend endpoint
+    // This is a placeholder that logs out the user
+    setDeleteError(
+      "Account deletion requires admin approval. Please contact support."
+    );
+
+    // For now, just log out
+    // localStorage.removeItem("user");
+    // localStorage.removeItem("token");
+    // navigate("/login");
   };
 
   const handleCloseDeleteModal = () => {
@@ -85,6 +328,20 @@ function Profile() {
     setDeletePassword("");
     setDeleteError("");
   };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <CustomerNavbar />
+        <div className="flex items-center justify-center h-screen">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+            <p className="text-gray-600">Loading profile...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -97,24 +354,94 @@ function Profile() {
           <p className="text-gray-600">Manage your account information</p>
         </div>
 
+        {/* Success Message */}
+        {successMessage && (
+          <div className="mb-6 bg-green-50 border border-green-200 text-green-800 px-4 py-3 rounded-lg flex items-center">
+            <span className="mr-2">✅</span>
+            {successMessage}
+          </div>
+        )}
+
+        {/* Error Message */}
+        {error && (
+          <div className="mb-6 bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded-lg flex items-center">
+            <span className="mr-2">⚠️</span>
+            {error}
+          </div>
+        )}
+
         {/* Profile Card */}
         <div className="bg-white rounded-lg shadow-md overflow-hidden">
           {/* Profile Header */}
           <div className="bg-gradient-to-r from-primary to-primary/80 px-6 py-8 text-white">
             <div className="flex items-center space-x-6">
-              <div className="w-24 h-24 bg-white rounded-full flex items-center justify-center">
-                <span className="text-5xl">👤</span>
+              <div className="relative">
+                <div className="w-24 h-24 bg-white rounded-full flex items-center justify-center overflow-hidden">
+                  {imagePreview ? (
+                    <img
+                      src={imagePreview}
+                      alt="Profile preview"
+                      className="w-full h-full object-cover"
+                    />
+                  ) : user.photo?.url ? (
+                    <img
+                      src={user.photo.url}
+                      alt={user.photo.altText}
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <span className="text-5xl">👤</span>
+                  )}
+                </div>
+                {isEditing && (
+                  <div className="mt-2 flex gap-2">
+                    <label className="cursor-pointer bg-white text-primary px-3 py-1 rounded text-sm font-medium hover:bg-gray-100 transition-colors">
+                      {selectedImage ? "Change" : "Upload"}
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={handleImageSelect}
+                        className="hidden"
+                        disabled={imageUploading}
+                      />
+                    </label>
+                    {(user.photo?.url || imagePreview) && (
+                      <button
+                        type="button"
+                        onClick={handleRemoveImage}
+                        disabled={imageUploading}
+                        className="bg-red-500 text-white px-3 py-1 rounded text-sm font-medium hover:bg-red-600 transition-colors disabled:opacity-50"
+                      >
+                        Remove
+                      </button>
+                    )}
+                  </div>
+                )}
               </div>
               <div>
                 <h2 className="text-2xl font-bold">{user.name}</h2>
                 <p className="text-primary-100">{user.email}</p>
                 <p className="text-sm mt-2 opacity-90">
-                  Member since {new Date(user.joinedDate).toLocaleDateString('en-GB', { 
-                    year: 'numeric', 
-                    month: 'long', 
-                    day: 'numeric' 
-                  })}
+                  Member since{" "}
+                  {user.joinedDate
+                    ? new Date(user.joinedDate).toLocaleDateString("en-GB", {
+                        year: "numeric",
+                        month: "long",
+                        day: "numeric",
+                      })
+                    : "N/A"}
                 </p>
+                {user.status && (
+                  <span
+                    className={`inline-block mt-2 px-3 py-1 rounded-full text-xs font-medium ${
+                      user.status === "Active"
+                        ? "bg-green-100 text-green-800"
+                        : "bg-red-100 text-red-800"
+                    }`}
+                  >
+                    {user.status}
+                  </span>
+                )}
               </div>
             </div>
           </div>
@@ -144,9 +471,12 @@ function Profile() {
                   </button>
                   <button
                     type="submit"
-                    className="bg-secondary text-white px-4 py-2 rounded-lg hover:bg-secondary/90 transition-colors font-medium"
+                    disabled={saving || imageUploading}
+                    className="bg-secondary text-white px-4 py-2 rounded-lg hover:bg-secondary/90 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    💾 Save Changes
+                    {saving || imageUploading
+                      ? "⏳ Saving..."
+                      : "💾 Save Changes"}
                   </button>
                 </div>
               )}
@@ -235,6 +565,7 @@ function Profile() {
                   value={formData.birthDate}
                   onChange={handleInputChange}
                   disabled={!isEditing}
+                  max={new Date().toISOString().split("T")[0]}
                   className={`w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary ${
                     !isEditing ? "bg-gray-50 text-gray-600" : ""
                   }`}
@@ -287,7 +618,9 @@ function Profile() {
                 <div className="flex items-center space-x-3">
                   <span className="text-2xl">🍽️</span>
                   <div className="text-left">
-                    <p className="font-medium text-gray-900">Browse Restaurants</p>
+                    <p className="font-medium text-gray-900">
+                      Browse Restaurants
+                    </p>
                     <p className="text-sm text-gray-600">Order food now</p>
                   </div>
                 </div>
@@ -302,7 +635,8 @@ function Profile() {
               Danger Zone
             </h3>
             <p className="text-sm text-red-700 mb-4">
-              Once you delete your account, there is no going back. Please be certain.
+              Once you delete your account, there is no going back. Please be
+              certain.
             </p>
             <button
               onClick={() => setShowDeleteModal(true)}
@@ -322,10 +656,10 @@ function Profile() {
               Delete Account?
             </h3>
             <p className="text-gray-600 mb-4">
-              Are you sure you want to delete your account? This action cannot be
-              undone and all your data will be permanently removed.
+              Are you sure you want to delete your account? This action cannot
+              be undone and all your data will be permanently removed.
             </p>
-            
+
             {/* Password Confirmation */}
             <div className="mb-6">
               <label className="block text-sm font-medium text-gray-700 mb-2">
