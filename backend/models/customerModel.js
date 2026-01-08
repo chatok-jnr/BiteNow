@@ -25,7 +25,7 @@ const customerSchema = new mongoose.Schema(
       required: function() {
         return !this.isGoogleAuth; // Not required for Google auth users
       },
-      unique: true,
+      //unique: true,
       sparse: true, // Allow multiple null values
     },
     customer_birth_date: {
