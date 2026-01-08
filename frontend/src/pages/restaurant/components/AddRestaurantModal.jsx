@@ -1,6 +1,8 @@
 import { useState } from "react";
+import { uploadRestaurantImage } from "../../../utils/restaurantService";
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:8000";
+const API_BASE_URL =
+  import.meta.env.VITE_API_BASE_URL || "http://localhost:8000";
 
 function AddRestaurantModal({ isOpen, onClose, onAdd }) {
   const [formData, setFormData] = useState({
@@ -21,12 +23,28 @@ function AddRestaurantModal({ isOpen, onClose, onAdd }) {
   const [categoryInput, setCategoryInput] = useState("");
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [imageFile, setImageFile] = useState(null);
+  const [imagePreview, setImagePreview] = useState(null);
 
   const availableCategories = [
-    "Fast Food", "BBQ", "Grill", "Indian", "Chinese", "Thai", 
-    "Italian", "Bangladeshi", "Pizza", "Burger", "Sushi", 
-    "Desserts", "Cafe", "Bakery", "Seafood", "Vegetarian",
-    "Asian", "Noodles"
+    "Fast Food",
+    "BBQ",
+    "Grill",
+    "Indian",
+    "Chinese",
+    "Thai",
+    "Italian",
+    "Bangladeshi",
+    "Pizza",
+    "Burger",
+    "Sushi",
+    "Desserts",
+    "Cafe",
+    "Bakery",
+    "Seafood",
+    "Vegetarian",
+    "Asian",
+    "Noodles",
   ];
 
   const handleChange = (e) => {
@@ -75,14 +93,52 @@ function AddRestaurantModal({ isOpen, onClose, onAdd }) {
     });
   };
 
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      // Validate file type
+      if (!file.type.startsWith("image/")) {
+        setErrors({ ...errors, image: "Please select a valid image file" });
+        return;
+      }
+
+      // Validate file size (5MB max)
+      if (file.size > 5 * 1024 * 1024) {
+        setErrors({ ...errors, image: "Image size must be less than 5MB" });
+        return;
+      }
+
+      setImageFile(file);
+      setErrors({ ...errors, image: "" });
+
+      // Create preview
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImagePreview(reader.result);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleRemoveImage = () => {
+    setImageFile(null);
+    setImagePreview(null);
+    setErrors({ ...errors, image: "" });
+  };
+
   const validate = () => {
     const newErrors = {};
-    if (!formData.restaurant_name.trim()) newErrors.restaurant_name = "Name is required";
-    if (!formData.restaurant_address.trim()) newErrors.restaurant_address = "Address is required";
-    if (!formData.restaurant_contact_info.phone.trim()) newErrors.phone = "Phone is required";
-    if (!formData.restaurant_contact_info.email.trim()) newErrors.email = "Email is required";
-    if (formData.restaurant_category.length === 0) newErrors.categories = "At least one category is required";
-    
+    if (!formData.restaurant_name.trim())
+      newErrors.restaurant_name = "Name is required";
+    if (!formData.restaurant_address.trim())
+      newErrors.restaurant_address = "Address is required";
+    if (!formData.restaurant_contact_info.phone.trim())
+      newErrors.phone = "Phone is required";
+    if (!formData.restaurant_contact_info.email.trim())
+      newErrors.email = "Email is required";
+    if (formData.restaurant_category.length === 0)
+      newErrors.categories = "At least one category is required";
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -95,7 +151,7 @@ function AddRestaurantModal({ isOpen, onClose, onAdd }) {
     try {
       const user = JSON.parse(localStorage.getItem("user"));
       const token = localStorage.getItem("token");
-      
+
       if (!user || !token) {
         alert("Please login again");
         return;
@@ -111,32 +167,50 @@ function AddRestaurantModal({ isOpen, onClose, onAdd }) {
         restaurant_contact_info: formData.restaurant_contact_info,
       };
 
-      console.log('=== SENDING REQUEST ===');
-      console.log('URL:', `${API_BASE_URL}/api/v1/restaurants/register`);
-      console.log('Token:', token ? 'Present' : 'Missing');
-      console.log('User ID:', user.id);
-      console.log('Request Body:', JSON.stringify(requestBody, null, 2));
-      console.log('=======================');
+      console.log("=== SENDING REQUEST ===");
+      console.log("URL:", `${API_BASE_URL}/api/v1/restaurants/register`);
+      console.log("Token:", token ? "Present" : "Missing");
+      console.log("User ID:", user.id);
+      console.log("Request Body:", JSON.stringify(requestBody, null, 2));
+      console.log("=======================");
 
-      const response = await fetch(`${API_BASE_URL}/api/v1/restaurants/register`, {
-        method: 'POST',
-        headers: { 
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify(requestBody)
-      });
+      const response = await fetch(
+        `${API_BASE_URL}/api/v1/restaurants/register`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify(requestBody),
+        }
+      );
 
       const data = await response.json();
-      
+
       if (!response.ok) {
-        throw new Error(data.message || 'Failed to create restaurant');
+        throw new Error(data.message || "Failed to create restaurant");
       }
-      
+
+      const createdRestaurant = data.data.restaurant;
+
+      // Upload image if selected
+      if (imageFile) {
+        try {
+          await uploadRestaurantImage(createdRestaurant._id, imageFile);
+        } catch (imageError) {
+          console.error("Error uploading image:", imageError);
+          // Continue even if image upload fails - restaurant is created
+          alert(
+            "Restaurant created but image upload failed. You can upload the image later in settings."
+          );
+        }
+      }
+
       alert("Restaurant created successfully!");
-      onAdd(data.data.restaurant);
+      onAdd(createdRestaurant);
       onClose();
-      
+
       // Reset form
       setFormData({
         restaurant_name: "",
@@ -152,6 +226,8 @@ function AddRestaurantModal({ isOpen, onClose, onAdd }) {
           email: "",
         },
       });
+      setImageFile(null);
+      setImagePreview(null);
     } catch (error) {
       console.error("Error adding restaurant:", error);
       alert(error.message || "Failed to create restaurant. Please try again.");
@@ -163,28 +239,48 @@ function AddRestaurantModal({ isOpen, onClose, onAdd }) {
   if (!isOpen) return null;
 
   return (
-    <div 
+    <div
       className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50 overflow-y-auto"
       onClick={onClose}
     >
-      <div className="bg-white rounded-lg max-w-4xl w-full my-8" onClick={(e) => e.stopPropagation()}>
+      <div
+        className="bg-white rounded-lg max-w-4xl w-full my-8"
+        onClick={(e) => e.stopPropagation()}
+      >
         <div className="sticky top-0 bg-white border-b px-6 py-4 flex justify-between items-center rounded-t-lg z-10">
-          <h2 className="text-2xl font-bold text-gray-900">Add New Restaurant</h2>
+          <h2 className="text-2xl font-bold text-gray-900">
+            Add New Restaurant
+          </h2>
           <button
             onClick={onClose}
             className="text-gray-400 hover:text-gray-600 p-2"
           >
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            <svg
+              className="w-6 h-6"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M6 18L18 6M6 6l12 12"
+              />
             </svg>
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="p-6 max-h-[calc(100vh-200px)] overflow-y-auto">
+        <form
+          onSubmit={handleSubmit}
+          className="p-6 max-h-[calc(100vh-200px)] overflow-y-auto"
+        >
           <div className="space-y-6">
             {/* Basic Information */}
             <div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">Basic Information</h3>
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">
+                Basic Information
+              </h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -196,12 +292,16 @@ function AddRestaurantModal({ isOpen, onClose, onAdd }) {
                     value={formData.restaurant_name}
                     onChange={handleChange}
                     className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent ${
-                      errors.restaurant_name ? "border-red-500" : "border-gray-300"
+                      errors.restaurant_name
+                        ? "border-red-500"
+                        : "border-gray-300"
                     }`}
-                    placeholder="e.g., Opu vai vat er hotel"
+                    placeholder="Enter restaurant name"
                   />
                   {errors.restaurant_name && (
-                    <p className="text-red-500 text-sm mt-1">{errors.restaurant_name}</p>
+                    <p className="text-red-500 text-sm mt-1">
+                      {errors.restaurant_name}
+                    </p>
                   )}
                 </div>
 
@@ -215,12 +315,16 @@ function AddRestaurantModal({ isOpen, onClose, onAdd }) {
                     value={formData.restaurant_address}
                     onChange={handleChange}
                     className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent ${
-                      errors.restaurant_address ? "border-red-500" : "border-gray-300"
+                      errors.restaurant_address
+                        ? "border-red-500"
+                        : "border-gray-300"
                     }`}
-                    placeholder="e.g., Uttara, Dhaka"
+                    placeholder="Enter restaurant address"
                   />
                   {errors.restaurant_address && (
-                    <p className="text-red-500 text-sm mt-1">{errors.restaurant_address}</p>
+                    <p className="text-red-500 text-sm mt-1">
+                      {errors.restaurant_address}
+                    </p>
                   )}
                 </div>
 
@@ -234,15 +338,61 @@ function AddRestaurantModal({ isOpen, onClose, onAdd }) {
                     onChange={handleChange}
                     rows={3}
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
-                    placeholder="Brief description of your restaurant"
+                    placeholder="Enter restaurant description"
                   />
                 </div>
               </div>
             </div>
 
+            {/* Restaurant Image */}
+            <div>
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">
+                Restaurant Image
+              </h3>
+
+              {/* Image Preview */}
+              {imagePreview && (
+                <div className="relative mb-4">
+                  <img
+                    src={imagePreview}
+                    alt="Restaurant preview"
+                    className="w-full h-64 object-cover rounded-lg"
+                  />
+                  <button
+                    type="button"
+                    onClick={handleRemoveImage}
+                    className="absolute top-2 right-2 px-3 py-1 bg-red-600 bg-opacity-90 text-white text-sm rounded-full hover:bg-red-700"
+                  >
+                    Remove
+                  </button>
+                </div>
+              )}
+
+              {/* Upload Button */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Upload Image (Optional)
+                </label>
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleImageChange}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                />
+                <p className="text-sm text-gray-500 mt-1">
+                  Maximum file size: 5MB. Supported formats: JPG, PNG, WebP
+                </p>
+                {errors.image && (
+                  <p className="text-red-500 text-sm mt-1">{errors.image}</p>
+                )}
+              </div>
+            </div>
+
             {/* Location Coordinates */}
             <div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">Location Coordinates</h3>
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">
+                Location Coordinates
+              </h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -255,9 +405,11 @@ function AddRestaurantModal({ isOpen, onClose, onAdd }) {
                     value={formData.restaurant_location.coordinates[0]}
                     onChange={handleChange}
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
-                    placeholder="e.g., 90.3915"
+                    placeholder="Enter longitude"
                   />
-                  <p className="text-xs text-gray-500 mt-1">Decimal degrees (e.g., 90.3915)</p>
+                  <p className="text-xs text-gray-500 mt-1">
+                    Decimal degrees (e.g., 90.3915)
+                  </p>
                 </div>
 
                 <div>
@@ -271,16 +423,20 @@ function AddRestaurantModal({ isOpen, onClose, onAdd }) {
                     value={formData.restaurant_location.coordinates[1]}
                     onChange={handleChange}
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
-                    placeholder="e.g., 23.8766"
+                    placeholder="Enter latitude"
                   />
-                  <p className="text-xs text-gray-500 mt-1">Decimal degrees (e.g., 23.8766)</p>
+                  <p className="text-xs text-gray-500 mt-1">
+                    Decimal degrees (e.g., 23.8766)
+                  </p>
                 </div>
               </div>
             </div>
 
             {/* Contact Information */}
             <div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">Contact Information</h3>
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">
+                Contact Information
+              </h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -294,7 +450,7 @@ function AddRestaurantModal({ isOpen, onClose, onAdd }) {
                     className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent ${
                       errors.phone ? "border-red-500" : "border-gray-300"
                     }`}
-                    placeholder="e.g., 01971311958"
+                    placeholder="Enter phone number"
                   />
                   {errors.phone && (
                     <p className="text-red-500 text-sm mt-1">{errors.phone}</p>
@@ -313,7 +469,7 @@ function AddRestaurantModal({ isOpen, onClose, onAdd }) {
                     className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent ${
                       errors.email ? "border-red-500" : "border-gray-300"
                     }`}
-                    placeholder="e.g., contact@restaurant.com"
+                    placeholder="Enter email address"
                   />
                   {errors.email && (
                     <p className="text-red-500 text-sm mt-1">{errors.email}</p>
@@ -324,7 +480,9 @@ function AddRestaurantModal({ isOpen, onClose, onAdd }) {
 
             {/* Categories */}
             <div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">Categories *</h3>
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">
+                Categories *
+              </h3>
               <div className="flex flex-wrap gap-2 mb-3">
                 {formData.restaurant_category.map((category) => (
                   <span

@@ -4,6 +4,7 @@ import Login from "./pages/common/Login";
 import Signup from "./pages/common/Signup";
 import Otp from "./pages/common/Otp";
 import ChangePassword from "./pages/common/ChangePassword";
+import GoogleAuthSuccess from "./pages/common/GoogleAuthSuccess";
 import CustomerDashboard from "./pages/customer/Dashboard";
 import RestaurantMenu from "./pages/customer/RestaurantMenu";
 import Checkout from "./pages/customer/Checkout";
@@ -22,6 +23,7 @@ function App() {
         <Route path="/signup" element={<Signup />} />
         <Route path="/otp" element={<Otp />} />
         <Route path="/owner-change-password" element={<ChangePassword />} />
+        <Route path="/auth/google/success" element={<GoogleAuthSuccess />} />
         
         {/* Customer Routes - Public access for browsing */}
         <Route path="/customer-dashboard" element={<CustomerDashboard />} />

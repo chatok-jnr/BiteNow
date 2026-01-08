@@ -12,7 +12,7 @@ const restaurantOwnerSchema = new mongoose.Schema(
     restaurant_owner_phone: {
       type: String,
       trim: true,
-      required: true,
+    //  required: true,
     },
     restaurant_owner_email: {
       type: String,
@@ -60,8 +60,8 @@ const restaurantOwnerSchema = new mongoose.Schema(
   //  passwordChangeAt: Date(),
     restaurant_owner_gender: {
       type: String,
-      enum: ["Male", "Female"],
-      required: true,
+      enum: ["Male", "Female", "Other"],
+      //required: true,
     },
     restaurant_owner_status: {
       type: String,
@@ -83,7 +83,6 @@ const restaurantOwnerSchema = new mongoose.Schema(
     },
     restaurant_owner_address: {
       type: String,
-      required: [true, "A Restaurant owner must have a address"],
       trim: true,
       maxLength: [50, "Restaurant owner address cannot exceed 50 characters"],
     },

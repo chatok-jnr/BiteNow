@@ -22,17 +22,24 @@ const customerSchema = new mongoose.Schema(
     },
     customer_phone: {
       type: String,
-      required: [true, "A customer must have an phone number"],
-      unique: true,
+      required: function() {
+        return !this.isGoogleAuth; // Not required for Google auth users
+      },
+      //unique: true,
+      sparse: true, // Allow multiple null values
     },
     customer_birth_date: {
       type: Date,
-      required: true,
+      required: function() {
+        return !this.isGoogleAuth;
+      },
     },
     customer_gender: {
       type: String,
-      enum: ["Male", "Female"],
-      required: true,
+      enum: ["Male", "Female", "Other"],
+      required: function() {
+        return !this.isGoogleAuth;
+      },
     },
     customer_status: {
       type: String,
@@ -41,13 +48,25 @@ const customerSchema = new mongoose.Schema(
     },
     customer_address: {
       type: String,
-      required: [true, "A customer must have an address"],
+      required: function() {
+        return !this.isGoogleAuth;
+      },
     },
     customer_password: {
       type: String,
-      required: true,
+      required: function() {
+        return !this.isGoogleAuth;
+      },
       minlength: [6, "A password length must be 6 or more"],
       select: false,
+    },
+    isGoogleAuth: {
+      type: Boolean,
+      default: false,
+    },
+    customer_photo: {
+      type: String,
+      default: '',
     },
     role: {
       type: String,
@@ -76,7 +95,7 @@ const customerSchema = new mongoose.Schema(
       },
       altText: {
         type: String,
-        default: "Rider image",
+        default: "Customer image",
       },
       public_id: {
         type: String,
@@ -146,7 +165,6 @@ customerSchema.methods.changedPasswordAfter = function (JWTTimestamps) {
   }
   return false;
 };
-
 
 /*
 The password reset generator
