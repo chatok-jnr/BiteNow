@@ -20,7 +20,7 @@ passport.use('google-customer',
         const name = profile.displayName;
         const photo = profile.photos && profile.photos[0] ? profile.photos[0].value : '';
 
-        let customer = await Customer.findOne({ customer_email: email });
+        let customer = await Customer.findOne({ customer_email: email }).select('+customer_status');
 
         if (customer) {
           return done(null, { ...customer.toObject(), role: 'customer' });
@@ -60,7 +60,7 @@ passport.use('google-restaurant',
         const email = profile.emails[0].value;
         const name = profile.displayName;
 
-        let restaurantOwner = await RestaurantOwner.findOne({ restaurant_owner_email: email });
+        let restaurantOwner = await RestaurantOwner.findOne({ restaurant_owner_email: email }).select('+restaurant_owner_status');
 
         if (restaurantOwner) {
           return done(null, { ...restaurantOwner.toObject(), role: 'restaurant' });
@@ -100,7 +100,7 @@ passport.use('google-rider',
         const email = profile.emails[0].value;
         const name = profile.displayName;
 
-        let rider = await Rider.findOne({ rider_email: email });
+        let rider = await Rider.findOne({ rider_email: email }).select('+rider_status');
 
         if (rider) {
           return done(null, { ...rider.toObject(), role: 'rider' });

@@ -169,7 +169,7 @@ export default function Announcement() {
           {/* Header */}
           <div className="mb-8">
             <div className="flex items-center gap-3 mb-2">
-              <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-purple-500 to-purple-600 flex items-center justify-center shadow-lg shadow-purple-500/20">
+              <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-orange-500 to-orange-600 flex items-center justify-center shadow-lg shadow-orange-500/20">
                 <Bell className="w-6 h-6 text-white" />
               </div>
               <div>
@@ -185,7 +185,7 @@ export default function Announcement() {
               onClick={() => setActiveTab('send')}
               className={`px-6 py-2.5 rounded-lg font-medium transition-all ${
                 activeTab === 'send'
-                  ? 'bg-purple-500 text-white shadow-lg shadow-purple-500/20'
+                  ? 'bg-orange-500 text-white shadow-lg shadow-orange-500/20'
                   : 'bg-[#1a1a22] text-gray-400 hover:bg-white/5'
               }`}
             >
@@ -198,7 +198,7 @@ export default function Announcement() {
               onClick={() => setActiveTab('history')}
               className={`px-6 py-2.5 rounded-lg font-medium transition-all ${
                 activeTab === 'history'
-                  ? 'bg-purple-500 text-white shadow-lg shadow-purple-500/20'
+                  ? 'bg-orange-500 text-white shadow-lg shadow-orange-500/20'
                   : 'bg-[#1a1a22] text-gray-400 hover:bg-white/5'
               }`}
             >
@@ -210,7 +210,7 @@ export default function Announcement() {
           </div>
 
           {activeTab === 'send' ? (
-            <div className="max-w-4xl">
+            <div className="max-w-4xl mx-auto">
               {/* Alerts */}
               {error && (
                 <div className="mb-6 p-4 bg-red-500/10 border border-red-500/20 rounded-lg text-red-400 flex items-center justify-between">
@@ -244,7 +244,7 @@ export default function Announcement() {
                       value={formData.title}
                       onChange={handleInputChange}
                       placeholder="Enter announcement title"
-                      className="w-full px-4 py-3 bg-[#0d0d12] border border-white/10 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-purple-500/50 focus:bg-[#111116] transition-all"
+                      className="w-full px-4 py-3 bg-[#0d0d12] border border-white/10 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-orange-500/50 focus:bg-[#111116] transition-all"
                       required
                     />
                   </div>
@@ -260,7 +260,7 @@ export default function Announcement() {
                       onChange={handleInputChange}
                       placeholder="Enter your announcement message"
                       rows="6"
-                      className="w-full px-4 py-3 bg-[#0d0d12] border border-white/10 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-purple-500/50 focus:bg-[#111116] transition-all resize-none"
+                      className="w-full px-4 py-3 bg-[#0d0d12] border border-white/10 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-orange-500/50 focus:bg-[#111116] transition-all resize-none"
                       required
                     />
                   </div>
@@ -276,7 +276,7 @@ export default function Announcement() {
                       value={formData.reason}
                       onChange={handleInputChange}
                       placeholder="Enter reason for announcement"
-                      className="w-full px-4 py-3 bg-[#0d0d12] border border-white/10 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-purple-500/50 focus:bg-[#111116] transition-all"
+                      className="w-full px-4 py-3 bg-[#0d0d12] border border-white/10 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-orange-500/50 focus:bg-[#111116] transition-all"
                       required
                     />
                   </div>
@@ -296,21 +296,21 @@ export default function Announcement() {
                             onClick={() => setFormData({ ...formData, recipientType: type.value, specificRecipientId: '' })}
                             className={`p-4 rounded-lg border text-left transition-all ${
                               formData.recipientType === type.value
-                                ? 'bg-purple-500/10 border-purple-500 shadow-lg shadow-purple-500/10'
+                                ? 'bg-orange-500/10 border-orange-500 shadow-lg shadow-orange-500/10'
                                 : 'bg-[#0d0d12] border-white/10 hover:border-white/20'
                             }`}
                           >
                             <div className="flex items-start gap-3">
                               <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${
                                 formData.recipientType === type.value
-                                  ? 'bg-purple-500/20 text-purple-400'
+                                  ? 'bg-orange-500/20 text-orange-400'
                                   : 'bg-white/5 text-gray-400'
                               }`}>
                                 <Icon className="w-5 h-5" />
                               </div>
                               <div className="flex-1">
                                 <h4 className={`font-medium mb-1 ${
-                                  formData.recipientType === type.value ? 'text-purple-400' : 'text-gray-300'
+                                  formData.recipientType === type.value ? 'text-orange-400' : 'text-gray-300'
                                 }`}>
                                   {type.label}
                                 </h4>
@@ -337,7 +337,7 @@ export default function Announcement() {
                         value={formData.specificRecipientId}
                         onChange={handleInputChange}
                         placeholder={`Enter ${formData.recipientType.replace('Specific ', '').toLowerCase()} ID`}
-                        className="w-full px-4 py-3 bg-[#0d0d12] border border-white/10 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-purple-500/50 focus:bg-[#111116] transition-all"
+                        className="w-full px-4 py-3 bg-[#0d0d12] border border-white/10 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-orange-500/50 focus:bg-[#111116] transition-all"
                         required
                       />
                       <p className="text-xs text-gray-500 mt-2">
@@ -351,7 +351,7 @@ export default function Announcement() {
                     <button
                       type="submit"
                       disabled={loading}
-                      className="flex-1 px-6 py-3 bg-gradient-to-r from-purple-500 to-purple-600 text-white rounded-lg font-medium shadow-lg shadow-purple-500/20 hover:from-purple-600 hover:to-purple-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                      className="flex-1 px-6 py-3 bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-lg font-medium shadow-lg shadow-orange-500/20 hover:from-orange-600 hover:to-orange-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                     >
                       {loading ? (
                         <>
@@ -383,7 +383,7 @@ export default function Announcement() {
                     onClick={() => setHistoryFilter('All')}
                     className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
                       historyFilter === 'All'
-                        ? 'bg-purple-500 text-white shadow-lg shadow-purple-500/20'
+                        ? 'bg-orange-500 text-white shadow-lg shadow-orange-500/20'
                         : 'bg-[#1a1a22] text-gray-400 hover:bg-white/5 border border-white/10'
                     }`}
                   >
@@ -395,7 +395,7 @@ export default function Announcement() {
                       onClick={() => setHistoryFilter(type.value)}
                       className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
                         historyFilter === type.value
-                          ? 'bg-purple-500 text-white shadow-lg shadow-purple-500/20'
+                          ? 'bg-orange-500 text-white shadow-lg shadow-orange-500/20'
                           : 'bg-[#1a1a22] text-gray-400 hover:bg-white/5 border border-white/10'
                       }`}
                     >
@@ -419,11 +419,11 @@ export default function Announcement() {
                         <div
                           key={itemId}
                           onClick={() => toggleExpand(itemId)}
-                          className="bg-[#0d0d12] border border-white/10 rounded-lg p-4 hover:border-purple-500/30 transition-all cursor-pointer"
+                          className="bg-[#0d0d12] border border-white/10 rounded-lg p-4 hover:border-orange-500/30 transition-all cursor-pointer"
                         >
                           <div className="flex items-start gap-4">
-                            <div className="w-12 h-12 rounded-lg bg-purple-500/10 flex items-center justify-center flex-shrink-0">
-                              <Icon className="w-6 h-6 text-purple-400" />
+                            <div className="w-12 h-12 rounded-lg bg-orange-500/10 flex items-center justify-center flex-shrink-0">
+                              <Icon className="w-6 h-6 text-orange-400" />
                             </div>
                             <div className="flex-1">
                               <div className="flex items-start justify-between mb-2">

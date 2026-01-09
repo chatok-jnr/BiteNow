@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import Sidebar from '../components/Sidebar';
-import { Search, X, Shield, Mail, Hash, Activity, ChevronDown, ChevronUp } from 'lucide-react';
+import { Search, X, Shield, Mail, Hash, Activity, ChevronDown, ChevronUp, UserPlus, Trash2, Phone, Calendar, User } from 'lucide-react';
 import axiosInstance from '../utils/axios';
 
 export default function AdminList() {
@@ -11,11 +11,42 @@ export default function AdminList() {
   const [showDetailModal, setShowDetailModal] = useState(false);
   const [expandedRows, setExpandedRows] = useState({});
   const [loading, setLoading] = useState(true);
+  const [isSuperAdmin, setIsSuperAdmin] = useState(false);
+  const [showAddAdminModal, setShowAddAdminModal] = useState(false);
+  const [newAdminData, setNewAdminData] = useState({
+    admin_name: '',
+    admin_email: '',
+    admin_phone: '',
+    admin_dob: '',
+    admin_password: '',
+    is_super: false,
+    admin_gender: 'Male'
+  });
 
   // Fetch admins from API
   useEffect(() => {
     fetchAdmins();
+    checkSuperAdminStatus();
   }, []);
+
+  const checkSuperAdminStatus = () => {
+    const adminData = localStorage.getItem('adminData');
+    console.log('🔍 Admin Data from localStorage:', adminData);
+    if (adminData) {
+      try {
+        const parsedData = JSON.parse(adminData);
+        console.log('✅ Parsed Admin Data:', parsedData);
+        console.log('🔑 is_super value:', parsedData.is_super);
+        const isSuperValue = parsedData.is_super === true;
+        console.log('✨ Setting isSuperAdmin to:', isSuperValue);
+        setIsSuperAdmin(isSuperValue);
+      } catch (error) {
+        console.error('Error parsing admin data:', error);
+      }
+    } else {
+      console.log('⚠️ No adminData found in localStorage');
+    }
+  };
 
   const fetchAdmins = async () => {
     try {
@@ -70,6 +101,7 @@ export default function AdminList() {
             photo: admin.admin_photo,
             isVerified: admin.admin_is_verified,
             role: admin.role,
+            isSuper: admin.is_super || false,
             createdAt: admin.createdAt,
             updatedAt: admin.updatedAt,
             totalActions: totalActions,
@@ -85,6 +117,51 @@ export default function AdminList() {
     } catch (error) {
       console.error('Error fetching admins:', error);
       setLoading(false);
+    }
+  };
+
+  const handleAddAdmin = async (e) => {
+    e.preventDefault();
+    try {
+      const response = await axiosInstance.post('/admin/super-admin', newAdminData);
+      
+      if (response.data.status === 'success') {
+        alert('Admin added successfully!');
+        setShowAddAdminModal(false);
+        setNewAdminData({
+          admin_name: '',
+          admin_email: '',
+          admin_phone: '',
+          admin_dob: '',
+          admin_password: '',
+          is_super: false,
+          admin_gender: 'Male'
+        });
+        fetchAdmins(); // Refresh the admin list
+      }
+    } catch (error) {
+      console.error('Error adding admin:', error);
+      alert(error.response?.data?.message || 'Failed to add admin');
+    }
+  };
+
+  const handleRemoveAdmin = async (targetId) => {
+    if (!window.confirm('Are you sure you want to remove this admin?')) {
+      return;
+    }
+
+    try {
+      const response = await axiosInstance.delete('/admin/super-admin', {
+        data: { target_id: targetId }
+      });
+      
+      if (response.data.status === 'success') {
+        alert('Admin removed successfully!');
+        fetchAdmins(); // Refresh the admin list
+      }
+    } catch (error) {
+      console.error('Error removing admin:', error);
+      alert(error.response?.data?.message || 'Failed to remove admin');
     }
   };
 
@@ -136,9 +213,20 @@ export default function AdminList() {
         <div className="p-8">
           {/* Header */}
           <div className="mb-8">
-            <div className="flex items-center gap-3 mb-2">
-              <Shield className="w-8 h-8 text-orange-500" />
-              <h1 className="text-3xl font-bold text-white">Admin List</h1>
+            <div className="flex items-center justify-between mb-2">
+              <div className="flex items-center gap-3">
+                <Shield className="w-8 h-8 text-orange-500" />
+                <h1 className="text-3xl font-bold text-white">Admin List</h1>
+              </div>
+              {isSuperAdmin && (
+                <button
+                  onClick={() => setShowAddAdminModal(true)}
+                  className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white rounded-xl font-semibold transition-all shadow-lg shadow-orange-500/20"
+                >
+                  <UserPlus className="w-5 h-5" />
+                  Add New Admin
+                </button>
+              )}
             </div>
             <p className="text-gray-400">Manage and monitor all admin accounts and their activities</p>
           </div>
@@ -214,6 +302,7 @@ export default function AdminList() {
                       <th className="text-left p-4 text-gray-400 font-medium text-sm">ID</th>
                       <th className="text-left p-4 text-gray-400 font-medium text-sm">Name</th>
                       <th className="text-left p-4 text-gray-400 font-medium text-sm">Email</th>
+                      <th className="text-center p-4 text-gray-400 font-medium text-sm">Role</th>
                       <th className="text-center p-4 text-gray-400 font-medium text-sm">Total Actions</th>
                       <th className="text-center p-4 text-gray-400 font-medium text-sm">Actions</th>
                     </tr>
@@ -240,6 +329,18 @@ export default function AdminList() {
                             </div>
                           </td>
                           <td className="p-4 text-center">
+                            {admin.isSuper ? (
+                              <span className="inline-flex items-center gap-2 px-3 py-1.5 bg-gradient-to-r from-purple-500/10 to-pink-500/10 border border-purple-500/20 text-purple-400 rounded-full font-semibold text-sm">
+                                <Shield className="w-4 h-4" />
+                                Super Admin
+                              </span>
+                            ) : (
+                              <span className="inline-flex items-center gap-2 px-3 py-1.5 bg-gray-500/10 border border-gray-500/20 text-gray-400 rounded-full font-semibold text-sm">
+                                Admin
+                              </span>
+                            )}
+                          </td>
+                          <td className="p-4 text-center">
                             <span className="inline-flex items-center gap-2 px-4 py-1.5 bg-orange-500/10 border border-orange-500/20 text-orange-500 rounded-full font-semibold">
                               <Activity className="w-4 h-4" />
                               {admin.totalActions}
@@ -253,6 +354,15 @@ export default function AdminList() {
                               >
                                 View Details
                               </button>
+                              {isSuperAdmin && !admin.isSuper && (
+                                <button
+                                  onClick={() => handleRemoveAdmin(admin.id)}
+                                  className="px-3 py-2 bg-red-500/10 hover:bg-red-500/20 border border-red-500/20 text-red-400 rounded-lg transition-all"
+                                  title="Remove Admin"
+                                >
+                                  <Trash2 className="w-4 h-4" />
+                                </button>
+                              )}
                               <button
                                 onClick={() => toggleRowExpansion(admin.id)}
                                 className="px-3 py-2 bg-white/5 hover:bg-white/10 border border-white/10 text-white rounded-lg transition-all"
@@ -439,6 +549,172 @@ export default function AdminList() {
                 </div>
               )}
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Add Admin Modal */}
+      {showAddAdminModal && isSuperAdmin && (
+        <div 
+          className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+          onClick={() => setShowAddAdminModal(false)}
+        >
+          <div 
+            className="bg-[#1a1a22] border border-white/10 rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-auto"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="sticky top-0 bg-[#1a1a22] border-b border-white/10 p-6 flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <UserPlus className="w-6 h-6 text-orange-500" />
+                <h2 className="text-2xl font-bold text-white">Add New Admin</h2>
+              </div>
+              <button
+                onClick={() => setShowAddAdminModal(false)}
+                className="p-2 hover:bg-white/10 rounded-lg transition-colors"
+              >
+                <X className="w-6 h-6 text-gray-400" />
+              </button>
+            </div>
+            
+            <form onSubmit={handleAddAdmin} className="p-6">
+              <div className="space-y-4">
+                {/* Name */}
+                <div>
+                  <label className="block text-gray-400 text-sm font-medium mb-2">
+                    Admin Name *
+                  </label>
+                  <div className="relative">
+                    <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" />
+                    <input
+                      type="text"
+                      required
+                      value={newAdminData.admin_name}
+                      onChange={(e) => setNewAdminData({...newAdminData, admin_name: e.target.value})}
+                      className="w-full pl-11 pr-4 py-3 bg-[#15151a] border border-white/10 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-orange-500/50 transition-all"
+                      placeholder="Enter admin name"
+                    />
+                  </div>
+                </div>
+
+                {/* Email */}
+                <div>
+                  <label className="block text-gray-400 text-sm font-medium mb-2">
+                    Email Address *
+                  </label>
+                  <div className="relative">
+                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" />
+                    <input
+                      type="email"
+                      required
+                      value={newAdminData.admin_email}
+                      onChange={(e) => setNewAdminData({...newAdminData, admin_email: e.target.value})}
+                      className="w-full pl-11 pr-4 py-3 bg-[#15151a] border border-white/10 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-orange-500/50 transition-all"
+                      placeholder="admin@example.com"
+                    />
+                  </div>
+                </div>
+
+                {/* Phone */}
+                <div>
+                  <label className="block text-gray-400 text-sm font-medium mb-2">
+                    Phone Number *
+                  </label>
+                  <div className="relative">
+                    <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" />
+                    <input
+                      type="tel"
+                      required
+                      value={newAdminData.admin_phone}
+                      onChange={(e) => setNewAdminData({...newAdminData, admin_phone: e.target.value})}
+                      className="w-full pl-11 pr-4 py-3 bg-[#15151a] border border-white/10 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-orange-500/50 transition-all"
+                      placeholder="01XXXXXXXXX"
+                    />
+                  </div>
+                </div>
+
+                {/* Date of Birth */}
+                <div>
+                  <label className="block text-gray-400 text-sm font-medium mb-2">
+                    Date of Birth *
+                  </label>
+                  <div className="relative">
+                    <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" />
+                    <input
+                      type="text"
+                      required
+                      value={newAdminData.admin_dob}
+                      onChange={(e) => setNewAdminData({...newAdminData, admin_dob: e.target.value})}
+                      className="w-full pl-11 pr-4 py-3 bg-[#15151a] border border-white/10 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-orange-500/50 transition-all"
+                      placeholder="DD-Mon-YYYY (e.g., 10-Feb-2003)"
+                    />
+                  </div>
+                  <p className="text-xs text-gray-500 mt-1">Format: DD-Mon-YYYY (e.g., 10-Feb-2003)</p>
+                </div>
+
+                {/* Password */}
+                <div>
+                  <label className="block text-gray-400 text-sm font-medium mb-2">
+                    Password *
+                  </label>
+                  <input
+                    type="password"
+                    required
+                    value={newAdminData.admin_password}
+                    onChange={(e) => setNewAdminData({...newAdminData, admin_password: e.target.value})}
+                    className="w-full px-4 py-3 bg-[#15151a] border border-white/10 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-orange-500/50 transition-all"
+                    placeholder="Enter password"
+                  />
+                </div>
+
+                {/* Gender */}
+                <div>
+                  <label className="block text-gray-400 text-sm font-medium mb-2">
+                    Gender *
+                  </label>
+                  <select
+                    value={newAdminData.admin_gender}
+                    onChange={(e) => setNewAdminData({...newAdminData, admin_gender: e.target.value})}
+                    className="w-full px-4 py-3 bg-[#15151a] border border-white/10 rounded-lg text-white focus:outline-none focus:border-orange-500/50 transition-all"
+                  >
+                    <option value="Male">Male</option>
+                    <option value="Female">Female</option>
+                    <option value="Other">Other</option>
+                  </select>
+                </div>
+
+                {/* Super Admin Checkbox */}
+                <div className="flex items-center gap-3 p-4 bg-purple-500/5 border border-purple-500/20 rounded-lg">
+                  <input
+                    type="checkbox"
+                    id="is_super"
+                    checked={newAdminData.is_super}
+                    onChange={(e) => setNewAdminData({...newAdminData, is_super: e.target.checked})}
+                    className="w-5 h-5 rounded border-purple-500/50 bg-[#15151a] text-purple-500 focus:ring-purple-500 focus:ring-offset-0"
+                  />
+                  <label htmlFor="is_super" className="flex items-center gap-2 text-white font-medium cursor-pointer">
+                    <Shield className="w-5 h-5 text-purple-400" />
+                    Grant Super Admin Privileges
+                  </label>
+                </div>
+              </div>
+
+              {/* Actions */}
+              <div className="flex gap-3 mt-6 pt-6 border-t border-white/10">
+                <button
+                  type="button"
+                  onClick={() => setShowAddAdminModal(false)}
+                  className="flex-1 px-6 py-3 bg-white/5 hover:bg-white/10 border border-white/10 text-white rounded-lg font-semibold transition-all"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="flex-1 px-6 py-3 bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white rounded-lg font-semibold transition-all shadow-lg shadow-orange-500/20"
+                >
+                  Add Admin
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}
