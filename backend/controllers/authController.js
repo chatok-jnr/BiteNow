@@ -439,9 +439,9 @@ exports.loginRider = async (req, res) => {
 
     if (rider.rider_status !== "Approved") {
       let msg = "Your rider request is not approved yet";
-      if (rider_status === "Rejected") {
+      if (rider.rider_status === "Rejected") {
         msg = "Your are not valid to become a rider";
-      } else if (rider_status === "Suspended") {
+      } else if (rider.rider_status === "Suspended") {
         msg =
           "Your account has been suspended. Please Contact the support team to learn more";
       }
@@ -1058,6 +1058,12 @@ exports.googleAuthSuccessCustomer = async (req, res) => {
   try {
     const customer = req.user;
 
+    // Check customer status
+    if (customer.customer_status !== "Active") {
+      const errorUrl = `${process.env.FRONTEND_URL || "http://localhost:5173"}/login?error=account_suspended`;
+      return res.redirect(errorUrl);
+    }
+
     const token = jwt.sign(
       { 
         id: customer._id,
@@ -1080,6 +1086,18 @@ exports.googleAuthSuccessCustomer = async (req, res) => {
 exports.googleAuthSuccessRestaurant = async (req, res) => {
   try {
     const restaurantOwner = req.user;
+
+    // Check restaurant owner status
+    if (restaurantOwner.restaurant_owner_status !== "Approved") {
+      let errorMsg = "account_not_approved";
+      if (restaurantOwner.restaurant_owner_status === "Suspended") {
+        errorMsg = "account_suspended";
+      } else if (restaurantOwner.restaurant_owner_status === "Rejected") {
+        errorMsg = "account_rejected";
+      }
+      const errorUrl = `${process.env.FRONTEND_URL || "http://localhost:5173"}/login?error=${errorMsg}`;
+      return res.redirect(errorUrl);
+    }
 
     const token = jwt.sign(
       { 
@@ -1104,6 +1122,18 @@ exports.googleAuthSuccessRestaurant = async (req, res) => {
 exports.googleAuthSuccessRider = async (req, res) => {
   try {
     const rider = req.user;
+
+    // Check rider status
+    if (rider.rider_status !== "Approved") {
+      let errorMsg = "account_not_approved";
+      if (rider.rider_status === "Suspended") {
+        errorMsg = "account_suspended";
+      } else if (rider.rider_status === "Rejected") {
+        errorMsg = "account_rejected";
+      }
+      const errorUrl = `${process.env.FRONTEND_URL || "http://localhost:5173"}/login?error=${errorMsg}`;
+      return res.redirect(errorUrl);
+    }
 
     const token = jwt.sign(
       { 
