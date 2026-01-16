@@ -1110,7 +1110,7 @@ exports.googleAuthSuccessRestaurant = async (req, res) => {
     );
 
     const redirectUrl = `${process.env.FRONTEND_URL || "http://localhost:5173"}/auth/google/success?token=${token}&userId=${restaurantOwner._id}&role=restaurant`;
-        
+
     res.redirect(redirectUrl);
   } catch (err) {
     const errorUrl = `${process.env.FRONTEND_URL || "http://localhost:5173"}/login?error=google_auth_failed`;
