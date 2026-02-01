@@ -64,10 +64,10 @@ const Profile = () => {
   const fetchCompletedOrders = async () => {
     try {
       const response = await getMyOrderList();
-      if (response.status === 'success') {
+      if (response.status === 'success' && response.myOrder) {
         // Filter only completed/delivered orders
-        const completed = response.data.orders.filter(
-          order => order.order_status === 'Delivered' || order.order_status === 'Completed'
+        const completed = response.myOrder.filter(
+          order => order.order_status === 'delivered'
         );
         setCompletedOrders(completed);
       }
@@ -404,13 +404,19 @@ const Profile = () => {
                 {/* Profile Photo */}
                 <div className="flex justify-center mb-6">
                   <div className="relative">
-                    <img
-                      src={editForm.imageFile 
-                        ? URL.createObjectURL(editForm.imageFile) 
-                        : (profileData.image?.url || 'https://via.placeholder.com/150')}
-                      alt="Profile"
-                      className="w-32 h-32 rounded-full object-cover border-4 border-[#67A177]"
-                    />
+                    <div className="w-32 h-32 rounded-full border-4 border-[#67A177] overflow-hidden bg-gray-200 flex items-center justify-center">
+                      {(editForm.imageFile || profileData?.image?.url) ? (
+                        <img
+                          src={editForm.imageFile 
+                            ? URL.createObjectURL(editForm.imageFile) 
+                            : profileData.image.url}
+                          alt="Profile"
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <User className="w-16 h-16 text-gray-400" />
+                      )}
+                    </div>
                     {isEditing && (
                       <label className="absolute bottom-0 right-0 bg-[#67A177] text-white p-2 rounded-full cursor-pointer hover:bg-[#5a8f68] transition-all">
                         <Camera className="w-5 h-5" />

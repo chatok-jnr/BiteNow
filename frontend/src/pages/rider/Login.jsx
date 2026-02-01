@@ -50,15 +50,32 @@ const Login = () => {
 
       const response = await loginRider(credentials);
 
+      console.log('🔐 Login Response:', response);
+      console.log('📦 Response Data:', response.data);
+      console.log('🎫 Token:', response.token);
+
       // Store token and user data
       if (response.status === 'success' && response.token) {
         localStorage.setItem('token', response.token);
         localStorage.setItem('userRole', 'rider');
-        localStorage.setItem('userId', response.data?.user?.rider_id);
         
+        // Store complete user object including status
+        const userData = response.data?.user || response.user;
+        console.log('👤 User Data to Store:', userData);
+        
+        if (userData) {
+          localStorage.setItem('user', JSON.stringify(userData));
+          localStorage.setItem('userId', userData.rider_id || userData._id || userData.id);
+          console.log('✅ User data stored to localStorage');
+        } else {
+          console.warn('⚠️ No user data found in response');
+        }
+        
+        console.log('🔄 Navigating to rider home...');
         // Navigate to rider home
         navigate('/rider/home');
       } else {
+        console.error('❌ Login failed - Invalid response:', response);
         setError('Login failed. Please try again.');
       }
     } catch (err) {

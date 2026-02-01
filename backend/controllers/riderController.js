@@ -588,3 +588,55 @@ exports.deleteRiderDoc = async (req, res) => {
     });
   }
 };
+
+// Get rider statistics
+exports.getRiderStats = async (req, res) => {
+  try {
+    const riderId = req.user._id;
+    const Order = require("./../models/orderModel");
+
+    // Get today's date range (start of day to end of day)
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const tomorrow = new Date(today);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+
+    // Get today's completed deliveries
+    const todaysDeliveries = await Order.find({
+      rider_id: riderId,
+      order_status: "delivered",
+      delivered_at: {
+        $gte: today,
+        $lt: tomorrow,
+      },
+    });
+
+    // Calculate today's earnings (sum of delivery charges)
+    const todaysEarnings = todaysDeliveries.reduce((total, order) => {
+      return total + (order.delivery_charge || 0);
+    }, 0);
+
+    // Count deliveries completed today
+    const deliveriesCompleted = todaysDeliveries.length;
+
+    // Count available requests (orders looking for rider)
+    const availableRequests = await Order.countDocuments({
+      order_status: "look_rider",
+      rider_id: null,
+    });
+
+    res.status(200).json({
+      status: "success",
+      data: {
+        todaysEarnings: todaysEarnings.toFixed(2),
+        deliveriesCompleted,
+        availableRequests,
+      },
+    });
+  } catch (err) {
+    res.status(500).json({
+      status: "error",
+      message: err.message || "Error fetching rider statistics",
+    });
+  }
+};

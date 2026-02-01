@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Store, Plus, X, MapPin, Mail, Menu, Image, FileText, ChevronRight, Star, Package, Phone, Trash2 } from 'lucide-react';
 import OwnerSidebar from '../../components/OwnerSidebar';
+import ApprovalMessage from '../../components/ApprovalMessage';
 import { getMyRestaurants, createRestaurant, deleteRestaurant, uploadRestaurantImage } from '../../utils/restaurantService';
 
 const Restaurants = () => {
@@ -12,6 +13,7 @@ const Restaurants = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [imageFile, setImageFile] = useState(null); // Store actual file for upload
+  const [ownerStatus, setOwnerStatus] = useState(null);
 
   const [formData, setFormData] = useState({
     restaurant_name: '',
@@ -47,7 +49,20 @@ const Restaurants = () => {
   // Fetch restaurants on component mount
   useEffect(() => {
     fetchRestaurants();
+    checkOwnerStatus();
   }, []);
+
+  const checkOwnerStatus = () => {
+    try {
+      const userStr = localStorage.getItem('user');
+      if (userStr) {
+        const user = JSON.parse(userStr);
+        setOwnerStatus(user.restaurant_owner_status || user.status);
+      }
+    } catch (err) {
+      console.error('Error checking owner status:', err);
+    }
+  };
 
   const fetchRestaurants = async () => {
     try {
@@ -161,6 +176,12 @@ const Restaurants = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    
+    // Check approval status first
+    if (ownerStatus !== 'Approved') {
+      alert('Your account must be approved before you can add restaurants');
+      return;
+    }
     
     // Validation
     if (!formData.restaurant_name || !formData.restaurant_description || 
@@ -361,39 +382,63 @@ const Restaurants = () => {
                 <p className="text-gray-600">Manage all your restaurant locations</p>
               </div>
               <button 
-                onClick={() => setShowAddModal(true)} 
+                onClick={() => {
+                  if (ownerStatus !== 'Approved') {
+                    alert('Your account must be approved before you can add restaurants');
+                    return;
+                  }
+                  setShowAddModal(true);
+                }} 
                 disabled={loading}
                 className="bg-[#67A177] text-white px-6 py-3 rounded-full hover:bg-[#5a8f68] transition-all font-semibold flex items-center space-x-2 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed">
                 <Plus className="w-5 h-5" /><span>Add Restaurant</span>
               </button>
             </div>
 
-            {/* Error Message */}
-            {error && (
-              <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg mb-4">
-                {error}
+            {/* Show approval notice if not approved */}
+            {ownerStatus && ownerStatus !== 'Approved' && (
+              <div className="mb-6">
+                <ApprovalMessage 
+                  status={ownerStatus}
+                  entityType="restaurant owner account"
+                  message="Your account is pending approval. You can view your restaurants but cannot add new ones until approved."
+                />
               </div>
             )}
 
-            {/* Loading State */}
-            {loading && restaurants.length === 0 && (
-              <div className="text-center py-12">
-                <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-[#67A177]"></div>
-                <p className="mt-4 text-gray-600">Loading restaurants...</p>
-              </div>
-            )}
+                {/* Error Message */}
+                {error && (
+                  <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg mb-4">
+                    {error}
+                  </div>
+                )}
+
+                {/* Loading State */}
+                {loading && restaurants.length === 0 && (
+                  <div className="text-center py-12">
+                    <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-[#67A177]"></div>
+                    <p className="mt-4 text-gray-600">Loading restaurants...</p>
+                  </div>
+                )}
 
             {/* Empty State */}
             {!loading && restaurants.length === 0 && (
               <div className="text-center py-12 bg-[#ACD4B1] rounded-2xl">
                 <Store className="w-16 h-16 text-gray-400 mx-auto mb-4" />
                 <h3 className="text-xl font-semibold text-gray-700 mb-2">No restaurants yet</h3>
-                <p className="text-gray-600 mb-4">Start by adding your first restaurant</p>
-                <button 
-                  onClick={() => setShowAddModal(true)}
-                  className="bg-[#67A177] text-white px-6 py-3 rounded-full hover:bg-[#5a8f68] transition-all font-semibold inline-flex items-center space-x-2">
-                  <Plus className="w-5 h-5" /><span>Add Restaurant</span>
-                </button>
+                <p className="text-gray-600 mb-4">
+                  {ownerStatus !== 'Approved' 
+                    ? 'Your account needs to be approved before you can add restaurants'
+                    : 'Start by adding your first restaurant'
+                  }
+                </p>
+                {ownerStatus === 'Approved' && (
+                  <button 
+                    onClick={() => setShowAddModal(true)}
+                    className="bg-[#67A177] text-white px-6 py-3 rounded-full hover:bg-[#5a8f68] transition-all font-semibold inline-flex items-center space-x-2">
+                    <Plus className="w-5 h-5" /><span>Add Restaurant</span>
+                  </button>
+                )}
               </div>
             )}
 
@@ -401,69 +446,69 @@ const Restaurants = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
               {restaurants.map((restaurant) => (
                 <div key={restaurant._id} className="bg-[#ACD4B1] rounded-2xl overflow-hidden shadow-lg hover:shadow-xl transition-all">
-                  <div className="aspect-video overflow-hidden relative">
-                    <img 
-                      src={restaurant.restaurant_image?.url || restaurant.restaurant_image || 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=400&q=80'} 
-                      alt={restaurant.restaurant_name} 
-                      className="w-full h-full object-cover hover:scale-110 transition-transform duration-500" 
-                    />
-                    <div className="absolute top-4 right-4 bg-[#67A177] text-white px-3 py-1 rounded-full text-sm font-semibold">
-                      {restaurant.restaurant_category?.[0] || 'Restaurant'}
+                      <div className="aspect-video overflow-hidden relative">
+                        <img 
+                          src={restaurant.restaurant_image?.url || restaurant.restaurant_image || 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=400&q=80'} 
+                          alt={restaurant.restaurant_name} 
+                          className="w-full h-full object-cover hover:scale-110 transition-transform duration-500" 
+                        />
+                        <div className="absolute top-4 right-4 bg-[#67A177] text-white px-3 py-1 rounded-full text-sm font-semibold">
+                          {restaurant.restaurant_category?.[0] || 'Restaurant'}
+                        </div>
+                      </div>
+                      <div className="p-5">
+                        <h3 className="text-2xl font-bold text-gray-800 mb-2">{restaurant.restaurant_name}</h3>
+                        <p className="text-gray-600 text-sm mb-4 line-clamp-2">{restaurant.restaurant_description}</p>
+                        <div className="space-y-2 mb-4">
+                          <div className="flex items-start space-x-2">
+                            <MapPin className="w-4 h-4 text-[#67A177] mt-0.5 flex-shrink-0" />
+                            <p className="text-sm text-gray-700">
+                              {restaurant.restaurant_address || 'No address provided'}
+                            </p>
+                          </div>
+                          {restaurant.restaurant_contact_info?.phone && (
+                            <div className="flex items-center space-x-2">
+                              <Phone className="w-4 h-4 text-[#67A177] flex-shrink-0" />
+                              <p className="text-sm text-gray-700">{restaurant.restaurant_contact_info.phone}</p>
+                            </div>
+                          )}
+                          {restaurant.restaurant_contact_info?.email && (
+                            <div className="flex items-center space-x-2">
+                              <Mail className="w-4 h-4 text-[#67A177] flex-shrink-0" />
+                              <p className="text-sm text-gray-700">{restaurant.restaurant_contact_info.email}</p>
+                            </div>
+                          )}
+                        </div>
+                        <div className="grid grid-cols-2 gap-2 mb-4">
+                          <div className="bg-[#DDEEDB] p-2 rounded-lg text-center">
+                            <div className="flex items-center justify-center mb-1"><Star className="w-4 h-4 fill-yellow-400 text-yellow-400" /></div>
+                            <p className="text-xs text-gray-600">Rating</p>
+                            <p className="font-bold text-gray-800">{restaurant.restaurant_rating?.average || 'N/A'}</p>
+                          </div>
+                          <div className="bg-[#DDEEDB] p-2 rounded-lg text-center">
+                            <div className="flex items-center justify-center mb-1"><Package className="w-4 h-4 text-[#67A177]" /></div>
+                            <p className="text-xs text-gray-600">Sales</p>
+                            <p className="font-bold text-gray-800">{restaurant.restaurant_total_sales || 0}</p>
+                          </div>
+                        </div>
+                        <div className="flex space-x-2">
+                          <button 
+                            onClick={() => handleManageRestaurant(restaurant)}
+                            className="flex-1 bg-[#67A177] text-white py-3 rounded-full hover:bg-[#5a8f68] transition-all font-semibold flex items-center justify-center space-x-2"
+                          >
+                            <span>Manage</span><ChevronRight className="w-5 h-5" />
+                          </button>
+                          <button 
+                            onClick={() => handleDeleteRestaurant(restaurant._id)}
+                            disabled={loading}
+                            className="bg-red-500 text-white px-4 py-3 rounded-full hover:bg-red-600 transition-all disabled:opacity-50 disabled:cursor-not-allowed">
+                            <Trash2 className="w-5 h-5" />
+                          </button>
+                        </div>
                     </div>
                   </div>
-                  <div className="p-5">
-                    <h3 className="text-2xl font-bold text-gray-800 mb-2">{restaurant.restaurant_name}</h3>
-                    <p className="text-gray-600 text-sm mb-4 line-clamp-2">{restaurant.restaurant_description}</p>
-                    <div className="space-y-2 mb-4">
-                      <div className="flex items-start space-x-2">
-                        <MapPin className="w-4 h-4 text-[#67A177] mt-0.5 flex-shrink-0" />
-                        <p className="text-sm text-gray-700">
-                          {restaurant.restaurant_address || 'No address provided'}
-                        </p>
-                      </div>
-                      {restaurant.restaurant_contact_info?.phone && (
-                        <div className="flex items-center space-x-2">
-                          <Phone className="w-4 h-4 text-[#67A177] flex-shrink-0" />
-                          <p className="text-sm text-gray-700">{restaurant.restaurant_contact_info.phone}</p>
-                        </div>
-                      )}
-                      {restaurant.restaurant_contact_info?.email && (
-                        <div className="flex items-center space-x-2">
-                          <Mail className="w-4 h-4 text-[#67A177] flex-shrink-0" />
-                          <p className="text-sm text-gray-700">{restaurant.restaurant_contact_info.email}</p>
-                        </div>
-                      )}
-                    </div>
-                    <div className="grid grid-cols-2 gap-2 mb-4">
-                      <div className="bg-[#DDEEDB] p-2 rounded-lg text-center">
-                        <div className="flex items-center justify-center mb-1"><Star className="w-4 h-4 fill-yellow-400 text-yellow-400" /></div>
-                        <p className="text-xs text-gray-600">Rating</p>
-                        <p className="font-bold text-gray-800">{restaurant.restaurant_rating?.average || 'N/A'}</p>
-                      </div>
-                      <div className="bg-[#DDEEDB] p-2 rounded-lg text-center">
-                        <div className="flex items-center justify-center mb-1"><Package className="w-4 h-4 text-[#67A177]" /></div>
-                        <p className="text-xs text-gray-600">Sales</p>
-                        <p className="font-bold text-gray-800">{restaurant.restaurant_total_sales || 0}</p>
-                      </div>
-                    </div>
-                    <div className="flex space-x-2">
-                      <button 
-                        onClick={() => handleManageRestaurant(restaurant)}
-                        className="flex-1 bg-[#67A177] text-white py-3 rounded-full hover:bg-[#5a8f68] transition-all font-semibold flex items-center justify-center space-x-2"
-                      >
-                        <span>Manage</span><ChevronRight className="w-5 h-5" />
-                      </button>
-                      <button 
-                        onClick={() => handleDeleteRestaurant(restaurant._id)}
-                        disabled={loading}
-                        className="bg-red-500 text-white px-4 py-3 rounded-full hover:bg-red-600 transition-all disabled:opacity-50 disabled:cursor-not-allowed">
-                        <Trash2 className="w-5 h-5" />
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
           </div>
         </main>
 

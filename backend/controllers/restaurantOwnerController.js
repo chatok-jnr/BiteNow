@@ -146,6 +146,7 @@ exports.getRestaurantOwner = async (req, res) => {
   }
 };
 
+// Update Restaurant Owner
 exports.updateRestaurantOwner = async (req, res) => {
   try {
     const ownerID = req.params.id;
@@ -206,6 +207,8 @@ exports.updateRestaurantOwner = async (req, res) => {
     });
   }
 };
+
+// Delete Restaurant Owner
 exports.deleteRestaurantOwner = async (req, res) => {
   try {
     const ownerID = req.params.id;

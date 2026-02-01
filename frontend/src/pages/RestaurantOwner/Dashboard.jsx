@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Store, DollarSign, TrendingUp, Package, ShoppingBag, Users, BarChart3, Menu, ChevronRight, Star, AlertCircle } from 'lucide-react';
 import OwnerSidebar from '../../components/OwnerSidebar';
+import ApprovalMessage from '../../components/ApprovalMessage';
 import { getOwnerDashboard } from '../../utils/restaurantOwnerService';
 
 const Dashboard = () => {
@@ -8,10 +9,24 @@ const Dashboard = () => {
   const [restaurantData, setRestaurantData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [ownerStatus, setOwnerStatus] = useState(null);
 
   useEffect(() => {
     fetchDashboardData();
+    checkOwnerStatus();
   }, []);
+
+  const checkOwnerStatus = () => {
+    try {
+      const userStr = localStorage.getItem('user');
+      if (userStr) {
+        const user = JSON.parse(userStr);
+        setOwnerStatus(user.restaurant_owner_status || user.status);
+      }
+    } catch (err) {
+      console.error('Error checking owner status:', err);
+    }
+  };
 
   const fetchDashboardData = async () => {
     try {
@@ -88,10 +103,17 @@ const Dashboard = () => {
     if (restaurantData.length === 0) {
       return (
         <div className="flex items-center justify-center min-h-[400px]">
-          <div className="text-center">
+          <div className="text-center max-w-md mx-auto">
             <Store className="w-16 h-16 text-gray-400 mx-auto mb-4" />
             <h3 className="text-xl font-semibold text-gray-700 mb-2">No Restaurants Yet</h3>
-            <p className="text-gray-600">Add your first restaurant to see dashboard data</p>
+            <p className="text-gray-600 mb-4">
+              {ownerStatus !== 'Approved' 
+                ? (ownerStatus === 'Pending' 
+                    ? 'To get approved and add restaurants, you need to upload the required documents that prove you are eligible. Once you add your documents, our admin team will review them and approve your account.'
+                    : 'Your account needs to be approved before you can add restaurants')
+                : 'Add your first restaurant to see dashboard data'
+              }
+            </p>
           </div>
         </div>
       );
@@ -280,6 +302,15 @@ const Dashboard = () => {
         {/* Content Area */}
         <main className="flex-1 p-4 lg:p-8">
           <div className="max-w-7xl mx-auto">
+            {/* Show approval message if not approved */}
+            {ownerStatus && ownerStatus !== 'Approved' && (
+              <div className="mb-6">
+                <ApprovalMessage 
+                  status={ownerStatus}
+                  entityType="account"
+                />
+              </div>
+            )}
             <DashboardContent />
           </div>
         </main>

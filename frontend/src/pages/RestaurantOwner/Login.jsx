@@ -50,15 +50,32 @@ const Login = () => {
 
       const response = await loginRestaurantOwner(credentials);
 
+      console.log('🔐 Login Response:', response);
+      console.log('📦 Response Data:', response.data);
+      console.log('🎫 Token:', response.token);
+
       // Store token and user data
       if (response.status === 'success' && response.token) {
         localStorage.setItem('token', response.token);
         localStorage.setItem('userRole', 'restaurant');
-        localStorage.setItem('userId', response.data?.ownerResponse?.id);
         
+        // Store complete user object including status
+        const userData = response.data?.ownerResponse || response.data?.user || response.user;
+        console.log('👤 User Data to Store:', userData);
+        
+        if (userData) {
+          localStorage.setItem('user', JSON.stringify(userData));
+          localStorage.setItem('userId', userData.id || userData._id);
+          console.log('✅ User data stored to localStorage');
+        } else {
+          console.warn('⚠️ No user data found in response');
+        }
+        
+        console.log('🔄 Navigating to dashboard...');
         // Navigate to dashboard
         navigate('/restaurant_owner/dashboard');
       } else {
+        console.error('❌ Login failed - Invalid response:', response);
         setError('Login failed. Please try again.');
       }
     } catch (err) {

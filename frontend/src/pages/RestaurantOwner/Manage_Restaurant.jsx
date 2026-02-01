@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Store, Plus, X, Search, MoreVertical, Edit2, Package, Trash2, ShoppingCart, User, Phone, Mail, MapPin, MessageSquare, ChefHat, Bike, AlertCircle, Loader, ArrowLeft } from 'lucide-react';
+import ApprovalMessage from '../../components/ApprovalMessage';
 import foodService from '../../utils/foodService';
 import { getOrdersByRestaurant, updateOrderStatusByRestaurant } from '../../utils/orderService';
 
@@ -27,6 +28,8 @@ const Manage_Restaurant = () => {
   // Get restaurant ID from localStorage or context
   const [restaurantId, setRestaurantId] = useState(null);
   const [restaurant, setRestaurant] = useState(null);
+  const [ownerStatus, setOwnerStatus] = useState(null);
+  const [restaurantStatus, setRestaurantStatus] = useState(null);
 
   const [foods, setFoods] = useState([]);
   const [allOrders, setAllOrders] = useState([]);
@@ -47,6 +50,10 @@ const Manage_Restaurant = () => {
       try {
         const user = JSON.parse(userStr);
         console.log('User data:', user);
+        
+        // Check owner status
+        setOwnerStatus(user.restaurant_owner_status || user.status);
+        
         // Try to find restaurant ID from user data
         if (user.restaurant_id) {
           setRestaurantId(user.restaurant_id);
@@ -56,6 +63,13 @@ const Manage_Restaurant = () => {
       } catch (err) {
         console.error('Error parsing user data:', err);
       }
+    }
+    
+    // Get restaurant status from navigation state
+    const navState = window.history.state?.usr;
+    if (navState?.restaurant) {
+      setRestaurant(navState.restaurant);
+      setRestaurantStatus(navState.restaurant.restaurant_status);
     }
   }, []);
 
@@ -110,6 +124,17 @@ const Manage_Restaurant = () => {
   const handleAddFood = async () => {
     if (!foodForm.food_name || !foodForm.food_price || !foodForm.food_quantity || !foodForm.food_description) {
       setError('Please fill all required fields');
+      return;
+    }
+
+    // Check approval status
+    if (ownerStatus !== 'Approved') {
+      setError('Your account must be approved before you can add food items');
+      return;
+    }
+
+    if (restaurantStatus !== 'Accepted') {
+      setError('This restaurant must be accepted before you can add food items');
       return;
     }
 
@@ -266,6 +291,17 @@ const Manage_Restaurant = () => {
   };
 
   const handleUpdateOrderStatus = async (orderId, newStatus) => {
+    // Check approval status
+    if (ownerStatus !== 'Approved') {
+      setError('Your account must be approved to manage orders');
+      return;
+    }
+
+    if (restaurantStatus !== 'Accepted') {
+      setError('This restaurant must be accepted to manage orders');
+      return;
+    }
+
     try {
       setLoading(true);
       setError(null);
@@ -553,12 +589,33 @@ const Manage_Restaurant = () => {
         </div>
       </div>
 
+      {/* Check if owner or restaurant is not approved */}
+      {(ownerStatus && ownerStatus !== 'Approved') || (restaurantStatus && restaurantStatus !== 'Accepted') ? (
+        <div className="max-w-7xl mx-auto px-4 py-6">
+          <div className="mb-6">
+            {ownerStatus && ownerStatus !== 'Approved' ? (
+              <ApprovalMessage 
+                status={ownerStatus}
+                entityType="restaurant owner account"
+                message="Your account is pending approval. You can view but cannot add food or manage orders until approved."
+              />
+            ) : (
+              <ApprovalMessage 
+                status={restaurantStatus}
+                entityType="restaurant"
+                message="This restaurant is pending acceptance. You can view but cannot add food or manage orders until accepted by admin."
+              />
+            )}
+          </div>
+        </div>
+      ) : null}
+
       {/* Mode Switcher */}
       <div className="max-w-7xl mx-auto px-4 py-6">
-        <div className="flex space-x-4 mb-6">
-          <button onClick={() => setActiveMode('food')} className={`flex-1 py-3 px-6 rounded-full font-semibold transition-all ${activeMode === 'food' ? 'bg-[#67A177] text-white shadow-lg' : 'bg-[#ACD4B1] text-gray-700'}`}><ShoppingCart className="w-5 h-5 inline mr-2" />Manage Food</button>
-          <button onClick={() => setActiveMode('order')} className={`flex-1 py-3 px-6 rounded-full font-semibold transition-all ${activeMode === 'order' ? 'bg-[#67A177] text-white shadow-lg' : 'bg-[#ACD4B1] text-gray-700'}`}><Package className="w-5 h-5 inline mr-2" />Manage Orders</button>
-        </div>
+            <div className="flex space-x-4 mb-6">
+              <button onClick={() => setActiveMode('food')} className={`flex-1 py-3 px-6 rounded-full font-semibold transition-all ${activeMode === 'food' ? 'bg-[#67A177] text-white shadow-lg' : 'bg-[#ACD4B1] text-gray-700'}`}><ShoppingCart className="w-5 h-5 inline mr-2" />Manage Food</button>
+              <button onClick={() => setActiveMode('order')} className={`flex-1 py-3 px-6 rounded-full font-semibold transition-all ${activeMode === 'order' ? 'bg-[#67A177] text-white shadow-lg' : 'bg-[#ACD4B1] text-gray-700'}`}><Package className="w-5 h-5 inline mr-2" />Manage Orders</button>
+            </div>
 
         {/* FOOD MANAGEMENT */}
         {activeMode === 'food' && (
@@ -568,7 +625,22 @@ const Manage_Restaurant = () => {
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
                 <input type="text" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} placeholder="Search foods..." className="w-full pl-10 pr-4 py-3 rounded-full border-2 border-[#8DBC96] focus:border-[#67A177] focus:outline-none bg-white" />
               </div>
-              <button onClick={() => setShowAddFoodModal(true)} className="bg-[#67A177] text-white px-6 py-3 rounded-full hover:bg-[#5a8f68] font-semibold flex items-center space-x-2 shadow-lg ml-4"><Plus className="w-5 h-5" /><span>Add Food</span></button>
+              <button 
+                onClick={() => {
+                  if (ownerStatus !== 'Approved') {
+                    alert('Your account must be approved before you can add food items');
+                    return;
+                  }
+                  if (restaurantStatus !== 'Accepted') {
+                    alert('This restaurant must be accepted before you can add food items');
+                    return;
+                  }
+                  setShowAddFoodModal(true);
+                }} 
+                disabled={ownerStatus !== 'Approved' || restaurantStatus !== 'Accepted'}
+                className="bg-[#67A177] text-white px-6 py-3 rounded-full hover:bg-[#5a8f68] font-semibold flex items-center space-x-2 shadow-lg ml-4 disabled:opacity-50 disabled:cursor-not-allowed">
+                <Plus className="w-5 h-5" /><span>Add Food</span>
+              </button>
             </div>
 
             {loading && (

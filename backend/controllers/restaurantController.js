@@ -164,15 +164,17 @@ exports.searchRestaurants = async (req, res) => {
     });
   }
 };
+
 //restricted
+// Create REstauranta
 exports.createRestaurant = async (req, res) => {
   try {
-    // Debug logging
-    console.log('=== CREATE RESTAURANT DEBUG ===');
-    console.log('Headers:', req.headers);
-    console.log('Request body:', JSON.stringify(req.body, null, 2));
-    console.log('User from auth:', req.user);
-    console.log('================================');
+    // // Debug logging
+    // console.log('=== CREATE RESTAURANT DEBUG ===');
+    // console.log('Headers:', req.headers);
+    // console.log('Request body:', JSON.stringify(req.body, null, 2));
+    // console.log('User from auth:', req.user);
+    // console.log('================================');
 
     //required field
     const { owner_id, restaurant_name, restaurant_address } = req.body;
@@ -193,6 +195,13 @@ exports.createRestaurant = async (req, res) => {
       });
     }
 
+    if(owner.restaurant_owner_status !== 'Approved') {
+      res.status(403).json({
+        status:'failed',
+        message:'You are not authorized to perform this opearation yet. Either your account is not approved yet or rejected'
+      });
+    }
+
     const newRestaurant = await Restaurant.create(req.body);
     res.status(201).json({
       status: "success",
@@ -208,6 +217,7 @@ exports.createRestaurant = async (req, res) => {
   }
 };
 
+// Get Owner All restaurant
 exports.getMyRestaurants = async (req, res) => {
   try {
     const owner_id = req.user._id;
@@ -244,6 +254,7 @@ exports.getMyRestaurants = async (req, res) => {
   }
 };
 
+// Get a sepcific restaurant by id for owner
 exports.getMyRestaurantById = async (req, res) => {
   try {
     const owner_id = req.user._id;
@@ -286,6 +297,7 @@ exports.getMyRestaurantById = async (req, res) => {
   }
 };
 
+// UPdate restaurnat 
 exports.updateRestaurant = async (req, res) => {
   try {
     const restaurantID = req.params.id;
@@ -368,6 +380,7 @@ exports.updateRestaurant = async (req, res) => {
   }
 };
 
+// delete restaurant
 exports.deleteRestaurant = async (req, res) => {
   try {
     const restaurantID = req.params.id;

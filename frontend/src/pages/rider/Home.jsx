@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Bike, Package, MapPin, Clock, DollarSign, Phone, Navigation, CheckCircle, Star, User, X, LogOut } from 'lucide-react';
+import ApprovalMessage from '../../components/ApprovalMessage';
 import axiosInstance from '../../utils/axios';
 
 const Home = () => {
@@ -14,14 +15,34 @@ const Home = () => {
   const [pinError, setPinError] = useState('');
   const [completedOrders, setCompletedOrders] = useState([]);
   const [orderRequests, setOrderRequests] = useState([]);
+  const [riderStatus, setRiderStatus] = useState(null);
+  const [riderStats, setRiderStats] = useState({
+    todaysEarnings: '0.00',
+    deliveriesCompleted: 0,
+    availableRequests: 0
+  });
 
   const [activeOrders, setActiveOrders] = useState([]);
 
   // Fetch order requests and accepted orders from API
   useEffect(() => {
+    checkRiderStatus();
     fetchOrderRequests();
     fetchAcceptedOrders();
+    fetchRiderStats();
   }, []);
+
+  const checkRiderStatus = () => {
+    try {
+      const userStr = localStorage.getItem('user');
+      if (userStr) {
+        const user = JSON.parse(userStr);
+        setRiderStatus(user.rider_status || user.status);
+      }
+    } catch (err) {
+      console.error('Error checking rider status:', err);
+    }
+  };
 
   const fetchOrderRequests = async () => {
     try {
@@ -53,6 +74,23 @@ const Home = () => {
       setError(err.response?.data?.message || 'Failed to fetch order requests');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchRiderStats = async () => {
+    try {
+      const response = await axiosInstance.get('/api/v1/riders/stats');
+      
+      if (response.data && response.data.data) {
+        setRiderStats({
+          todaysEarnings: response.data.data.todaysEarnings,
+          deliveriesCompleted: response.data.data.deliveriesCompleted,
+          availableRequests: response.data.data.availableRequests
+        });
+      }
+    } catch (err) {
+      console.error('Error fetching rider stats:', err);
+      // Keep default values if error occurs
     }
   };
 
@@ -124,10 +162,11 @@ const Home = () => {
         // Remove from order requests
         setOrderRequests(orderRequests.filter(order => order.id !== orderId));
         
-        // Refresh both lists
+        // Refresh both lists and stats
         await Promise.all([
           fetchOrderRequests(),
-          fetchAcceptedOrders()
+          fetchAcceptedOrders(),
+          fetchRiderStats()
         ]);
       }
     } catch (err) {
@@ -199,6 +238,9 @@ const Home = () => {
         
         setCompletedOrders([newCompletedOrder, ...completedOrders]);
         setActiveOrders(activeOrders.filter(order => order.id !== selectedOrder.id));
+        
+        // Refresh stats to update today's earnings and deliveries
+        await fetchRiderStats();
         
         // Close modal
         setShowPinModal(false);
@@ -301,10 +343,17 @@ const Home = () => {
 
         {/* Accept Button */}
         <button 
-          onClick={() => handleAcceptOrder(order.id)}
-          className="w-full bg-[#67A177] text-white py-2 rounded-full hover:bg-[#5a8f68] transition-all font-semibold text-sm hover:shadow-lg"
+          onClick={() => {
+            if (riderStatus !== 'Approved') {
+              alert('Your account must be approved before you can accept orders');
+              return;
+            }
+            handleAcceptOrder(order.id);
+          }}
+          disabled={riderStatus !== 'Approved'}
+          className="w-full bg-[#67A177] text-white py-2 rounded-full hover:bg-[#5a8f68] transition-all font-semibold text-sm hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-[#67A177]"
         >
-          Accept Order
+          {riderStatus !== 'Approved' ? 'Account Not Approved' : 'Accept Order'}
         </button>
       </div>
     </div>
@@ -515,9 +564,6 @@ const Home = () => {
               <span className="text-2xl font-bold text-white">BiteNow Rider</span>
             </div>
             <div className="flex items-center space-x-4">
-              <div className="bg-[#67A177] text-white px-4 py-2 rounded-full font-semibold">
-                4.9
-              </div>
               <button 
                 onClick={() => navigate('/rider/profile')}
                 className="bg-[#67A177] text-white px-6 py-2 rounded-full hover:bg-[#5a8f68] transition-all font-semibold flex items-center space-x-2"
@@ -543,15 +589,15 @@ const Home = () => {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div className="bg-white/20 backdrop-blur-sm rounded-2xl p-6 border border-white/30">
               <p className="text-white/80 text-sm mb-2">Today's Earnings</p>
-              <p className="text-3xl font-bold text-white">$52.50</p>
+              <p className="text-3xl font-bold text-white">${riderStats.todaysEarnings}</p>
             </div>
             <div className="bg-white/20 backdrop-blur-sm rounded-2xl p-6 border border-white/30">
               <p className="text-white/80 text-sm mb-2">Deliveries Completed</p>
-              <p className="text-3xl font-bold text-white">12</p>
+              <p className="text-3xl font-bold text-white">{riderStats.deliveriesCompleted}</p>
             </div>
             <div className="bg-white/20 backdrop-blur-sm rounded-2xl p-6 border border-white/30">
               <p className="text-white/80 text-sm mb-2">Available Requests</p>
-              <p className="text-3xl font-bold text-white">{orderRequests.length}</p>
+              <p className="text-3xl font-bold text-white">{riderStats.availableRequests}</p>
             </div>
           </div>
         </div>
@@ -614,6 +660,17 @@ const Home = () => {
       {/* Content */}
       <div className="bg-[#DDEEDB] min-h-screen">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          {/* Show approval notice if not approved */}
+          {riderStatus && riderStatus !== 'Approved' && (
+            <div className="mb-6">
+              <ApprovalMessage 
+                status={riderStatus}
+                entityType="rider account"
+                message="Your account is pending approval. You can view orders but cannot accept them until approved by admin."
+              />
+            </div>
+          )}
+
           {activeTab === 'requests' ? (
             <div>
               {orderRequests.length > 0 ? (

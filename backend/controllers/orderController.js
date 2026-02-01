@@ -3,6 +3,7 @@ const Food = require('./../models/foodModel');
 const Cart = require('./../models/cartModel');
 const mongoose = require('mongoose');
 const Restaurant = require('./../models/restaurantModel');
+const Rider = require('./../models/riderModel');
 
 // Create Order from Cart
 exports.createOrder = async (req, res) => {
@@ -383,6 +384,14 @@ exports.getMyOrderList = async (req, res) => {
 // Rider Accepting Order
 exports.availableToDeliver = async (req, res) => {
   try{
+
+    const rider = await Rider.findById(req.user._id);
+    if(rider.rider_status !== 'Approved') {
+      res.status(403).json({
+        status:'failed',
+        message:'Your account is either not approved yet or banned'
+      });
+    }
 
     const pin1 = Math.floor(Math.random() * (9999 - 1000 + 1)) + 1000;
     const pin2 = Math.floor(Math.random() * (9999 - 1000 + 1)) + 1000;
