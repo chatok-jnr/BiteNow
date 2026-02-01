@@ -216,3 +216,15 @@ export const deleteRestaurantOwner = async (ownerId) => {
     throw error.response?.data || error;
   }
 };
+
+export default {
+  getRestaurantOwner,
+  updateRestaurantOwner,
+  uploadOwnerImage,
+  updateOwnerImage,
+  deleteOwnerImage,
+  uploadOwnerDocuments,
+  deleteAllOwnerDocuments,
+  deleteOwnerDocument,
+  deleteRestaurantOwner,
+};

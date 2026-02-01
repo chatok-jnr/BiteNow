@@ -11,6 +11,10 @@ router
   .route("/all")
   .get(restrictTo("rider", "admin"), riderController.getAllRiders);
 
+router 
+  .route("/profile")
+  .get(restrictTo("rider"), riderController.getMe);
+
 router
   .route("/:id")
   .get(restrictTo("rider", "admin"), riderController.getRiderById)

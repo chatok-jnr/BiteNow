@@ -175,6 +175,16 @@ exports.removeFromCart = async (req, res) => {
     try {
       cart.removeItem(food_id, quantity);
       await cart.save();
+      
+      // If cart is now empty, delete it
+      if (cart.items.length === 0) {
+        await Cart.findByIdAndDelete(cart._id);
+        return res.status(200).json({
+          status: 'success',
+          message: 'Last item removed, cart deleted',
+          data: { cart: null }
+        });
+      }
 
     } catch (removeError) {
 

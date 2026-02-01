@@ -4,20 +4,31 @@ const API_BASE_URL =
   import.meta.env.VITE_API_BASE_URL || "http://localhost:8000";
 
 /**
- * Get a single restaurant by ID (owner's restaurant)
+ * Get all restaurants (public endpoint for customers)
+ * @param {Object} params - Query parameters (page, limit, etc.)
+ * @returns {Promise<Object>} List of restaurants
+ */
+export const getAllRestaurants = async (params = {}) => {
+  try {
+    const response = await axios.get(`${API_BASE_URL}/api/v1/restaurants/`, {
+      params,
+    });
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching restaurants:", error);
+    throw error;
+  }
+};
+
+/**
+ * Get a single restaurant by ID (public endpoint)
  * @param {string} restaurantId - Restaurant ID
  * @returns {Promise<Object>} Restaurant data
  */
 export const getRestaurantById = async (restaurantId) => {
   try {
-    const token = localStorage.getItem("token");
     const response = await axios.get(
-      `${API_BASE_URL}/api/v1/restaurants/my/${restaurantId}`,
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      }
+      `${API_BASE_URL}/api/v1/restaurants/${restaurantId}`
     );
     return response.data;
   } catch (error) {
@@ -46,6 +57,29 @@ export const getMyRestaurants = async (params = {}) => {
     return response.data;
   } catch (error) {
     console.error("Error fetching restaurants:", error);
+    throw error;
+  }
+};
+
+/**
+ * Get owner's restaurant by ID
+ * @param {string} restaurantId - Restaurant ID
+ * @returns {Promise<Object>} Restaurant data
+ */
+export const getMyRestaurantById = async (restaurantId) => {
+  try {
+    const token = localStorage.getItem("token");
+    const response = await axios.get(
+      `${API_BASE_URL}/api/v1/restaurants/my/${restaurantId}`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching restaurant:", error);
     throw error;
   }
 };
@@ -219,6 +253,21 @@ export const createRestaurant = async (restaurantData) => {
     return response.data;
   } catch (error) {
     console.error("Error creating restaurant:", error);
-    throw error;
+    console.error("Error response:", error.response?.data);
+    console.error("Error status:", error.response?.status);
+    throw error.response?.data || error;
   }
+};
+
+export default {
+  getAllRestaurants,
+  getRestaurantById,
+  getMyRestaurants,
+  getMyRestaurantById,
+  updateRestaurant,
+  updateRestaurantImage,
+  uploadRestaurantImage,
+  deleteRestaurantImage,
+  deleteRestaurant,
+  createRestaurant,
 };

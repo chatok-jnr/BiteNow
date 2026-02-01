@@ -47,8 +47,23 @@ const corsOption = {
 
 app.use(cors(corsOption));
 
-app.use(express.json({ limit: '10mb' }));
-app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+// Body parsers - skip for multipart/form-data (let multer handle those)
+app.use((req, res, next) => {
+  // Skip body parsing for multipart requests (file uploads)
+  if (req.is('multipart/form-data')) {
+    return next();
+  }
+  express.json({ limit: '10mb' })(req, res, next);
+});
+
+app.use((req, res, next) => {
+  // Skip urlencoded parsing for multipart requests
+  if (req.is('multipart/form-data')) {
+    return next();
+  }
+  express.urlencoded({ extended: true, limit: '10mb' })(req, res, next);
+});
+
 app.use(express.static(`${__dirname}/public`));
 
 // Initialize Passport
@@ -73,7 +88,8 @@ app.use("/api/v1/restaurants", restaurantRoutes);
 app.use("/api/v1/riders", riderRoutes);
 app.use("/api/v1/food", foodRoutes);
 app.use("/api/v1/cart", cartRoutes);
-app.use("/api/v1/order", orderRoutes);
+app.use("/api/v1/orders", orderRoutes);
+app.use("/api/v1/order", orderRoutes); // Alternative route without 's'
 app.use("/api/v1/restaurant-owner", restaurantOwnerRoutes);
 app.use("/api/v1/customer", customerRoutes);
 app.use("/api/v1/location", locationRoutes);

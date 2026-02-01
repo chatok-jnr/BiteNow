@@ -166,22 +166,42 @@ exports.createCustomer = async (req, res) => {
 //login
 exports.loginCustomer = async (req, res) => {
   try {
-    const { customer_email, customer_password } = req.body;
-    if (!customer_email || !customer_password) {
+    const { customer_email, customer_phone, customer_password } = req.body;
+    
+    // Check if password is provided
+    if (!customer_password) {
       return res.status(400).json({
         status: "failed",
-        message: "Please enter your email and passowrd",
+        message: "Please enter your password",
       });
     }
 
-    const customer = await Customer.findOne({
-      customer_email: customer_email,
-    }).select("+customer_password +customer_status");
+    // Check if either email or phone is provided
+    if (!customer_email && !customer_phone) {
+      return res.status(400).json({
+        status: "failed",
+        message: "Please enter your email or phone number",
+      });
+    }
+
+    // Find customer by email or phone
+    let customer;
+    if (customer_email) {
+      customer = await Customer.findOne({
+        customer_email: customer_email,
+      }).select("+customer_password +customer_status");
+    } else if (customer_phone) {
+      customer = await Customer.findOne({
+        customer_phone: customer_phone,
+      }).select("+customer_password +customer_status");
+    }
 
     if (!customer) {
       return res.status(404).json({
         status: "failed",
-        message: "You enterd a wrong email address",
+        message: customer_email 
+          ? "You entered a wrong email address"
+          : "You entered a wrong phone number",
       });
     }
 
@@ -193,7 +213,7 @@ exports.loginCustomer = async (req, res) => {
     if (!isPasswordValid) {
       return res.status(400).json({
         status: "failed",
-        message: "You enterd an wrong passowrd",
+        message: "You entered a wrong password",
       });
     }
 
@@ -215,7 +235,7 @@ exports.loginCustomer = async (req, res) => {
     const token = jwt.sign(
       {
         id: customer._id,
-        email: req.body.customer_email,
+        email: customer.customer_email,
         role: "customer",
       },
       process.env.JWT_SECRET,
@@ -243,7 +263,7 @@ exports.loginCustomer = async (req, res) => {
       message: "Login successfully",
       token,
       data: {
-        user: customerResponse,
+        customer: customerResponse,
       },
     });
   } catch (err) {

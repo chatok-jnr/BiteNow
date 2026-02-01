@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
+import { Loader } from 'lucide-react';
 import * as cartService from '../../utils/cartService';
 
 const GoogleAuthSuccess = () => {
@@ -70,11 +71,11 @@ const GoogleAuthSuccess = () => {
         } else {
           // Navigate based on role
           if (role === 'customer') {
-            navigate('/customer-dashboard');
+            navigate('/');
           } else if (role === 'restaurant') {
-            navigate('/owner-dashboard');
+            navigate('/restaurant_owner/dashboard');
           } else if (role === 'rider') {
-            navigate('/rider-dashboard');
+            navigate('/rider/home');
           }
         }
       } catch (error) {
@@ -87,11 +88,13 @@ const GoogleAuthSuccess = () => {
   }, [searchParams, navigate]);
 
   return (
-    <div className="min-h-screen bg-white flex items-center justify-center">
+    <div className="min-h-screen bg-gradient-to-br from-primary/5 via-white to-accent/5 flex items-center justify-center">
       <div className="text-center">
-        <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-primary mx-auto mb-4"></div>
-        <h2 className="text-2xl font-semibold text-gray-900">Completing sign in...</h2>
-        <p className="text-gray-600 mt-2">Please wait while we set up your account</p>
+        <div className="mb-6 flex justify-center">
+          <Loader className="w-16 h-16 text-primary animate-spin" />
+        </div>
+        <h2 className="text-2xl font-bold text-gray-900 mb-2">Completing sign in...</h2>
+        <p className="text-gray-600">Please wait while we set up your account</p>
       </div>
     </div>
   );

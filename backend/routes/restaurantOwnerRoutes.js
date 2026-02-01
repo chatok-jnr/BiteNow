@@ -16,13 +16,14 @@ router
   );
 
 router
-  .route("/delete/:id")
+  .route("/delete/:id") // delete restaurnat owner profie
   .delete(
     protect,
     restrictTo("restaurant_owner"),
     restaurantOwnerController.deleteRestaurantOwner
   );
-router
+
+router // get restaunr owner profile
   .route("/:id")
   .get(
     protect,

@@ -49,6 +49,13 @@ axiosInstance.interceptors.request.use(
       config.headers['x-guest-session-id'] = guestSessionId;
       console.log('✅ Using Guest Session ID');
     }
+
+    // Don't override Content-Type if it's already set (important for multipart/form-data)
+    // When sending FormData, axios automatically sets the correct Content-Type with boundary
+    if (config.data instanceof FormData) {
+      delete config.headers['Content-Type'];
+      console.log('🖼️ FormData detected - letting axios set Content-Type automatically');
+    }
     
     return config;
   },

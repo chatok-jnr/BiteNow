@@ -125,9 +125,11 @@ exports.getUserOrders = async (req, res) => {
     const user_id = req.user._id;
     
     const orders = await Order.find({customer_id:user_id})
-      .populate('restaurant_id', 'name')
-      .populate('items.food_id', 'food_name')
-      .select('-rider_pin');
+      .populate('restaurant_id', 'restaurant_name restaurant_image restaurant_address restaurant_contact_info')
+      .populate('items.food_id', 'food_name food_image food_price')
+      .populate('rider_id', 'rider_name rider_contact_info rider_stats')
+      .select('-rider_pin')
+      .sort({ createdAt: -1 });
 
     res.status(200).json({
       status: 'success',
@@ -266,6 +268,20 @@ exports.updateOrderStatusByRestaurant = async(req, res) => {
 
     const resp = await Order.findById(orderId).populate('restaurant_id', 'owner_id');
 
+    if (!resp) {
+      return res.status(404).json({
+        status: 'failed',
+        message: 'Order not found'
+      });
+    }
+
+    if (!resp.restaurant_id || !resp.restaurant_id.owner_id) {
+      return res.status(400).json({
+        status: 'failed',
+        message: 'Restaurant information not found for this order'
+      });
+    }
+
     const owner_id = resp.restaurant_id.owner_id.toString();
     const userId = req.user._id.toString();
     
@@ -302,8 +318,9 @@ exports.updateOrderStatusByRestaurant = async(req, res) => {
       }
     });
   } catch(err) {
+    console.error('Error in updateOrderStatusByRestaurant:', err);
     res.status(400).json({
-      status:'faield',
+      status:'failed',
       message:err.message
     });
   }
@@ -312,16 +329,16 @@ exports.updateOrderStatusByRestaurant = async(req, res) => {
 //Get the order list which is requred rider
 exports.getLookForRider = async(req, res) => {
   try {
-    const needRider = await Order.find({'order_status':'preparing', 'rider_pin':''})
+    const needRider = await Order.find({
+      'order_status': { $in: ['look_rider', 'preparing'] },
+      $or: [
+        { 'rider_id': { $exists: false } },
+        { 'rider_id': null }
+      ]
+    })
     .sort('-createdAt')
-    .populate('restaurant_id', 'restaurant_address restaurant_name restaurant_location');
-
-    if(!needRider) {
-      return res.status(500).json({
-        status:'failed',
-        message:'Internal server problem or No one needs any rider right now'
-      });
-    }
+    .populate('restaurant_id', 'restaurant_address restaurant_name restaurant_location')
+    .populate('customer_id', 'name phone');
 
     res.status(200).json({
       status:'success',
@@ -338,14 +355,18 @@ exports.getLookForRider = async(req, res) => {
   }
 }
 
-//Get My Order List
+//Get My Order List(rider)
 exports.getMyOrderList = async (req, res) => {
   try{  
     const riderId = req.user._id;
     let myOrder = await Order.find({
       rider_id:riderId, 
-      order_status: { $in: ['ready_for_pickup', 'preparing', 'out_for_delivery'] }
-    }).select('-customer_pin');
+      order_status: { $in: ['ready_for_pickup', 'preparing', 'out_for_delivery', 'delivered'] }
+    })
+    .select('-customer_pin')
+    .populate('restaurant_id', 'restaurant_name restaurant_address restaurant_image')
+    .populate('customer_id', 'name phone')
+    .sort('-createdAt');
     
     res.status(200).json({
       status:'success',
@@ -371,7 +392,8 @@ exports.availableToDeliver = async (req, res) => {
       {
         rider_id:req.user._id,
         rider_pin: pin1,
-        customer_pin: pin2
+        customer_pin: pin2,
+        order_status:'preparing'
       },
       {
         new:true,
@@ -405,6 +427,34 @@ exports.availableToDeliver = async (req, res) => {
     });
   }
 }
+
+// // For Rider Completed order
+// exports.successFullyDelivered = async (req, res) => {
+//   try{
+//     const rider_id = req.user._id;
+//     const list = await Order.find({
+//       rider_id:rider_id,
+//       order_status:'delivered'
+//     });
+
+//     if(!list) {
+//       res.status(404).json({
+//         status:'failed',
+//         message:'Not found'
+//       });
+//     }
+
+//     res.status(200).json({
+//       status:'success',
+//       completed_list:list
+//     });
+//   } catch(err) {
+//     res.status(400).json({
+//       status:'failed',
+//       message:err.message
+//     });
+//   }
+// }; 
 
 //Verify Rider Pin
 exports.verifyRider = async (req, res) => {

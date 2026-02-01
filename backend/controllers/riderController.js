@@ -89,6 +89,48 @@ exports.getRiderById = async (req, res) => {
     });
   }
 };
+
+// Get user info 
+exports.getMe = async(req, res) => {
+  try{
+
+    const rider_id = req.user._id;
+    const riderInfo = await Rider.findById(rider_id);
+    if(!riderInfo) {
+      res.status(404).json({
+        status:'failed',
+        message:'Rider Not found'
+      });
+    }
+
+    const rider = {
+      id:req.user._id,
+      name:riderInfo.rider_name,
+      email:riderInfo.rider_email,
+      date_of_birth:riderInfo.rider_date_of_birth,
+      gender:riderInfo.rider_gender || '',
+      address:riderInfo.rider_address || '',
+      location: riderInfo.rider_location || null,
+      account_status:riderInfo.rider_status,
+      image:riderInfo.rider_image || null,
+      documents:riderInfo.rider_documents,
+      contact_info:riderInfo.rider_contact_info,
+      stats:riderInfo.rider_stats,
+    };
+
+    res.status(200).json({
+      status:'success',
+      rider
+    });
+
+  } catch(err) {
+    res.status(400).json({
+      status:'failed',
+      message:err.message
+    });
+  }
+}
+
 //update rider
 exports.updateRider = async (req, res) => {
   try {

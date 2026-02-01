@@ -22,13 +22,19 @@ export const getCustomerProfile = async (customerId) => {
  */
 export const updateCustomerProfile = async (customerId, profileData) => {
   try {
+    // Capitalize gender to match backend enum (Male, Female, Other)
+    const capitalizeGender = (gender) => {
+      if (!gender) return gender;
+      return gender.charAt(0).toUpperCase() + gender.slice(1).toLowerCase();
+    };
+
     const response = await axiosInstance.patch(
       `/api/v1/customer/${customerId}`,
       {
         customer_name: profileData.name,
         customer_phone: profileData.phone,
         customer_birth_date: profileData.birthDate,
-        customer_gender: profileData.gender,
+        customer_gender: capitalizeGender(profileData.gender),
         customer_address: profileData.address,
       }
     );
@@ -51,12 +57,8 @@ export const uploadCustomerImage = async (customerId, imageFile) => {
 
     const response = await axiosInstance.post(
       `/api/v1/customer/${customerId}/image`,
-      formData,
-      {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-      }
+      formData
+      // Don't set Content-Type header - axios will automatically set it with the correct boundary
     );
     return response.data;
   } catch (error) {
@@ -77,12 +79,8 @@ export const updateCustomerImage = async (customerId, imageFile) => {
 
     const response = await axiosInstance.patch(
       `/api/v1/customer/${customerId}/image`,
-      formData,
-      {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-      }
+      formData
+      // Don't set Content-Type header - axios will automatically set it with the correct boundary
     );
     return response.data;
   } catch (error) {
@@ -104,4 +102,12 @@ export const deleteCustomerImage = async (customerId) => {
   } catch (error) {
     throw error.response?.data || error;
   }
+};
+
+export default {
+  getCustomerProfile,
+  updateCustomerProfile,
+  uploadCustomerImage,
+  updateCustomerImage,
+  deleteCustomerImage,
 };

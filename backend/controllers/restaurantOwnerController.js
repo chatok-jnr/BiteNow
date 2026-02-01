@@ -32,6 +32,18 @@ exports.getRestaurantOwner = async (req, res) => {
       });
     }
 
+    const response = {
+      name:restaurantOwner.restaurant_owner_name,
+      phone:restaurantOwner.restaurant_owner_phone || '',
+      email:restaurantOwner.restaurant_owner_email,
+      image:restaurantOwner.restaurant_owner_image,
+      documents:restaurantOwner.restaurant_owner_documents,
+      gender:restaurantOwner.restaurant_owner_gender || 'Male',
+      status:restaurantOwner.restaurant_owner_status,
+      dob:restaurantOwner.restaurant_owner_dob || null,
+      address:restaurantOwner.restaurant_owner_address,
+    }
+
     res.status(200).json({
       status: "success",
       data: {

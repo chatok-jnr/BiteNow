@@ -8,7 +8,6 @@ const {
 //Get My personal Data
 exports.getMe = async (req, res) => {
   try {
-    console.log(`My first Cookie = ${req.cookie}`);
 
     const areYouMe = req.user._id.toString() === req.params.id.toString();
     if (!areYouMe) {
