@@ -4,6 +4,26 @@ const API_BASE_URL =
   import.meta.env.VITE_API_BASE_URL || "http://localhost:8000";
 
 /**
+ * Get restaurant owner dashboard data
+ */
+export const getOwnerDashboard = async () => {
+  try {
+    const token = localStorage.getItem("token");
+    const response = await axios.get(
+      `${API_BASE_URL}/api/v1/restaurant-owner/dashboard`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+    return response.data;
+  } catch (error) {
+    throw error.response?.data || error;
+  }
+};
+
+/**
  * Get restaurant owner by ID
  */
 export const getRestaurantOwner = async (ownerId) => {

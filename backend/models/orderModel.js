@@ -220,5 +220,8 @@ orderSchema.statics.getRevenueByRestaurant = async function (
   return result[0] || { totalRevenue: 0, totalOrders: 0, averageOrderValue: 0 };
 };
 
+// Indexes for performance optimization
+orderSchema.index({ restaurant_id: 1, createdAt: 1 });
+
 const Order = mongoose.model("Order", orderSchema);
 module.exports = Order;

@@ -1,73 +1,103 @@
-import React, { useState } from 'react';
-import { Store, DollarSign, TrendingUp, Package, ShoppingBag, Users, BarChart3, Menu, ChevronRight, Star } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Store, DollarSign, TrendingUp, Package, ShoppingBag, Users, BarChart3, Menu, ChevronRight, Star, AlertCircle } from 'lucide-react';
 import OwnerSidebar from '../../components/OwnerSidebar';
+import { getOwnerDashboard } from '../../utils/restaurantOwnerService';
 
 const Dashboard = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [restaurantData, setRestaurantData] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  const restaurantData = [
-    {
-      id: 1,
-      name: 'Pizza Paradise',
-      image: 'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=400&q=80',
-      totalEarnings: 15847.50,
-      monthlyEarnings: 4250.00,
-      totalOrders: 342,
-      monthlyOrders: 89,
-      rating: 4.8,
-      topSelling: 'Margherita Pizza',
-      topSellingCount: 156,
-      status: 'active'
-    },
-    {
-      id: 2,
-      name: 'Burger House',
-      image: 'https://images.unsplash.com/photo-1550547660-d9450f859349?w=400&q=80',
-      totalEarnings: 12430.75,
-      monthlyEarnings: 3180.50,
-      totalOrders: 278,
-      monthlyOrders: 72,
-      rating: 4.6,
-      topSelling: 'Double Cheeseburger',
-      topSellingCount: 134,
-      status: 'active'
-    },
-    {
-      id: 3,
-      name: 'Sushi Master',
-      image: 'https://images.unsplash.com/photo-1579584425555-c3ce17fd4351?w=400&q=80',
-      totalEarnings: 18920.00,
-      monthlyEarnings: 5240.00,
-      totalOrders: 412,
-      monthlyOrders: 98,
-      rating: 4.9,
-      topSelling: 'California Roll',
-      topSellingCount: 187,
-      status: 'active'
-    },
-    {
-      id: 4,
-      name: 'Thai Kitchen',
-      image: 'https://images.unsplash.com/photo-1559314809-0d155014e29e?w=400&q=80',
-      totalEarnings: 9876.25,
-      monthlyEarnings: 2340.75,
-      totalOrders: 198,
-      monthlyOrders: 54,
-      rating: 4.7,
-      topSelling: 'Pad Thai',
-      topSellingCount: 98,
-      status: 'active'
+  useEffect(() => {
+    fetchDashboardData();
+  }, []);
+
+  const fetchDashboardData = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const response = await getOwnerDashboard();
+      
+      if (response.status === 'success' && response.myRestaurants) {
+        // Transform backend data to match frontend structure
+        const transformedData = response.myRestaurants.map((restaurant) => ({
+          id: restaurant._id,
+          name: restaurant.restaurant_name,
+          image: restaurant.restaurant_image?.url || 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=400&q=80',
+          totalEarnings: restaurant.restaurant_total_revenue || 0,
+          monthlyEarnings: restaurant.total_revenue || 0,
+          totalOrders: restaurant.restaurant_total_orders || 0,
+          monthlyOrders: restaurant.order_count || 0,
+          rating: Number(restaurant.restaurant_rating) || 0,
+          status: restaurant.restaurant_status || 'Pending',
+          address: restaurant.restaurant_address || 'N/A',
+          commissionRate: restaurant.restaurant_commissionRate || 0.25
+        }));
+        setRestaurantData(transformedData);
+      }
+    } catch (err) {
+      console.error('Failed to fetch dashboard data:', err);
+      setError(err.message || 'Failed to load dashboard data');
+    } finally {
+      setLoading(false);
     }
-  ];
+  };
 
   const totalEarnings = restaurantData.reduce((sum, r) => sum + r.totalEarnings, 0);
   const monthlyEarnings = restaurantData.reduce((sum, r) => sum + r.monthlyEarnings, 0);
   const totalOrders = restaurantData.reduce((sum, r) => sum + r.totalOrders, 0);
   const monthlyOrders = restaurantData.reduce((sum, r) => sum + r.monthlyOrders, 0);
 
-  const topPerformer = [...restaurantData].sort((a, b) => b.monthlyOrders - a.monthlyOrders)[0];
+  const topPerformer = restaurantData.length > 0 
+    ? [...restaurantData].sort((a, b) => b.monthlyOrders - a.monthlyOrders)[0]
+    : null;
 
-  const DashboardContent = () => (
+  const DashboardContent = () => {
+    if (loading) {
+      return (
+        <div className="flex items-center justify-center min-h-[400px]">
+          <div className="text-center">
+            <div className="w-16 h-16 border-4 border-[#67A177] border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+            <p className="text-gray-600">Loading dashboard...</p>
+          </div>
+        </div>
+      );
+    }
+
+    if (error) {
+      return (
+        <div className="flex items-center justify-center min-h-[400px]">
+          <div className="bg-red-50 border border-red-200 rounded-2xl p-6 max-w-md">
+            <div className="flex items-center space-x-3 mb-2">
+              <AlertCircle className="w-6 h-6 text-red-500" />
+              <h3 className="text-lg font-semibold text-red-800">Error Loading Dashboard</h3>
+            </div>
+            <p className="text-red-600">{error}</p>
+            <button
+              onClick={fetchDashboardData}
+              className="mt-4 px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors"
+            >
+              Retry
+            </button>
+          </div>
+        </div>
+      );
+    }
+
+    if (restaurantData.length === 0) {
+      return (
+        <div className="flex items-center justify-center min-h-[400px]">
+          <div className="text-center">
+            <Store className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+            <h3 className="text-xl font-semibold text-gray-700 mb-2">No Restaurants Yet</h3>
+            <p className="text-gray-600">Add your first restaurant to see dashboard data</p>
+          </div>
+        </div>
+      );
+    }
+
+    return (
     <div className="space-y-6">
       {/* Stats Overview */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -117,39 +147,41 @@ const Dashboard = () => {
       </div>
 
       {/* Top Performer Highlight */}
-      <div className="bg-gradient-to-r from-[#67A177] to-[#8DBC96] rounded-2xl p-6 shadow-lg text-white">
-        <div className="flex items-center space-x-3 mb-4">
-          <TrendingUp className="w-8 h-8" />
-          <h3 className="text-2xl font-bold">Top Performer This Month</h3>
-        </div>
-        <div className="flex items-center space-x-6">
-          <img 
-            src={topPerformer.image} 
-            alt={topPerformer.name}
-            className="w-24 h-24 rounded-xl object-cover"
-          />
-          <div className="flex-1">
-            <h4 className="text-xl font-bold mb-2">{topPerformer.name}</h4>
-            <div className="grid grid-cols-3 gap-4">
-              <div>
-                <p className="text-white/80 text-sm">Monthly Orders</p>
-                <p className="text-2xl font-bold">{topPerformer.monthlyOrders}</p>
-              </div>
-              <div>
-                <p className="text-white/80 text-sm">Monthly Revenue</p>
-                <p className="text-2xl font-bold">${topPerformer.monthlyEarnings.toFixed(0)}</p>
-              </div>
-              <div>
-                <p className="text-white/80 text-sm">Rating</p>
-                <div className="flex items-center space-x-1">
-                  <Star className="w-5 h-5 fill-yellow-400 text-yellow-400" />
-                  <p className="text-2xl font-bold">{topPerformer.rating}</p>
+      {topPerformer && (
+        <div className="bg-gradient-to-r from-[#67A177] to-[#8DBC96] rounded-2xl p-6 shadow-lg text-white">
+          <div className="flex items-center space-x-3 mb-4">
+            <TrendingUp className="w-8 h-8" />
+            <h3 className="text-2xl font-bold">Top Performer This Month</h3>
+          </div>
+          <div className="flex items-center space-x-6">
+            <img 
+              src={topPerformer.image} 
+              alt={topPerformer.name}
+              className="w-24 h-24 rounded-xl object-cover"
+            />
+            <div className="flex-1">
+              <h4 className="text-xl font-bold mb-2">{topPerformer.name}</h4>
+              <div className="grid grid-cols-3 gap-4">
+                <div>
+                  <p className="text-white/80 text-sm">Monthly Orders</p>
+                  <p className="text-2xl font-bold">{topPerformer.monthlyOrders}</p>
+                </div>
+                <div>
+                  <p className="text-white/80 text-sm">Monthly Revenue</p>
+                  <p className="text-2xl font-bold">${topPerformer.monthlyEarnings.toFixed(0)}</p>
+                </div>
+                <div>
+                  <p className="text-white/80 text-sm">Rating</p>
+                  <div className="flex items-center space-x-1">
+                    <Star className="w-5 h-5 fill-yellow-400 text-yellow-400" />
+                    <p className="text-2xl font-bold">{topPerformer.rating.toFixed(1)}</p>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
         </div>
-      </div>
+      )}
 
       {/* Restaurant Performance Cards */}
       <div>
@@ -168,8 +200,19 @@ const Dashboard = () => {
                     <h4 className="text-xl font-bold text-gray-800">{restaurant.name}</h4>
                     <div className="flex items-center space-x-1 bg-[#DDEEDB] px-2 py-1 rounded-full">
                       <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
-                      <span className="text-sm font-semibold text-gray-700">{restaurant.rating}</span>
+                      <span className="text-sm font-semibold text-gray-700">{restaurant.rating.toFixed(1)}</span>
                     </div>
+                  </div>
+                  
+                  <div className="mb-2">
+                    <span className={`inline-block px-2 py-1 rounded-full text-xs font-semibold ${
+                      restaurant.status === 'Accepted' ? 'bg-green-100 text-green-700' :
+                      restaurant.status === 'Pending' ? 'bg-yellow-100 text-yellow-700' :
+                      restaurant.status === 'Rejected' ? 'bg-red-100 text-red-700' :
+                      'bg-gray-100 text-gray-700'
+                    }`}>
+                      {restaurant.status}
+                    </span>
                   </div>
                   
                   <div className="grid grid-cols-2 gap-3 mb-3">
@@ -195,14 +238,8 @@ const Dashboard = () => {
                   </div>
 
                   <div className="bg-[#67A177] p-3 rounded-lg">
-                    <p className="text-xs text-white/80 mb-1">Top Selling Item</p>
-                    <div className="flex items-center justify-between">
-                      <p className="text-sm font-semibold text-white">{restaurant.topSelling}</p>
-                      <div className="flex items-center space-x-1 bg-white/20 px-2 py-1 rounded-full">
-                        <ShoppingBag className="w-3 h-3 text-white" />
-                        <span className="text-xs font-semibold text-white">{restaurant.topSellingCount} sold</span>
-                      </div>
-                    </div>
+                    <p className="text-xs text-white/80 mb-1">Restaurant Address</p>
+                    <p className="text-sm font-semibold text-white">{restaurant.address}</p>
                   </div>
                 </div>
               </div>
@@ -211,7 +248,8 @@ const Dashboard = () => {
         </div>
       </div>
     </div>
-  );
+    );
+  };
 
   return (
     <div className="min-h-screen bg-[#C4E2C4] flex">

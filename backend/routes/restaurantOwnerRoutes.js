@@ -7,6 +7,15 @@ const {
 } = require("./../utils/cloudinary");
 const router = express.Router();
 
+// Dashboard route
+router
+  .route("/dashboard")
+  .get(
+    protect,
+    restrictTo("restaurant_owner"),
+    restaurantOwnerController.getDashboard
+  );
+
 router
   .route("/update/:id")
   .patch(
