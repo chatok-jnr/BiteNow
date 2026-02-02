@@ -13,7 +13,6 @@ const Login = () => {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [toast, setToast] = useState({ show: false, message: "", type: "" });
-  const [toast, setToast] = useState({ show: false, message: "", type: "" });
 
   // Toast notification helper
   const showToast = (message, type = "info") => {
