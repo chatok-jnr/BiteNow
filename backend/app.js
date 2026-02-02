@@ -86,6 +86,7 @@ app.use("/api/v1/auth", authRoutes);
 app.use("/api/v1/admin", adminRoutes);
 app.use("/api/v1/restaurants", restaurantRoutes);
 app.use("/api/v1/riders", riderRoutes);
+app.use("/api/v1/rider", riderRoutes);
 app.use("/api/v1/food", foodRoutes);
 app.use("/api/v1/cart", cartRoutes);
 app.use("/api/v1/orders", orderRoutes);

@@ -52,24 +52,13 @@ const Home = () => {
 
   // Fetch order requests and accepted orders from API
   useEffect(() => {
-    checkRiderStatus();
+    // Fetch rider profile first (includes status check from API)
+    // This will call GET /api/v1/riders/profile to get rider data including account_status
+    fetchRiderProfile();
     fetchOrderRequests();
     fetchAcceptedOrders();
     fetchRiderStats();
-    fetchRiderProfile();
   }, []);
-
-  const checkRiderStatus = () => {
-    try {
-      const userStr = localStorage.getItem("user");
-      if (userStr) {
-        const user = JSON.parse(userStr);
-        setRiderStatus(user.rider_status || user.status);
-      }
-    } catch (err) {
-      console.error("Error checking rider status:", err);
-    }
-  };
 
   const fetchOrderRequests = async () => {
     try {
@@ -141,28 +130,33 @@ const Home = () => {
       const response = await axiosInstance.get("/api/v1/riders/profile");
       console.log("Rider profile response:", response.data);
 
-      // Try different possible response structures
-      const profileData =
-        response.data?.data || response.data?.rider || response.data;
+      // Get rider data from response
+      const riderData = response.data?.rider;
 
-      if (profileData) {
+      if (riderData) {
         // Extract image URL - handle both string and object formats
-        const imageData =
-          profileData.profile_image ||
-          profileData.image ||
-          profileData.rider_image;
+        const imageData = riderData.image;
         const imageUrl =
           typeof imageData === "object" ? imageData?.url : imageData;
 
+        // Update rider profile state
         setRiderProfile({
           image: imageUrl,
-          gender: profileData.gender,
-          name: profileData.name || profileData.rider_name,
+          gender: riderData.gender,
+          name: riderData.name,
         });
+
+        // Update rider status from API response
+        if (riderData.account_status) {
+          setRiderStatus(riderData.account_status);
+          console.log("Rider status updated from API:", riderData.account_status);
+        }
+
         console.log("Profile set:", {
           image: imageUrl,
-          gender: profileData.gender,
-          name: profileData.name || profileData.rider_name,
+          gender: riderData.gender,
+          name: riderData.name,
+          status: riderData.account_status,
         });
       }
     } catch (err) {

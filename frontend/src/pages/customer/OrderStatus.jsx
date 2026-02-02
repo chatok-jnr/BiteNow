@@ -136,7 +136,7 @@ const OrderStatus = () => {
       });
     };
 
-    return {
+    const transformed = {
       id: order._id || order.id,
       restaurant: order.restaurant_id?.restaurant_name || "Restaurant",
       restaurantImage:
@@ -172,6 +172,17 @@ const OrderStatus = () => {
           }
         : null,
     };
+
+    // Debug logging for PIN display
+    console.log('Order Transform Debug:', {
+      orderId: transformed.id,
+      status: transformed.status,
+      customer_pin: order.customer_pin,
+      confirmationPin: transformed.confirmationPin,
+      isOutForDelivery: transformed.status?.toLowerCase() === 'out_for_delivery'
+    });
+
+    return transformed;
   };
 
   const OrderCard = ({ order, isActive }) => (
@@ -496,16 +507,17 @@ const OrderStatus = () => {
                   ${selectedOrder.total.toFixed(2)}
                 </span>
               </div>
-              {selectedOrder.confirmationPin && (
-                <div className="flex justify-between items-center mt-4 bg-[#67A177] px-4 py-2 rounded-lg">
-                  <span className="text-white font-medium">
-                    Confirmation PIN
-                  </span>
-                  <span className="bg-white text-[#67A177] font-bold px-4 py-2 rounded-lg text-xl tracking-wider">
-                    {selectedOrder.confirmationPin}
-                  </span>
-                </div>
-              )}
+              {selectedOrder.confirmationPin &&
+                selectedOrder.status?.toLowerCase() === "out_for_delivery" && (
+                  <div className="flex justify-between items-center mt-4 bg-[#67A177] px-4 py-2 rounded-lg">
+                    <span className="text-white font-medium">
+                      Confirmation PIN
+                    </span>
+                    <span className="bg-white text-[#67A177] font-bold px-4 py-2 rounded-lg text-xl tracking-wider">
+                      {selectedOrder.confirmationPin}
+                    </span>
+                  </div>
+                )}
             </div>
           </div>
         </div>
