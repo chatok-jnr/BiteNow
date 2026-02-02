@@ -2,6 +2,7 @@ import { useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Loader } from 'lucide-react';
 import * as cartService from '../../utils/cartService';
+import axiosInstance from '../../utils/axios';
 
 const GoogleAuthSuccess = () => {
   const navigate = useNavigate();
@@ -32,13 +33,36 @@ const GoogleAuthSuccess = () => {
         // Store token FIRST before any API calls
         localStorage.setItem('token', token);
 
-        // Create basic user data object from token info
-        const userData = {
+        // Fetch complete user profile based on role
+        let userData = {
           id: userId,
           userId: userId,
           role: role,
           token: token
         };
+
+        // For restaurant owners, fetch full profile to get restaurant_owner_status
+        if (role === 'restaurant') {
+          try {
+            console.log('🔄 Fetching restaurant owner profile for ID:', userId);
+            const profileResponse = await axiosInstance.get(`/api/v1/restaurant-owner/${userId}`);
+            
+            if (profileResponse.data?.status === 'success' && profileResponse.data?.data?.restaurantOwner) {
+              const ownerData = profileResponse.data.data.restaurantOwner;
+              userData = {
+                ...ownerData,
+                id: ownerData._id || ownerData.id,
+                userId: ownerData._id || ownerData.id,
+                role: role,
+                token: token
+              };
+              console.log('✅ Restaurant owner profile fetched:', userData);
+            }
+          } catch (profileError) {
+            console.error('❌ Failed to fetch owner profile:', profileError);
+            // Continue with basic userData if profile fetch fails
+          }
+        }
 
         localStorage.setItem('user', JSON.stringify(userData));
         console.log('✅ User data stored in localStorage');

@@ -4,6 +4,7 @@ import { Store, Plus, X, MapPin, Mail, Menu, Image, FileText, ChevronRight, Star
 import OwnerSidebar from '../../components/OwnerSidebar';
 import ApprovalMessage from '../../components/ApprovalMessage';
 import { getMyRestaurants, createRestaurant, deleteRestaurant, uploadRestaurantImage } from '../../utils/restaurantService';
+import axiosInstance from '../../utils/axios';
 
 const Restaurants = () => {
   const navigate = useNavigate();
@@ -48,15 +49,64 @@ const Restaurants = () => {
 
   // Fetch restaurants on component mount
   useEffect(() => {
+    fetchOwnerProfile(); // Fetch fresh profile data first
     fetchRestaurants();
-    checkOwnerStatus();
   }, []);
 
-  const checkOwnerStatus = () => {
+  // Fetch fresh owner profile from backend to get latest status
+  const fetchOwnerProfile = async () => {
+    try {
+      // Get owner ID from localStorage
+      const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
+      const ownerId = currentUser._id || currentUser.id || currentUser.userId;
+      
+      if (!ownerId) {
+        console.warn('⚠️ No owner ID found in localStorage');
+        checkOwnerStatusFromLocalStorage();
+        return;
+      }
+      
+      console.log('🔄 Fetching fresh restaurant owner profile for ID:', ownerId);
+      const response = await axiosInstance.get(`/api/v1/restaurant-owner/${ownerId}`);
+      
+      if (response.data?.status === 'success' && response.data?.data?.restaurantOwner) {
+        const ownerData = response.data.data.restaurantOwner;
+        console.log('✅ Fresh owner profile fetched:', ownerData);
+        
+        // Update localStorage with fresh data
+        const updatedUser = {
+          ...currentUser,
+          ...ownerData,
+          id: ownerData._id || ownerData.id || currentUser.id,
+          userId: ownerData._id || ownerData.id || currentUser.userId,
+        };
+        
+        localStorage.setItem('user', JSON.stringify(updatedUser));
+        console.log('💾 Updated user data in localStorage');
+        
+        // Set the owner status
+        setOwnerStatus(ownerData.restaurant_owner_status);
+        console.log('📊 Owner status set to:', ownerData.restaurant_owner_status);
+      }
+    } catch (err) {
+      console.error('❌ Error fetching owner profile:', err);
+      // Fallback to localStorage data
+      checkOwnerStatusFromLocalStorage();
+    }
+  };
+
+  // Fallback: Check owner status from localStorage if API fails
+  const checkOwnerStatusFromLocalStorage = () => {
     try {
       const userStr = localStorage.getItem('user');
+      console.log('🔍 Raw user string from localStorage:', userStr);
+      
       if (userStr) {
         const user = JSON.parse(userStr);
+        console.log('👤 Parsed user object:', user);
+        console.log('📊 restaurant_owner_status:', user.restaurant_owner_status);
+        console.log('📊 status:', user.status);
+        
         setOwnerStatus(user.restaurant_owner_status || user.status);
       }
     } catch (err) {
@@ -177,6 +227,8 @@ const Restaurants = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     
+    console.log(`Debug = ${ownerStatus}`);
+
     // Check approval status first
     if (ownerStatus !== 'Approved') {
       alert('Your account must be approved before you can add restaurants');
@@ -383,6 +435,9 @@ const Restaurants = () => {
               </div>
               <button 
                 onClick={() => {
+
+                  console.log(`Debug = ${ownerStatus}`);
+
                   if (ownerStatus !== 'Approved') {
                     alert('Your account must be approved before you can add restaurants');
                     return;
