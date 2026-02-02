@@ -280,7 +280,23 @@ exports.getMyRestaurantById = async (req, res) => {
     res.status(200).json({
       status: "success",
       data: {
-        restaurant,
+        restaurant: {
+          restaurant_name: restaurant.restaurant_name,
+          restaurant_address: restaurant.restaurant_address,
+          restaurant_location: restaurant.restaurant_location,
+          restaurant_status: restaurant.restaurant_status,
+          restaurant_commissionRate: restaurant.restaurant_commissionRate,
+          restaurant_total_revenue: restaurant.restaurant_total_revenue,
+          restaurant_total_sales: restaurant.restaurant_total_sales,
+          restaurant_description: restaurant.restaurant_description,
+          restaurant_contact_info: restaurant.restaurant_contact_info,
+          restaurant_category: restaurant.restaurant_category,
+          restaurant_opening_hours: restaurant.restaurant_opening_hours,
+          restaurant_rating: restaurant.restaurant_rating,
+          restaurant_image: restaurant.restaurant_image,
+          restaurant_created_at: restaurant.restaurant_created_at,
+          restaurant_updated_at: restaurant.restaurant_updated_at,
+        }
       },
     });
   } catch (err) {

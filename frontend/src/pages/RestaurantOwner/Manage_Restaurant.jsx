@@ -4,6 +4,7 @@ import { Store, Plus, X, Search, MoreVertical, Edit2, Package, Trash2, ShoppingC
 import ApprovalMessage from '../../components/ApprovalMessage';
 import foodService from '../../utils/foodService';
 import { getOrdersByRestaurant, updateOrderStatusByRestaurant } from '../../utils/orderService';
+import { getMyRestaurantById } from '../../utils/restaurantService';
 
 const Manage_Restaurant = () => {
   const navigate = useNavigate();
@@ -73,6 +74,42 @@ const Manage_Restaurant = () => {
     }
   }, []);
 
+  // Fetch restaurant details when restaurant ID is available
+  useEffect(() => {
+    if (restaurantId) {
+      fetchRestaurantDetails();
+    }
+  }, [restaurantId]);
+
+  const fetchRestaurantDetails = async () => {
+    if (!restaurantId) return;
+    
+    try {
+      setLoading(true);
+      setError(null);
+      console.log('Fetching restaurant details for ID:', restaurantId);
+      
+      const response = await getMyRestaurantById(restaurantId);
+      console.log('Restaurant details response:', response);
+      
+      if (response.status === 'success' && response.data?.restaurant) {
+        const restaurantData = response.data.restaurant;
+        setRestaurant(restaurantData);
+        setRestaurantStatus(restaurantData.restaurant_status);
+        console.log('Restaurant status set to:', restaurantData.restaurant_status);
+      }
+    } catch (err) {
+      console.error('Error fetching restaurant details:', err);
+      setError(err.response?.data?.message || 'Failed to fetch restaurant details');
+      // If fetch fails, redirect back to restaurants page
+      setTimeout(() => {
+        navigate('/restaurant_owner/restaurants');
+      }, 2000);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   // Fetch foods when restaurant ID changes
   useEffect(() => {
     if (restaurantId) {
@@ -124,6 +161,16 @@ const Manage_Restaurant = () => {
   const handleAddFood = async () => {
     if (!foodForm.food_name || !foodForm.food_price || !foodForm.food_quantity || !foodForm.food_description) {
       setError('Please fill all required fields');
+      return;
+    }
+
+    if (parseFloat(foodForm.food_price) < 50) {
+      setError('Food price cannot be less than 50');
+      return;
+    }
+
+    if (foodForm.food_description.trim().length < 10) {
+      setError('Food description must be at least 10 characters');
       return;
     }
 
@@ -201,6 +248,16 @@ const Manage_Restaurant = () => {
   const handleUpdateFood = async () => {
     if (!selectedFood || !foodForm.food_name || !foodForm.food_price || !foodForm.food_description) {
       setError('Please fill all required fields');
+      return;
+    }
+
+    if (parseFloat(foodForm.food_price) < 50) {
+      setError('Food price cannot be less than 50');
+      return;
+    }
+
+    if (foodForm.food_description.trim().length < 10) {
+      setError('Food description must be at least 10 characters');
       return;
     }
 
@@ -767,13 +824,36 @@ const Manage_Restaurant = () => {
               </div>
 
               <div className="grid grid-cols-2 gap-4">
-                <div><label className="block text-sm font-semibold mb-2">Price *</label><input type="number" step="0.01" value={foodForm.food_price} onChange={(e) => setFoodForm({ ...foodForm, food_price: e.target.value })} className="w-full px-4 py-3 rounded-lg border-2 border-[#8DBC96] focus:border-[#67A177] focus:outline-none bg-white" /></div>
+                <div><label className="block text-sm font-semibold mb-2">Price * (min: 50)</label><input type="number" step="0.01" min="50" value={foodForm.food_price} onChange={(e) => setFoodForm({ ...foodForm, food_price: e.target.value })} className="w-full px-4 py-3 rounded-lg border-2 border-[#8DBC96] focus:border-[#67A177] focus:outline-none bg-white" /></div>
                 <div><label className="block text-sm font-semibold mb-2">Quantity *</label><input type="number" value={foodForm.food_quantity} onChange={(e) => setFoodForm({ ...foodForm, food_quantity: e.target.value })} className="w-full px-4 py-3 rounded-lg border-2 border-[#8DBC96] focus:border-[#67A177] focus:outline-none bg-white" /></div>
               </div>
               <div><label className="block text-sm font-semibold mb-2">Discount (%)</label><input type="number" min="0" max="100" value={foodForm.discount_percentage} onChange={(e) => setFoodForm({ ...foodForm, discount_percentage: e.target.value })} className="w-full px-4 py-3 rounded-lg border-2 border-[#8DBC96] focus:border-[#67A177] focus:outline-none bg-white" /></div>
               <div><label className="block text-sm font-semibold mb-2">Tags (comma-separated)</label><input type="text" value={foodForm.tags} onChange={(e) => setFoodForm({ ...foodForm, tags: e.target.value })} placeholder="vegetarian, spicy, popular" className="w-full px-4 py-3 rounded-lg border-2 border-[#8DBC96] focus:border-[#67A177] focus:outline-none bg-white" /></div>
-              <div><label className="block text-sm font-semibold mb-2">Description *</label><textarea value={foodForm.food_description} onChange={(e) => setFoodForm({ ...foodForm, food_description: e.target.value })} rows="3" className="w-full px-4 py-3 rounded-lg border-2 border-[#8DBC96] focus:border-[#67A177] focus:outline-none bg-white resize-none" /></div>
+              <div><label className="block text-sm font-semibold mb-2">Description * (min: 10 characters)</label><textarea value={foodForm.food_description} onChange={(e) => setFoodForm({ ...foodForm, food_description: e.target.value })} rows="3" minLength="10" className="w-full px-4 py-3 rounded-lg border-2 border-[#8DBC96] focus:border-[#67A177] focus:outline-none bg-white resize-none" /></div>
               <div className="flex space-x-4"><button onClick={() => { setShowAddFoodModal(false); setImageFile(null); setImagePreview(null); }} className="flex-1 bg-gray-400 text-white py-3 rounded-full hover:bg-gray-500 font-semibold">Cancel</button><button onClick={handleAddFood} className="flex-1 bg-[#67A177] text-white py-3 rounded-full hover:bg-[#5a8f68] font-semibold">Add Food</button></div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showEditFoodModal && selectedFood && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+          <div className="bg-[#DDEEDB] rounded-2xl max-w-2xl w-full p-6">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-2xl font-bold">Edit Food</h2>
+              <button onClick={() => { setShowEditFoodModal(false); setSelectedFood(null); setFoodForm({ food_name: '', food_description: '', food_price: '', food_quantity: '', discount_percentage: 0, tags: '' }); }}><X className="w-6 h-6" /></button>
+            </div>
+            <div className="space-y-4">
+              <div><label className="block text-sm font-semibold mb-2">Name *</label><input type="text" value={foodForm.food_name} onChange={(e) => setFoodForm({ ...foodForm, food_name: e.target.value })} className="w-full px-4 py-3 rounded-lg border-2 border-[#8DBC96] focus:border-[#67A177] focus:outline-none bg-white" /></div>
+              
+              <div className="grid grid-cols-2 gap-4">
+                <div><label className="block text-sm font-semibold mb-2">Price * (min: 50)</label><input type="number" step="0.01" min="50" value={foodForm.food_price} onChange={(e) => setFoodForm({ ...foodForm, food_price: e.target.value })} className="w-full px-4 py-3 rounded-lg border-2 border-[#8DBC96] focus:border-[#67A177] focus:outline-none bg-white" /></div>
+                <div><label className="block text-sm font-semibold mb-2">Quantity *</label><input type="number" value={foodForm.food_quantity} onChange={(e) => setFoodForm({ ...foodForm, food_quantity: e.target.value })} className="w-full px-4 py-3 rounded-lg border-2 border-[#8DBC96] focus:border-[#67A177] focus:outline-none bg-white" /></div>
+              </div>
+              <div><label className="block text-sm font-semibold mb-2">Discount (%)</label><input type="number" min="0" max="100" value={foodForm.discount_percentage} onChange={(e) => setFoodForm({ ...foodForm, discount_percentage: e.target.value })} className="w-full px-4 py-3 rounded-lg border-2 border-[#8DBC96] focus:border-[#67A177] focus:outline-none bg-white" /></div>
+              <div><label className="block text-sm font-semibold mb-2">Tags (comma-separated)</label><input type="text" value={foodForm.tags} onChange={(e) => setFoodForm({ ...foodForm, tags: e.target.value })} placeholder="vegetarian, spicy, popular" className="w-full px-4 py-3 rounded-lg border-2 border-[#8DBC96] focus:border-[#67A177] focus:outline-none bg-white" /></div>
+              <div><label className="block text-sm font-semibold mb-2">Description * (min: 10 characters)</label><textarea value={foodForm.food_description} onChange={(e) => setFoodForm({ ...foodForm, food_description: e.target.value })} rows="3" minLength="10" className="w-full px-4 py-3 rounded-lg border-2 border-[#8DBC96] focus:border-[#67A177] focus:outline-none bg-white resize-none" /></div>
+              <div className="flex space-x-4"><button onClick={() => { setShowEditFoodModal(false); setSelectedFood(null); }} className="flex-1 bg-gray-400 text-white py-3 rounded-full hover:bg-gray-500 font-semibold">Cancel</button><button onClick={handleUpdateFood} className="flex-1 bg-[#67A177] text-white py-3 rounded-full hover:bg-[#5a8f68] font-semibold">Update Food</button></div>
             </div>
           </div>
         </div>

@@ -121,6 +121,13 @@ exports.createFood = async (req, res) => {
       });
     }
 
+    if(req.body.food_price < 50) {
+      return res.status(400).json({
+        status:'failed',
+        message:'food price can\'t be lsss than 50'
+      });
+    }
+
     const newFood = await Food.create({
       restaurant_id: req.body.restaurant_id,
       food_name: req.body.food_name,
