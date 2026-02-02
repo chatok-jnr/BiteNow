@@ -1,55 +1,82 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { ShoppingCart, Mail, Phone, User, Calendar, Camera, X, DollarSign, LogOut, MapPin, Home as HomeIcon, Package } from 'lucide-react';
-import { getCustomerProfile, updateCustomerProfile, updateCustomerImage, uploadCustomerImage } from '../../utils/customerService';
+import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import {
+  ShoppingCart,
+  Mail,
+  Phone,
+  User,
+  Calendar,
+  Camera,
+  X,
+  DollarSign,
+  LogOut,
+  MapPin,
+  Home as HomeIcon,
+  Package,
+  CheckCircle,
+  Clock,
+} from "lucide-react";
+import {
+  getCustomerProfile,
+  updateCustomerProfile,
+  updateCustomerImage,
+  uploadCustomerImage,
+} from "../../utils/customerService";
 
 const Profile = () => {
   const navigate = useNavigate();
   const [isEditing, setIsEditing] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [debugInfo, setDebugInfo] = useState('');
+  const [debugInfo, setDebugInfo] = useState("");
+  const [toast, setToast] = useState({ show: false, message: "", type: "" });
+
+  const showToast = (message, type) => {
+    setToast({ show: true, message, type });
+    setTimeout(() => setToast({ show: false, message: "", type: "" }), 4000);
+  };
+
   const [profileData, setProfileData] = useState({
-    name: '',
-    email: '',
-    phone: '',
-    address: '',
-    birthDate: '',
-    gender: '',
+    name: "",
+    email: "",
+    phone: "",
+    address: "",
+    birthDate: "",
+    gender: "",
     image: null,
     totalSpent: 0,
-    memberSince: ''
+    memberSince: "",
   });
 
   const [editForm, setEditForm] = useState({
-    name: '',
-    phone: '',
-    address: '',
-    birthDate: '',
-    gender: '',
-    image: ''
+    name: "",
+    phone: "",
+    address: "",
+    birthDate: "",
+    gender: "",
+    image: "",
   });
 
   const [imageFile, setImageFile] = useState(null);
 
   // Load user data when component mounts
   useEffect(() => {
-    console.log('Profile component mounted');
+    console.log("Profile component mounted");
     const checkAuth = async () => {
-      const token = localStorage.getItem('token');
-      const userString = localStorage.getItem('user');
-      
-      console.log('Auth check:', { hasToken: !!token, hasUser: !!userString });
-      
+      const token = localStorage.getItem("token");
+      const userString = localStorage.getItem("user");
+
+      console.log("Auth check:", { hasToken: !!token, hasUser: !!userString });
+
       if (!token || !userString) {
-        console.log('No auth found, redirecting to login');
-        navigate('/login', { replace: true });
+        console.log("No auth found, redirecting to login");
+        navigate("/login", { replace: true });
         return;
       }
-      
+
       await fetchCustomerProfile();
     };
-    
+
     checkAuth();
   }, [navigate]);
 
@@ -59,59 +86,66 @@ const Profile = () => {
       setError(null);
 
       // Get user from localStorage
-      const userString = localStorage.getItem('user');
+      const userString = localStorage.getItem("user");
       const user = JSON.parse(userString);
       const customerId = user.id || user.userId || user._id || user.customer_id;
 
-      console.log('Fetching profile for customer:', customerId);
-      console.log('User from localStorage:', user);
+      console.log("Fetching profile for customer:", customerId);
+      console.log("User from localStorage:", user);
 
       // Fetch customer profile from API
       const response = await getCustomerProfile(customerId);
-      
-      console.log('Profile API response:', response);
+
+      console.log("Profile API response:", response);
       setDebugInfo(JSON.stringify(response, null, 2));
-      
+
       if (response && response.data) {
         // Handle different response structures - backend uses "userRespone" (typo)
-        const customer = response.data.userRespone || response.data.customer || response.data;
-        
-        console.log('Customer data:', customer);
-        
+        const customer =
+          response.data.userRespone || response.data.customer || response.data;
+
+        console.log("Customer data:", customer);
+
         if (!customer) {
-          console.error('No customer data in response');
-          setError('No customer data received from server');
+          console.error("No customer data in response");
+          setError("No customer data received from server");
           return;
         }
-        
-        const memberSince = customer.createdAt 
-          ? new Date(customer.createdAt).toLocaleDateString('en-US', {
-              month: 'long',
-              year: 'numeric'
+
+        const memberSince = customer.createdAt
+          ? new Date(customer.createdAt).toLocaleDateString("en-US", {
+              month: "long",
+              year: "numeric",
             })
-          : 'N/A';
+          : "N/A";
 
         // Capitalize gender to match enum (Male, Female, Other)
         const capitalizeGender = (gender) => {
-          if (!gender) return '';
+          if (!gender) return "";
           return gender.charAt(0).toUpperCase() + gender.slice(1).toLowerCase();
         };
 
         const userData = {
-          name: customer.name || customer.customer_name || 'User',
-          email: customer.email || customer.customer_email || '',
-          phone: customer.phone || customer.customer_phone || '',
-          address: customer.address || customer.customer_address || '',
-          birthDate: customer.dob 
-            ? new Date(customer.dob).toISOString().split('T')[0] 
-            : (customer.customer_birth_date ? new Date(customer.customer_birth_date).toISOString().split('T')[0] : ''),
-          gender: capitalizeGender(customer.gender || customer.customer_gender || ''),
+          name: customer.name || customer.customer_name || "User",
+          email: customer.email || customer.customer_email || "",
+          phone: customer.phone || customer.customer_phone || "",
+          address: customer.address || customer.customer_address || "",
+          birthDate: customer.dob
+            ? new Date(customer.dob).toISOString().split("T")[0]
+            : customer.customer_birth_date
+              ? new Date(customer.customer_birth_date)
+                  .toISOString()
+                  .split("T")[0]
+              : "",
+          gender: capitalizeGender(
+            customer.gender || customer.customer_gender || "",
+          ),
           image: customer.photo?.url || customer.customer_image?.url || null,
           totalSpent: 0, // This can be calculated from orders
-          memberSince
+          memberSince,
         };
 
-        console.log('Setting profile data:', userData);
+        console.log("Setting profile data:", userData);
 
         setProfileData(userData);
         setEditForm({
@@ -120,22 +154,24 @@ const Profile = () => {
           address: userData.address,
           birthDate: userData.birthDate,
           gender: userData.gender,
-          image: userData.image
+          image: userData.image,
         });
       } else {
-        console.error('Unexpected API response format:', response);
-        setError('Unexpected response from server');
+        console.error("Unexpected API response format:", response);
+        setError("Unexpected response from server");
       }
     } catch (err) {
-      console.error('Error fetching profile:', err);
-      console.error('Error details:', err.response?.data);
-      setError(err.response?.data?.message || err.message || 'Failed to load profile');
+      console.error("Error fetching profile:", err);
+      console.error("Error details:", err.response?.data);
+      setError(
+        err.response?.data?.message || err.message || "Failed to load profile",
+      );
       // Don't redirect on API errors, just show the error
       // Only redirect if it's specifically an auth error
       if (err.response?.status === 401 || err.response?.status === 403) {
-        localStorage.removeItem('token');
-        localStorage.removeItem('user');
-        navigate('/login', { replace: true });
+        localStorage.removeItem("token");
+        localStorage.removeItem("user");
+        navigate("/login", { replace: true });
       }
     } finally {
       setLoading(false);
@@ -163,17 +199,17 @@ const Profile = () => {
       setLoading(true);
       setError(null);
 
-      const userString = localStorage.getItem('user');
+      const userString = localStorage.getItem("user");
       const user = JSON.parse(userString);
       const customerId = user.id || user.userId || user._id || user.customer_id;
 
-      console.log('Updating profile for customer:', customerId);
-      console.log('Update data:', {
+      console.log("Updating profile for customer:", customerId);
+      console.log("Update data:", {
         name: editForm.name,
         phone: editForm.phone,
         address: editForm.address,
         birthDate: editForm.birthDate,
-        gender: editForm.gender
+        gender: editForm.gender,
       });
 
       // Update profile data
@@ -182,28 +218,31 @@ const Profile = () => {
         phone: editForm.phone,
         address: editForm.address,
         birthDate: editForm.birthDate,
-        gender: editForm.gender
+        gender: editForm.gender,
       });
 
-      console.log('Update response:', response);
+      console.log("Update response:", response);
 
       // Upload or update image if selected
       if (imageFile) {
-        console.log('Processing image upload/update...');
+        console.log("Processing image upload/update...");
         try {
           // Check if customer already has a profile picture
           if (profileData.image) {
             // Update existing image
-            console.log('Updating existing image...');
+            console.log("Updating existing image...");
             await updateCustomerImage(customerId, imageFile);
           } else {
             // Upload new image
-            console.log('Uploading new image...');
+            console.log("Uploading new image...");
             await uploadCustomerImage(customerId, imageFile);
           }
         } catch (imgErr) {
-          console.error('Error processing image:', imgErr);
-          throw new Error('Failed to upload/update image: ' + (imgErr.response?.data?.message || imgErr.message));
+          console.error("Error processing image:", imgErr);
+          throw new Error(
+            "Failed to upload/update image: " +
+              (imgErr.response?.data?.message || imgErr.message),
+          );
         }
       }
 
@@ -211,12 +250,20 @@ const Profile = () => {
       await fetchCustomerProfile();
       setIsEditing(false);
       setImageFile(null);
-      alert('Profile updated successfully!');
+      showToast("Profile updated successfully!", "success");
     } catch (err) {
-      console.error('Error updating profile:', err);
-      console.error('Error response:', err.response?.data);
-      setError(err.response?.data?.message || err.message || 'Failed to update profile');
-      alert('Failed to update profile: ' + (err.response?.data?.message || err.message));
+      console.error("Error updating profile:", err);
+      console.error("Error response:", err.response?.data);
+      setError(
+        err.response?.data?.message ||
+          err.message ||
+          "Failed to update profile",
+      );
+      showToast(
+        "Failed to update profile: " +
+          (err.response?.data?.message || err.message),
+        "error",
+      );
     } finally {
       setLoading(false);
     }
@@ -229,16 +276,16 @@ const Profile = () => {
       address: profileData.address,
       birthDate: profileData.birthDate,
       gender: profileData.gender,
-      image: profileData.image
+      image: profileData.image,
     });
     setImageFile(null);
     setIsEditing(false);
   };
 
   const handleLogout = () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
-    navigate('/login');
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+    navigate("/login");
   };
 
   if (loading && !profileData.email) {
@@ -253,12 +300,38 @@ const Profile = () => {
 
   return (
     <div className="min-h-screen bg-[#C4E2C4] flex flex-col">
+      {/* Toast Notification */}
+      {toast.show && (
+        <div
+          className={`fixed top-4 right-4 z-50 px-6 py-4 rounded-lg shadow-lg ${
+            toast.type === "success"
+              ? "bg-green-500"
+              : toast.type === "error"
+                ? "bg-red-500"
+                : toast.type === "warning"
+                  ? "bg-yellow-500"
+                  : "bg-blue-500"
+          } text-white flex items-center space-x-3 animate-fade-in-down`}
+        >
+          {toast.type === "success" && <CheckCircle className="w-6 h-6" />}
+          {toast.type === "error" && <X className="w-6 h-6" />}
+          {toast.type === "warning" && <Clock className="w-6 h-6" />}
+          <span className="font-medium">{toast.message}</span>
+          <button
+            onClick={() => setToast({ show: false, message: "", type: "" })}
+            className="ml-4 hover:bg-white/20 rounded-full p-1"
+          >
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+      )}
+
       {/* Navbar */}
       <nav className="sticky top-0 z-50 bg-[#67A177] shadow-md">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
-            <div 
-              onClick={() => navigate('/')} 
+            <div
+              onClick={() => navigate("/")}
               className="flex items-center space-x-3 cursor-pointer"
             >
               <div className="w-10 h-10 bg-[#ACD4B1] rounded-full flex items-center justify-center">
@@ -267,33 +340,33 @@ const Profile = () => {
               <span className="text-2xl font-bold text-white">BiteNow</span>
             </div>
             <div className="flex items-center space-x-4">
-              <button 
-                onClick={() => navigate('/')}
+              <button
+                onClick={() => navigate("/")}
                 className="text-white hover:text-[#ACD4B1] transition-colors font-medium px-4 py-2 flex items-center gap-2"
               >
                 <HomeIcon className="w-5 h-5" />
                 Home
               </button>
-              <button 
-                onClick={() => navigate('/orderStatus')}
+              <button
+                onClick={() => navigate("/orderStatus")}
                 className="text-white hover:text-[#ACD4B1] transition-colors font-medium px-4 py-2 flex items-center gap-2"
               >
                 <Package className="w-5 h-5" />
                 Orders
               </button>
-              <button 
-                onClick={() => navigate('/profile')}
+              <button
+                onClick={() => navigate("/profile")}
                 className="bg-[#ACD4B1] text-[#67A177] px-6 py-2 rounded-full font-semibold flex items-center gap-2"
               >
                 <User className="w-5 h-5" />
                 Profile
               </button>
-              <button 
+              <button
                 onClick={() => {
-                  localStorage.removeItem('token');
-                  localStorage.removeItem('user');
-                  localStorage.removeItem('guest_session_id');
-                  navigate('/login');
+                  localStorage.removeItem("token");
+                  localStorage.removeItem("user");
+                  localStorage.removeItem("guest_session_id");
+                  navigate("/login");
                 }}
                 className="text-white hover:text-red-300 transition-colors font-medium px-4 py-2 flex items-center gap-2"
               >
@@ -308,12 +381,11 @@ const Profile = () => {
       {/* Profile Container */}
       <div className="flex-1 px-4 py-12">
         <div className="max-w-4xl mx-auto">
-          
           {/* Profile Card */}
           <div className="bg-[#ACD4B1] rounded-3xl shadow-2xl overflow-hidden">
             {/* Header Section */}
             <div className="bg-[#8DBC96] h-32"></div>
-            
+
             <div className="relative px-8 pb-8">
               {/* Error Message */}
               {error && (
@@ -356,7 +428,9 @@ const Profile = () => {
                 <div className="space-y-6">
                   {/* Name */}
                   <div className="text-center">
-                    <h2 className="text-3xl font-bold text-gray-800 mb-1">{profileData.name}</h2>
+                    <h2 className="text-3xl font-bold text-gray-800 mb-1">
+                      {profileData.name}
+                    </h2>
                     <p className="text-gray-600">BiteNow Member</p>
                   </div>
 
@@ -369,8 +443,12 @@ const Profile = () => {
                           <Mail className="w-5 h-5 text-[#67A177]" />
                         </div>
                         <div>
-                          <p className="text-sm text-gray-500 font-semibold">Email</p>
-                          <p className="text-gray-800 font-medium">{profileData.email}</p>
+                          <p className="text-sm text-gray-500 font-semibold">
+                            Email
+                          </p>
+                          <p className="text-gray-800 font-medium">
+                            {profileData.email}
+                          </p>
                         </div>
                       </div>
                     </div>
@@ -382,8 +460,12 @@ const Profile = () => {
                           <Phone className="w-5 h-5 text-[#67A177]" />
                         </div>
                         <div>
-                          <p className="text-sm text-gray-500 font-semibold">Phone</p>
-                          <p className="text-gray-800 font-medium">{profileData.phone || 'Not provided'}</p>
+                          <p className="text-sm text-gray-500 font-semibold">
+                            Phone
+                          </p>
+                          <p className="text-gray-800 font-medium">
+                            {profileData.phone || "Not provided"}
+                          </p>
                         </div>
                       </div>
                     </div>
@@ -395,8 +477,12 @@ const Profile = () => {
                           <MapPin className="w-5 h-5 text-[#67A177]" />
                         </div>
                         <div>
-                          <p className="text-sm text-gray-500 font-semibold">Address</p>
-                          <p className="text-gray-800 font-medium">{profileData.address || 'Not provided'}</p>
+                          <p className="text-sm text-gray-500 font-semibold">
+                            Address
+                          </p>
+                          <p className="text-gray-800 font-medium">
+                            {profileData.address || "Not provided"}
+                          </p>
                         </div>
                       </div>
                     </div>
@@ -408,9 +494,19 @@ const Profile = () => {
                           <Calendar className="w-5 h-5 text-[#67A177]" />
                         </div>
                         <div>
-                          <p className="text-sm text-gray-500 font-semibold">Birth Date</p>
+                          <p className="text-sm text-gray-500 font-semibold">
+                            Birth Date
+                          </p>
                           <p className="text-gray-800 font-medium">
-                            {profileData.birthDate ? new Date(profileData.birthDate).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) : 'Not provided'}
+                            {profileData.birthDate
+                              ? new Date(
+                                  profileData.birthDate,
+                                ).toLocaleDateString("en-US", {
+                                  year: "numeric",
+                                  month: "long",
+                                  day: "numeric",
+                                })
+                              : "Not provided"}
                           </p>
                         </div>
                       </div>
@@ -423,8 +519,12 @@ const Profile = () => {
                           <User className="w-5 h-5 text-[#67A177]" />
                         </div>
                         <div>
-                          <p className="text-sm text-gray-500 font-semibold">Gender</p>
-                          <p className="text-gray-800 font-medium capitalize">{profileData.gender || 'Not provided'}</p>
+                          <p className="text-sm text-gray-500 font-semibold">
+                            Gender
+                          </p>
+                          <p className="text-gray-800 font-medium capitalize">
+                            {profileData.gender || "Not provided"}
+                          </p>
                         </div>
                       </div>
                     </div>
@@ -436,8 +536,12 @@ const Profile = () => {
                           <DollarSign className="w-5 h-5 text-[#67A177]" />
                         </div>
                         <div>
-                          <p className="text-sm text-gray-500 font-semibold">Total Spent</p>
-                          <p className="text-gray-800 font-medium text-xl">${profileData.totalSpent.toFixed(2)}</p>
+                          <p className="text-sm text-gray-500 font-semibold">
+                            Total Spent
+                          </p>
+                          <p className="text-gray-800 font-medium text-xl">
+                            ${profileData.totalSpent.toFixed(2)}
+                          </p>
                         </div>
                       </div>
                     </div>
@@ -449,8 +553,12 @@ const Profile = () => {
                           <Calendar className="w-5 h-5 text-[#67A177]" />
                         </div>
                         <div>
-                          <p className="text-sm text-gray-500 font-semibold">Member Since</p>
-                          <p className="text-gray-800 font-medium">{profileData.memberSince}</p>
+                          <p className="text-sm text-gray-500 font-semibold">
+                            Member Since
+                          </p>
+                          <p className="text-gray-800 font-medium">
+                            {profileData.memberSince}
+                          </p>
                         </div>
                       </div>
                     </div>
@@ -477,7 +585,9 @@ const Profile = () => {
                 // Edit Mode
                 <div className="space-y-6">
                   <div className="text-center mb-6">
-                    <h2 className="text-3xl font-bold text-gray-800 mb-2">Edit Profile</h2>
+                    <h2 className="text-3xl font-bold text-gray-800 mb-2">
+                      Edit Profile
+                    </h2>
                     <p className="text-gray-600">Update your information</p>
                   </div>
 
@@ -624,7 +734,9 @@ const Profile = () => {
             </div>
             <div className="bg-[#ACD4B1] rounded-2xl p-6 shadow-lg text-center">
               <p className="text-4xl font-bold text-[#67A177] mb-2">8</p>
-              <p className="text-gray-700 font-semibold">Favorite Restaurants</p>
+              <p className="text-gray-700 font-semibold">
+                Favorite Restaurants
+              </p>
             </div>
             <div className="bg-[#ACD4B1] rounded-2xl p-6 shadow-lg text-center">
               <p className="text-4xl font-bold text-[#67A177] mb-2">4.8</p>

@@ -1,54 +1,62 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Mail, Phone, Lock, Eye, EyeOff, Loader } from 'lucide-react';
-import { loginCustomer } from '../../utils/authService';
-import { migrateGuestCart } from '../../utils/cartService';
+import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { Mail, Phone, Lock, Eye, EyeOff, Loader } from "lucide-react";
+import { loginCustomer } from "../../utils/authService";
+import { migrateGuestCart } from "../../utils/cartService";
 
 const Login = () => {
   const navigate = useNavigate();
   const [isLogin, setIsLogin] = useState(true);
   const [showPassword, setShowPassword] = useState(false);
-  const [loginMethod, setLoginMethod] = useState('email');
+  const [loginMethod, setLoginMethod] = useState("email");
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
-  const [success, setSuccess] = useState('');
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
+  const [toast, setToast] = useState({ show: false, message: "", type: "" });
+  const [toast, setToast] = useState({ show: false, message: "", type: "" });
+
+  // Toast notification helper
+  const showToast = (message, type = "info") => {
+    setToast({ show: true, message, type });
+    setTimeout(() => setToast({ show: false, message: "", type: "" }), 4000);
+  };
 
   // Redirect to home if already logged in
   useEffect(() => {
-    const token = localStorage.getItem('token');
-    const user = localStorage.getItem('user');
+    const token = localStorage.getItem("token");
+    const user = localStorage.getItem("user");
     if (token && user) {
-      navigate('/');
+      navigate("/");
     }
   }, [navigate]);
 
   const [loginForm, setLoginForm] = useState({
-    emailOrPhone: '',
-    password: ''
+    emailOrPhone: "",
+    password: "",
   });
 
   const handleLoginChange = (e) => {
     setLoginForm({ ...loginForm, [e.target.name]: e.target.value });
-    setError(''); // Clear error on input change
+    setError(""); // Clear error on input change
   };
 
   const handleLoginSubmit = async (e) => {
     e.preventDefault();
-    setError('');
+    setError("");
     setLoading(true);
 
     try {
       // Validate inputs
       if (!loginForm.emailOrPhone || !loginForm.password) {
-        setError('Please fill in all fields');
+        setError("Please fill in all fields");
         setLoading(false);
         return;
       }
 
       // Determine if input is email or phone
-      const isEmail = loginForm.emailOrPhone.includes('@');
+      const isEmail = loginForm.emailOrPhone.includes("@");
       const credentials = {
-        customer_password: loginForm.password
+        customer_password: loginForm.password,
       };
 
       if (isEmail) {
@@ -60,36 +68,37 @@ const Login = () => {
       // Call login API
       const response = await loginCustomer(credentials);
 
-      if (response.status === 'success') {
+      if (response.status === "success") {
         // Store token and user data
-        localStorage.setItem('token', response.token);
-        localStorage.setItem('user', JSON.stringify(response.data.customer));
+        localStorage.setItem("token", response.token);
+        localStorage.setItem("user", JSON.stringify(response.data.customer));
 
         // Migrate guest cart to user account
         try {
           await migrateGuestCart();
         } catch (cartError) {
-          console.error('Cart migration failed:', cartError);
+          console.error("Cart migration failed:", cartError);
           // Continue even if cart migration fails
         }
 
-        setSuccess('Login successful! Redirecting...');
-        
+        setSuccess("Login successful! Redirecting...");
+
         // Redirect to home page
         setTimeout(() => {
-          navigate('/');
+          navigate("/");
         }, 1000);
       }
     } catch (err) {
-      console.error('Login error:', err);
-      setError(err.message || 'Invalid credentials. Please try again.');
+      console.error("Login error:", err);
+      setError(err.message || "Invalid credentials. Please try again.");
       setLoading(false);
     }
   };
 
   const handleGoogleAuth = () => {
     // Get the backend URL from environment or default
-    const backendUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+    const backendUrl =
+      import.meta.env.VITE_API_BASE_URL || "http://localhost:8000";
     // Redirect to backend Google OAuth endpoint for customers
     window.location.href = `${backendUrl}/api/v1/auth/google/customer`;
   };
@@ -107,8 +116,8 @@ const Login = () => {
                 onClick={() => setIsLogin(true)}
                 className={`flex-1 py-4 text-lg font-bold transition-all ${
                   isLogin
-                    ? 'bg-[#67A177] text-white'
-                    : 'bg-[#8DBC96] text-white/70 hover:text-white'
+                    ? "bg-[#67A177] text-white"
+                    : "bg-[#8DBC96] text-white/70 hover:text-white"
                 }`}
               >
                 Login
@@ -117,8 +126,8 @@ const Login = () => {
                 onClick={() => setIsLogin(false)}
                 className={`flex-1 py-4 text-lg font-bold transition-all ${
                   !isLogin
-                    ? 'bg-[#67A177] text-white'
-                    : 'bg-[#8DBC96] text-white/70 hover:text-white'
+                    ? "bg-[#67A177] text-white"
+                    : "bg-[#8DBC96] text-white/70 hover:text-white"
                 }`}
               >
                 Sign Up
@@ -145,7 +154,9 @@ const Login = () => {
                 // Login Form
                 <form onSubmit={handleLoginSubmit} className="space-y-6">
                   <div className="text-center mb-6">
-                    <h2 className="text-3xl font-bold text-gray-800 mb-2">Welcome Back!</h2>
+                    <h2 className="text-3xl font-bold text-gray-800 mb-2">
+                      Welcome Back!
+                    </h2>
                     <p className="text-gray-600">Login to continue ordering</p>
                   </div>
 
@@ -153,22 +164,22 @@ const Login = () => {
                   <div className="flex gap-2 mb-4">
                     <button
                       type="button"
-                      onClick={() => setLoginMethod('email')}
+                      onClick={() => setLoginMethod("email")}
                       className={`flex-1 py-2 rounded-full font-semibold transition-all ${
-                        loginMethod === 'email'
-                          ? 'bg-[#67A177] text-white'
-                          : 'bg-[#DDEEDB] text-gray-600 hover:bg-[#C4E2C4]'
+                        loginMethod === "email"
+                          ? "bg-[#67A177] text-white"
+                          : "bg-[#DDEEDB] text-gray-600 hover:bg-[#C4E2C4]"
                       }`}
                     >
                       Email
                     </button>
                     <button
                       type="button"
-                      onClick={() => setLoginMethod('phone')}
+                      onClick={() => setLoginMethod("phone")}
                       className={`flex-1 py-2 rounded-full font-semibold transition-all ${
-                        loginMethod === 'phone'
-                          ? 'bg-[#67A177] text-white'
-                          : 'bg-[#DDEEDB] text-gray-600 hover:bg-[#C4E2C4]'
+                        loginMethod === "phone"
+                          ? "bg-[#67A177] text-white"
+                          : "bg-[#DDEEDB] text-gray-600 hover:bg-[#C4E2C4]"
                       }`}
                     >
                       Phone
@@ -178,25 +189,27 @@ const Login = () => {
                   {/* Email/Phone Input */}
                   <div>
                     <label className="block text-sm font-semibold text-gray-700 mb-2">
-                      {loginMethod === 'email' ? 'Email Address' : 'Phone Number'}
+                      {loginMethod === "email"
+                        ? "Email Address"
+                        : "Phone Number"}
                     </label>
                     <div className="relative">
                       <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500">
-                        {loginMethod === 'email' ? (
+                        {loginMethod === "email" ? (
                           <Mail className="w-5 h-5" />
                         ) : (
                           <Phone className="w-5 h-5" />
                         )}
                       </div>
                       <input
-                        type={loginMethod === 'email' ? 'email' : 'tel'}
+                        type={loginMethod === "email" ? "email" : "tel"}
                         name="emailOrPhone"
                         value={loginForm.emailOrPhone}
                         onChange={handleLoginChange}
                         placeholder={
-                          loginMethod === 'email'
-                            ? 'your@email.com'
-                            : '+1 (555) 000-0000'
+                          loginMethod === "email"
+                            ? "your@email.com"
+                            : "+1 (555) 000-0000"
                         }
                         className="w-full pl-12 pr-4 py-3 bg-white rounded-full border-2 border-transparent focus:border-[#67A177] focus:outline-none transition-all"
                         disabled={loading}
@@ -215,7 +228,7 @@ const Login = () => {
                         <Lock className="w-5 h-5" />
                       </div>
                       <input
-                        type={showPassword ? 'text' : 'password'}
+                        type={showPassword ? "text" : "password"}
                         name="password"
                         value={loginForm.password}
                         onChange={handleLoginChange}
@@ -243,7 +256,7 @@ const Login = () => {
                   <div className="text-right">
                     <button
                       type="button"
-                      onClick={() => navigate('/forgot-password')}
+                      onClick={() => navigate("/forgot-password")}
                       className="text-sm text-[#67A177] hover:text-[#5a8f68] font-semibold"
                     >
                       Forgot Password?
@@ -262,7 +275,7 @@ const Login = () => {
                         <span>Logging in...</span>
                       </>
                     ) : (
-                      'Login'
+                      "Login"
                     )}
                   </button>
 
@@ -310,8 +323,12 @@ const Login = () => {
                 // Signup - Google OAuth Only
                 <div className="space-y-6 py-12">
                   <div className="text-center mb-8">
-                    <h2 className="text-3xl font-bold text-gray-800 mb-2">Create Account</h2>
-                    <p className="text-gray-600">Join BiteNow with your Google account</p>
+                    <h2 className="text-3xl font-bold text-gray-800 mb-2">
+                      Create Account
+                    </h2>
+                    <p className="text-gray-600">
+                      Join BiteNow with your Google account
+                    </p>
                   </div>
 
                   {/* Google OAuth */}
@@ -353,18 +370,18 @@ const Login = () => {
 
           {/* Terms Text */}
           <p className="text-center text-sm text-gray-600 mt-6">
-            By continuing, you agree to BiteNow's{' '}
+            By continuing, you agree to BiteNow's{" "}
             <button
               type="button"
-              onClick={() => navigate('/terms')}
+              onClick={() => navigate("/terms")}
               className="text-[#67A177] hover:text-[#5a8f68] font-semibold"
             >
               Terms of Service
-            </button>{' '}
-            and{' '}
+            </button>{" "}
+            and{" "}
             <button
               type="button"
-              onClick={() => navigate('/privacy')}
+              onClick={() => navigate("/privacy")}
               className="text-[#67A177] hover:text-[#5a8f68] font-semibold"
             >
               Privacy Policy
@@ -378,13 +395,48 @@ const Login = () => {
           type="button"
           className="text-[#67A177] hover:text-[#5a8f68] font-semibold underline"
           onClick={() => {
-            const frontendUrl = import.meta.env.VITE_FRONTEND_URL || window.location.origin;
+            const frontendUrl =
+              import.meta.env.VITE_FRONTEND_URL || window.location.origin;
             window.location.href = `${frontendUrl}/login`;
           }}
         >
           Back to main login
         </button>
       </div>
+
+      {/* Toast Notification */}
+      {toast.show && (
+        <div className="fixed top-4 right-4 z-50 animate-fade-in-down">
+          <div
+            className={`rounded-lg shadow-2xl p-4 min-w-[300px] max-w-md ${
+              toast.type === "success"
+                ? "bg-green-500 text-white"
+                : toast.type === "error"
+                  ? "bg-red-500 text-white"
+                  : toast.type === "warning"
+                    ? "bg-yellow-500 text-white"
+                    : "bg-blue-500 text-white"
+            }`}
+          >
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-3">
+                {toast.type === "success" && (
+                  <ShoppingCart className="w-6 h-6" />
+                )}
+                {toast.type === "error" && <Lock className="w-6 h-6" />}
+                {toast.type === "warning" && <Mail className="w-6 h-6" />}
+                <p className="font-medium">{toast.message}</p>
+              </div>
+              <button
+                onClick={() => setToast({ show: false, message: "", type: "" })}
+                className="ml-4 hover:opacity-75"
+              >
+                <Eye className="w-5 h-5" />
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

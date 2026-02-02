@@ -1,28 +1,54 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Bike, Package, MapPin, Clock, DollarSign, Phone, Navigation, CheckCircle, Star, User, X, LogOut } from 'lucide-react';
-import ApprovalMessage from '../../components/ApprovalMessage';
-import axiosInstance from '../../utils/axios';
+import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import {
+  Bike,
+  Package,
+  MapPin,
+  Clock,
+  DollarSign,
+  Phone,
+  Navigation,
+  CheckCircle,
+  Star,
+  User,
+  UserCircle,
+  X,
+  LogOut,
+} from "lucide-react";
+import ApprovalMessage from "../../components/ApprovalMessage";
+import axiosInstance from "../../utils/axios";
 
 const Home = () => {
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState('requests');
+  const [activeTab, setActiveTab] = useState("requests");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [showPinModal, setShowPinModal] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState(null);
-  const [customerPin, setCustomerPin] = useState('');
-  const [pinError, setPinError] = useState('');
+  const [customerPin, setCustomerPin] = useState("");
+  const [pinError, setPinError] = useState("");
   const [completedOrders, setCompletedOrders] = useState([]);
   const [orderRequests, setOrderRequests] = useState([]);
   const [riderStatus, setRiderStatus] = useState(null);
   const [riderStats, setRiderStats] = useState({
-    todaysEarnings: '0.00',
+    todaysEarnings: "0.00",
     deliveriesCompleted: 0,
-    availableRequests: 0
+    availableRequests: 0,
   });
 
   const [activeOrders, setActiveOrders] = useState([]);
+  const [riderProfile, setRiderProfile] = useState({
+    image: null,
+    gender: null,
+    name: null,
+  });
+  const [toast, setToast] = useState({ show: false, message: "", type: "" });
+
+  // Toast notification helper
+  const showToast = (message, type = "info") => {
+    setToast({ show: true, message, type });
+    setTimeout(() => setToast({ show: false, message: "", type: "" }), 4000);
+  };
 
   // Fetch order requests and accepted orders from API
   useEffect(() => {
@@ -30,17 +56,18 @@ const Home = () => {
     fetchOrderRequests();
     fetchAcceptedOrders();
     fetchRiderStats();
+    fetchRiderProfile();
   }, []);
 
   const checkRiderStatus = () => {
     try {
-      const userStr = localStorage.getItem('user');
+      const userStr = localStorage.getItem("user");
       if (userStr) {
         const user = JSON.parse(userStr);
         setRiderStatus(user.rider_status || user.status);
       }
     } catch (err) {
-      console.error('Error checking rider status:', err);
+      console.error("Error checking rider status:", err);
     }
   };
 
@@ -48,30 +75,45 @@ const Home = () => {
     try {
       setLoading(true);
       setError(null);
-      const response = await axiosInstance.get('/api/v1/order/rider');
-      
+      const response = await axiosInstance.get("/api/v1/order/rider");
+
       if (response.data && response.data.data && response.data.data.needRider) {
         // Transform API data to match component structure
-        const transformedOrders = response.data.data.needRider.map(order => ({
+        const transformedOrders = response.data.data.needRider.map((order) => ({
           id: order._id,
-          restaurant: order.restaurant_id?.restaurant_name || 'Unknown Restaurant',
-          restaurantImage: order.restaurant_id?.restaurant_image || 'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=400&q=80',
-          restaurantAddress: order.restaurant_id?.restaurant_address || '',
-          customerName: order.customer_id?.name || 'Customer',
-          customerAddress: order.delivery_address ? `${order.delivery_address.street || ''}, ${order.delivery_address.city || ''}` : '',
-          items: order.items?.map(item => item.food_name) || [],
+          restaurant:
+            order.restaurant_id?.restaurant_name || "Unknown Restaurant",
+          restaurantImage:
+            order.restaurant_id?.restaurant_image ||
+            "https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=400&q=80",
+          restaurantAddress: order.restaurant_id?.restaurant_address || "",
+          customerName: order.customer_id?.name || "Customer",
+          customerAddress: order.delivery_address
+            ? `${order.delivery_address.street || ""}, ${order.delivery_address.city || ""}`
+            : "",
+          items: order.items?.map((item) => item.food_name) || [],
           orderValue: order.total_amount || 0,
           deliveryFee: order.delivery_charge || 0,
-          distance: order.distance || 'N/A',
-          estimatedTime: order.estimated_delivery_time ? new Date(order.estimated_delivery_time).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }) : 'N/A',
-          orderTime: order.createdAt ? new Date(order.createdAt).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }) : ''
+          distance: order.distance || "N/A",
+          estimatedTime: order.estimated_delivery_time
+            ? new Date(order.estimated_delivery_time).toLocaleTimeString(
+                "en-US",
+                { hour: "numeric", minute: "2-digit" },
+              )
+            : "N/A",
+          orderTime: order.createdAt
+            ? new Date(order.createdAt).toLocaleTimeString("en-US", {
+                hour: "numeric",
+                minute: "2-digit",
+              })
+            : "",
         }));
-        
+
         setOrderRequests(transformedOrders);
       }
     } catch (err) {
-      console.error('Error fetching order requests:', err);
-      setError(err.response?.data?.message || 'Failed to fetch order requests');
+      console.error("Error fetching order requests:", err);
+      setError(err.response?.data?.message || "Failed to fetch order requests");
     } finally {
       setLoading(false);
     }
@@ -79,17 +121,52 @@ const Home = () => {
 
   const fetchRiderStats = async () => {
     try {
-      const response = await axiosInstance.get('/api/v1/riders/stats');
-      
+      const response = await axiosInstance.get("/api/v1/riders/stats");
+
       if (response.data && response.data.data) {
         setRiderStats({
           todaysEarnings: response.data.data.todaysEarnings,
           deliveriesCompleted: response.data.data.deliveriesCompleted,
-          availableRequests: response.data.data.availableRequests
+          availableRequests: response.data.data.availableRequests,
         });
       }
     } catch (err) {
-      console.error('Error fetching rider stats:', err);
+      console.error("Error fetching rider stats:", err);
+      // Keep default values if error occurs
+    }
+  };
+
+  const fetchRiderProfile = async () => {
+    try {
+      const response = await axiosInstance.get("/api/v1/riders/profile");
+      console.log("Rider profile response:", response.data);
+
+      // Try different possible response structures
+      const profileData =
+        response.data?.data || response.data?.rider || response.data;
+
+      if (profileData) {
+        // Extract image URL - handle both string and object formats
+        const imageData =
+          profileData.profile_image ||
+          profileData.image ||
+          profileData.rider_image;
+        const imageUrl =
+          typeof imageData === "object" ? imageData?.url : imageData;
+
+        setRiderProfile({
+          image: imageUrl,
+          gender: profileData.gender,
+          name: profileData.name || profileData.rider_name,
+        });
+        console.log("Profile set:", {
+          image: imageUrl,
+          gender: profileData.gender,
+          name: profileData.name || profileData.rider_name,
+        });
+      }
+    } catch (err) {
+      console.error("Error fetching rider profile:", err);
       // Keep default values if error occurs
     }
   };
@@ -98,42 +175,80 @@ const Home = () => {
     try {
       setLoading(true);
       setError(null);
-      const response = await axiosInstance.get('/api/v1/orders/rider/my-order');
-      
+      const response = await axiosInstance.get("/api/v1/orders/rider/my-order");
+
       if (response.data && response.data.myOrder) {
         // Transform API data to match component structure
-        const transformedOrders = response.data.myOrder.map(order => ({
+        const transformedOrders = response.data.myOrder.map((order) => ({
           id: order._id,
-          restaurant: order.restaurant_id?.restaurant_name || 'Unknown Restaurant',
-          restaurantImage: order.restaurant_id?.restaurant_image || 'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=400&q=80',
-          restaurantAddress: order.restaurant_id?.restaurant_address || '',
-          customerName: order.customer_id?.name || 'Customer',
-          customerPhone: order.customer_id?.phone || '',
-          customerAddress: order.delivery_address ? `${order.delivery_address.street || ''}, ${order.delivery_address.city || ''}` : '',
-          items: order.items?.map(item => item.food_name) || [],
+          restaurant:
+            order.restaurant_id?.restaurant_name || "Unknown Restaurant",
+          restaurantImage:
+            order.restaurant_id?.restaurant_image ||
+            "https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=400&q=80",
+          restaurantAddress: order.restaurant_id?.restaurant_address || "",
+          customerName: order.customer_id?.name || "Customer",
+          customerPhone: order.customer_id?.phone || "",
+          customerAddress: order.delivery_address
+            ? `${order.delivery_address.street || ""}, ${order.delivery_address.city || ""}`
+            : "",
+          items: order.items?.map((item) => item.food_name) || [],
           orderValue: order.total_amount || 0,
           deliveryFee: order.delivery_charge || 0,
-          distance: order.distance || 'N/A',
-          status: order.order_status || 'preparing',
-          riderPin: order.rider_pin || '',
-          confirmationPin: order.customer_pin || '',
-          acceptedTime: order.updatedAt ? new Date(order.updatedAt).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }) : '',
-          estimatedPickup: order.estimated_delivery_time ? new Date(order.estimated_delivery_time).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }) : '',
-          pickedUpTime: order.picked_up_at ? new Date(order.picked_up_at).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }) : '',
-          completedTime: order.delivered_at ? new Date(order.delivered_at).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' }) : '',
-          orderTime: order.createdAt ? new Date(order.createdAt).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' }) : ''
+          distance: order.distance || "N/A",
+          status: order.order_status || "preparing",
+          riderPin: order.rider_pin || "",
+          confirmationPin: order.customer_pin || "",
+          acceptedTime: order.updatedAt
+            ? new Date(order.updatedAt).toLocaleTimeString("en-US", {
+                hour: "numeric",
+                minute: "2-digit",
+              })
+            : "",
+          estimatedPickup: order.estimated_delivery_time
+            ? new Date(order.estimated_delivery_time).toLocaleTimeString(
+                "en-US",
+                { hour: "numeric", minute: "2-digit" },
+              )
+            : "",
+          pickedUpTime: order.picked_up_at
+            ? new Date(order.picked_up_at).toLocaleTimeString("en-US", {
+                hour: "numeric",
+                minute: "2-digit",
+              })
+            : "",
+          completedTime: order.delivered_at
+            ? new Date(order.delivered_at).toLocaleString("en-US", {
+                month: "short",
+                day: "numeric",
+                hour: "numeric",
+                minute: "2-digit",
+              })
+            : "",
+          orderTime: order.createdAt
+            ? new Date(order.createdAt).toLocaleString("en-US", {
+                month: "short",
+                day: "numeric",
+                hour: "numeric",
+                minute: "2-digit",
+              })
+            : "",
         }));
-        
+
         // Filter orders by status
-        const delivered = transformedOrders.filter(order => order.status.toLowerCase() === 'delivered');
-        const active = transformedOrders.filter(order => order.status.toLowerCase() !== 'delivered');
-        
+        const delivered = transformedOrders.filter(
+          (order) => order.status.toLowerCase() === "delivered",
+        );
+        const active = transformedOrders.filter(
+          (order) => order.status.toLowerCase() !== "delivered",
+        );
+
         setCompletedOrders(delivered);
         setActiveOrders(active);
       }
     } catch (err) {
-      console.error('Error fetching accepted orders:', err);
-      setError(err.response?.data?.message || 'Failed to fetch orders');
+      console.error("Error fetching accepted orders:", err);
+      setError(err.response?.data?.message || "Failed to fetch orders");
     } finally {
       setLoading(false);
     }
@@ -143,35 +258,38 @@ const Home = () => {
     try {
       setLoading(true);
       setError(null);
-      
+
       // Get rider_id from localStorage (stored during login)
-      const userStr = localStorage.getItem('user');
+      const userStr = localStorage.getItem("user");
       const user = userStr ? JSON.parse(userStr) : null;
       const riderId = user?.id || user?._id;
-      
+
       if (!riderId) {
-        setError('Rider ID not found. Please login again.');
+        setError("Rider ID not found. Please login again.");
         return;
       }
 
-      const response = await axiosInstance.patch(`/api/v1/order/rider/${orderId}`, {
-        rider_id: riderId
-      });
+      const response = await axiosInstance.patch(
+        `/api/v1/order/rider/${orderId}`,
+        {
+          rider_id: riderId,
+        },
+      );
 
       if (response.data && response.data.success) {
         // Remove from order requests
-        setOrderRequests(orderRequests.filter(order => order.id !== orderId));
-        
+        setOrderRequests(orderRequests.filter((order) => order.id !== orderId));
+
         // Refresh both lists and stats
         await Promise.all([
           fetchOrderRequests(),
           fetchAcceptedOrders(),
-          fetchRiderStats()
+          fetchRiderStats(),
         ]);
       }
     } catch (err) {
-      console.error('Error accepting order:', err);
-      setError(err.response?.data?.message || 'Failed to accept order');
+      console.error("Error accepting order:", err);
+      setError(err.response?.data?.message || "Failed to accept order");
     } finally {
       setLoading(false);
     }
@@ -179,47 +297,50 @@ const Home = () => {
 
   const getStatusColor = (status) => {
     switch (status) {
-      case 'Preparing':
-        return 'bg-blue-500';
-      case 'Ready to Pick Up':
-        return 'bg-purple-500';
-      case 'Out for delivery':
-        return 'bg-[#67A177]';
+      case "Preparing":
+        return "bg-blue-500";
+      case "Ready to Pick Up":
+        return "bg-purple-500";
+      case "Out for delivery":
+        return "bg-[#67A177]";
       default:
-        return 'bg-gray-500';
+        return "bg-gray-500";
     }
   };
 
   const handleCompleteDelivery = (orderId) => {
-    const order = activeOrders.find(order => order.id === orderId);
+    const order = activeOrders.find((order) => order.id === orderId);
     if (order) {
       setSelectedOrder(order);
       setShowPinModal(true);
-      setCustomerPin('');
-      setPinError('');
+      setCustomerPin("");
+      setPinError("");
     }
   };
 
   const handleLogout = () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
-    navigate('/rider/login');
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+    navigate("/rider/login");
   };
 
   const handleVerifyPin = async () => {
     if (!customerPin || customerPin.length !== 4) {
-      setPinError('Please enter a 4-digit PIN');
+      setPinError("Please enter a 4-digit PIN");
       return;
     }
 
     try {
       setLoading(true);
-      setPinError('');
-      
-      const response = await axiosInstance.patch('/api/v1/orders/rider/verify-customer', {
-        order_id: selectedOrder.id,
-        customer_pin: customerPin
-      });
+      setPinError("");
+
+      const response = await axiosInstance.patch(
+        "/api/v1/orders/rider/verify-customer",
+        {
+          order_id: selectedOrder.id,
+          customer_pin: customerPin,
+        },
+      );
 
       if (response.data && response.data.success) {
         // Move order to completed
@@ -232,24 +353,33 @@ const Home = () => {
           items: selectedOrder.items,
           deliveryFee: selectedOrder.deliveryFee,
           distance: selectedOrder.distance,
-          completedTime: new Date().toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' }),
-          orderTime: selectedOrder.acceptedTime
+          completedTime: new Date().toLocaleString("en-US", {
+            month: "short",
+            day: "numeric",
+            hour: "numeric",
+            minute: "2-digit",
+          }),
+          orderTime: selectedOrder.acceptedTime,
         };
-        
+
         setCompletedOrders([newCompletedOrder, ...completedOrders]);
-        setActiveOrders(activeOrders.filter(order => order.id !== selectedOrder.id));
-        
+        setActiveOrders(
+          activeOrders.filter((order) => order.id !== selectedOrder.id),
+        );
+
         // Refresh stats to update today's earnings and deliveries
         await fetchRiderStats();
-        
+
         // Close modal
         setShowPinModal(false);
         setSelectedOrder(null);
-        setCustomerPin('');
+        setCustomerPin("");
       }
     } catch (err) {
-      console.error('Error verifying PIN:', err);
-      setPinError(err.response?.data?.message || 'Invalid PIN. Please try again.');
+      console.error("Error verifying PIN:", err);
+      setPinError(
+        err.response?.data?.message || "Invalid PIN. Please try again.",
+      );
     } finally {
       setLoading(false);
     }
@@ -261,13 +391,15 @@ const Home = () => {
         {/* Header */}
         <div className="flex items-start justify-between mb-3">
           <div className="flex items-center space-x-3">
-            <img 
-              src={order.restaurantImage} 
+            <img
+              src={order.restaurantImage}
               alt={order.restaurant}
               className="w-12 h-12 rounded-lg object-cover"
             />
             <div>
-              <h3 className="text-base font-bold text-gray-800">{order.restaurant}</h3>
+              <h3 className="text-base font-bold text-gray-800">
+                {order.restaurant}
+              </h3>
               <p className="text-xs text-gray-600">#{order.id}</p>
             </div>
           </div>
@@ -290,7 +422,9 @@ const Home = () => {
               <Clock className="w-3 h-3 text-[#67A177]" />
               <p className="text-xs text-gray-600">Est. Time</p>
             </div>
-            <p className="font-bold text-sm text-gray-800">{order.estimatedTime}</p>
+            <p className="font-bold text-sm text-gray-800">
+              {order.estimatedTime}
+            </p>
           </div>
         </div>
 
@@ -299,7 +433,9 @@ const Home = () => {
           <p className="text-xs text-gray-600 mb-1 font-semibold">Pickup</p>
           <div className="flex items-start space-x-1">
             <MapPin className="w-3 h-3 text-[#67A177] mt-0.5 flex-shrink-0" />
-            <p className="text-xs text-gray-700 line-clamp-1">{order.restaurant}</p>
+            <p className="text-xs text-gray-700 line-clamp-1">
+              {order.restaurant}
+            </p>
           </div>
         </div>
 
@@ -308,16 +444,23 @@ const Home = () => {
           <p className="text-xs text-gray-600 mb-1 font-semibold">Deliver To</p>
           <div className="flex items-start space-x-1">
             <MapPin className="w-3 h-3 text-[#67A177] mt-0.5 flex-shrink-0" />
-            <p className="text-xs text-gray-700 line-clamp-1">{order.customerName}</p>
+            <p className="text-xs text-gray-700 line-clamp-1">
+              {order.customerName}
+            </p>
           </div>
         </div>
 
         {/* Order Items */}
         <div className="mb-3">
-          <p className="text-xs text-gray-600 mb-1 font-semibold">Items ({order.items.length})</p>
+          <p className="text-xs text-gray-600 mb-1 font-semibold">
+            Items ({order.items.length})
+          </p>
           <div className="flex flex-wrap gap-1">
             {order.items.slice(0, 2).map((item, index) => (
-              <span key={index} className="bg-[#DDEEDB] text-gray-700 px-2 py-0.5 rounded-full text-xs">
+              <span
+                key={index}
+                className="bg-[#DDEEDB] text-gray-700 px-2 py-0.5 rounded-full text-xs"
+              >
                 {item}
               </span>
             ))}
@@ -333,27 +476,34 @@ const Home = () => {
         <div className="flex items-center justify-between pt-3 border-t border-[#8DBC96]/30 mb-3">
           <div>
             <p className="text-xs text-gray-600">Earnings</p>
-            <p className="text-lg font-bold text-[#67A177]">${order.deliveryFee.toFixed(2)}</p>
+            <p className="text-lg font-bold text-[#67A177]">
+              ${order.deliveryFee.toFixed(2)}
+            </p>
           </div>
           <div className="text-right">
             <p className="text-xs text-gray-600">Value</p>
-            <p className="text-sm font-semibold text-gray-800">${order.orderValue.toFixed(2)}</p>
+            <p className="text-sm font-semibold text-gray-800">
+              ${order.orderValue.toFixed(2)}
+            </p>
           </div>
         </div>
 
         {/* Accept Button */}
-        <button 
+        <button
           onClick={() => {
-            if (riderStatus !== 'Approved') {
-              alert('Your account must be approved before you can accept orders');
+            if (riderStatus !== "Approved") {
+              showToast(
+                "Your account must be approved before you can accept orders",
+                "warning",
+              );
               return;
             }
             handleAcceptOrder(order.id);
           }}
-          disabled={riderStatus !== 'Approved'}
+          disabled={riderStatus !== "Approved"}
           className="w-full bg-[#67A177] text-white py-2 rounded-full hover:bg-[#5a8f68] transition-all font-semibold text-sm hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-[#67A177]"
         >
-          {riderStatus !== 'Approved' ? 'Account Not Approved' : 'Accept Order'}
+          {riderStatus !== "Approved" ? "Account Not Approved" : "Accept Order"}
         </button>
       </div>
     </div>
@@ -365,17 +515,21 @@ const Home = () => {
         {/* Header */}
         <div className="flex items-start justify-between mb-3">
           <div className="flex items-center space-x-3">
-            <img 
-              src={order.restaurantImage} 
+            <img
+              src={order.restaurantImage}
               alt={order.restaurant}
               className="w-12 h-12 rounded-lg object-cover"
             />
             <div>
-              <h3 className="text-base font-bold text-gray-800">{order.restaurant}</h3>
+              <h3 className="text-base font-bold text-gray-800">
+                {order.restaurant}
+              </h3>
               <p className="text-xs text-gray-600">#{order.id}</p>
             </div>
           </div>
-          <div className={`${getStatusColor(order.status)} text-white px-2 py-1 rounded-full font-semibold text-xs`}>
+          <div
+            className={`${getStatusColor(order.status)} text-white px-2 py-1 rounded-full font-semibold text-xs`}
+          >
             {order.status}
           </div>
         </div>
@@ -384,10 +538,14 @@ const Home = () => {
         <div className="mb-3 bg-[#67A177] p-3 rounded-lg">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-white text-xs font-semibold">Your PIN (Show to Restaurant)</p>
+              <p className="text-white text-xs font-semibold">
+                Your PIN (Show to Restaurant)
+              </p>
             </div>
             <div className="bg-white px-4 py-1.5 rounded-lg">
-              <p className="text-xl font-bold text-[#67A177] tracking-wider">{order.riderPin || 'N/A'}</p>
+              <p className="text-xl font-bold text-[#67A177] tracking-wider">
+                {order.riderPin || "N/A"}
+              </p>
             </div>
           </div>
         </div>
@@ -400,11 +558,13 @@ const Home = () => {
                 <User className="w-4 h-4 text-white" />
               </div>
               <div>
-                <p className="font-semibold text-xs text-gray-800">{order.customerName}</p>
+                <p className="font-semibold text-xs text-gray-800">
+                  {order.customerName}
+                </p>
                 <p className="text-xs text-gray-600">{order.customerPhone}</p>
               </div>
             </div>
-            <a 
+            <a
               href={`tel:${order.customerPhone}`}
               className="bg-[#67A177] text-white p-2 rounded-full hover:bg-[#5a8f68] transition-all"
             >
@@ -418,7 +578,9 @@ const Home = () => {
           <p className="text-xs text-gray-600 mb-1 font-semibold">Pickup</p>
           <div className="flex items-start space-x-1">
             <MapPin className="w-3 h-3 text-[#67A177] mt-0.5 flex-shrink-0" />
-            <p className="text-xs text-gray-700 line-clamp-1">{order.restaurant}</p>
+            <p className="text-xs text-gray-700 line-clamp-1">
+              {order.restaurant}
+            </p>
           </div>
         </div>
 
@@ -427,16 +589,23 @@ const Home = () => {
           <p className="text-xs text-gray-600 mb-1 font-semibold">Deliver To</p>
           <div className="flex items-start space-x-1">
             <MapPin className="w-3 h-3 text-[#67A177] mt-0.5 flex-shrink-0" />
-            <p className="text-xs text-gray-700 line-clamp-1">{order.customerAddress}</p>
+            <p className="text-xs text-gray-700 line-clamp-1">
+              {order.customerAddress}
+            </p>
           </div>
         </div>
 
         {/* Order Items */}
         <div className="mb-3">
-          <p className="text-xs text-gray-600 mb-1 font-semibold">Items ({order.items.length})</p>
+          <p className="text-xs text-gray-600 mb-1 font-semibold">
+            Items ({order.items.length})
+          </p>
           <div className="flex flex-wrap gap-1">
             {order.items.slice(0, 2).map((item, index) => (
-              <span key={index} className="bg-[#DDEEDB] text-gray-700 px-2 py-0.5 rounded-full text-xs">
+              <span
+                key={index}
+                className="bg-[#DDEEDB] text-gray-700 px-2 py-0.5 rounded-full text-xs"
+              >
                 {item}
               </span>
             ))}
@@ -452,7 +621,9 @@ const Home = () => {
         <div className="flex items-center justify-between pt-3 border-t border-[#8DBC96]/30 mb-3">
           <div>
             <p className="text-xs text-gray-600">Earnings</p>
-            <p className="text-lg font-bold text-[#67A177]">${order.deliveryFee.toFixed(2)}</p>
+            <p className="text-lg font-bold text-[#67A177]">
+              ${order.deliveryFee.toFixed(2)}
+            </p>
           </div>
           <div className="flex items-center space-x-1 text-xs text-gray-600">
             <Navigation className="w-3 h-3" />
@@ -465,7 +636,7 @@ const Home = () => {
           <button className="bg-[#DDEEDB] text-[#67A177] py-2 rounded-full hover:bg-[#C4E2C4] transition-all font-semibold text-sm">
             Navigate
           </button>
-          <button 
+          <button
             onClick={() => handleCompleteDelivery(order.id)}
             className="bg-[#67A177] text-white py-2 rounded-full hover:bg-[#5a8f68] transition-all font-semibold text-sm"
           >
@@ -482,13 +653,15 @@ const Home = () => {
         {/* Header */}
         <div className="flex items-start justify-between mb-3">
           <div className="flex items-center space-x-3">
-            <img 
-              src={order.restaurantImage} 
+            <img
+              src={order.restaurantImage}
               alt={order.restaurant}
               className="w-12 h-12 rounded-lg object-cover"
             />
             <div>
-              <h3 className="text-base font-bold text-gray-800">{order.restaurant}</h3>
+              <h3 className="text-base font-bold text-gray-800">
+                {order.restaurant}
+              </h3>
               <p className="text-xs text-gray-600">#{order.id}</p>
             </div>
           </div>
@@ -500,19 +673,28 @@ const Home = () => {
 
         {/* Customer & Address */}
         <div className="mb-3 bg-[#DDEEDB] p-2 rounded-lg">
-          <p className="text-xs text-gray-600 mb-1 font-semibold">Delivered To</p>
+          <p className="text-xs text-gray-600 mb-1 font-semibold">
+            Delivered To
+          </p>
           <div className="flex items-start space-x-1">
             <MapPin className="w-3 h-3 text-[#67A177] mt-0.5 flex-shrink-0" />
-            <p className="text-xs text-gray-700 line-clamp-1">{order.customerName}</p>
+            <p className="text-xs text-gray-700 line-clamp-1">
+              {order.customerName}
+            </p>
           </div>
         </div>
 
         {/* Order Items */}
         <div className="mb-3">
-          <p className="text-xs text-gray-600 mb-1 font-semibold">Items ({order.items.length})</p>
+          <p className="text-xs text-gray-600 mb-1 font-semibold">
+            Items ({order.items.length})
+          </p>
           <div className="flex flex-wrap gap-1">
             {order.items.slice(0, 2).map((item, index) => (
-              <span key={index} className="bg-[#DDEEDB] text-gray-700 px-2 py-0.5 rounded-full text-xs">
+              <span
+                key={index}
+                className="bg-[#DDEEDB] text-gray-700 px-2 py-0.5 rounded-full text-xs"
+              >
                 {item}
               </span>
             ))}
@@ -528,11 +710,15 @@ const Home = () => {
         <div className="grid grid-cols-2 gap-2 mb-3">
           <div className="bg-[#DDEEDB] p-2 rounded-lg">
             <p className="text-xs text-gray-600">Order</p>
-            <p className="font-semibold text-gray-800 text-xs">{order.orderTime}</p>
+            <p className="font-semibold text-gray-800 text-xs">
+              {order.orderTime}
+            </p>
           </div>
           <div className="bg-[#DDEEDB] p-2 rounded-lg">
             <p className="text-xs text-gray-600">Completed</p>
-            <p className="font-semibold text-gray-800 text-xs">{order.completedTime}</p>
+            <p className="font-semibold text-gray-800 text-xs">
+              {order.completedTime}
+            </p>
           </div>
         </div>
 
@@ -540,7 +726,9 @@ const Home = () => {
         <div className="flex items-center justify-between pt-3 border-t border-[#8DBC96]/30">
           <div>
             <p className="text-xs text-gray-600">Earned</p>
-            <p className="text-lg font-bold text-[#67A177]">${order.deliveryFee.toFixed(2)}</p>
+            <p className="text-lg font-bold text-[#67A177]">
+              ${order.deliveryFee.toFixed(2)}
+            </p>
           </div>
           <div className="flex items-center space-x-1 text-xs text-gray-600">
             <Navigation className="w-3 h-3" />
@@ -558,20 +746,41 @@ const Home = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 bg-[#67A177] rounded-full flex items-center justify-center">
-                <Bike className="w-6 h-6 text-white" />
+              {riderProfile.image ? (
+                <img
+                  src={riderProfile.image}
+                  alt="Rider profile"
+                  className="w-10 h-10 rounded-full object-cover border-2 border-white"
+                  onError={(e) => {
+                    console.error("Image failed to load:", riderProfile.image);
+                    e.target.style.display = "none";
+                    e.target.nextSibling.style.display = "flex";
+                  }}
+                />
+              ) : null}
+              <div
+                className="w-10 h-10 bg-white rounded-full flex items-center justify-center"
+                style={{ display: riderProfile.image ? "none" : "flex" }}
+              >
+                {riderProfile.gender?.toLowerCase() === "female" ? (
+                  <UserCircle className="w-6 h-6 text-[#67A177]" />
+                ) : (
+                  <User className="w-6 h-6 text-[#67A177]" />
+                )}
               </div>
-              <span className="text-2xl font-bold text-white">BiteNow Rider</span>
+              <span className="text-2xl font-bold text-white">
+                {riderProfile.name || "BiteNow Rider"}
+              </span>
             </div>
             <div className="flex items-center space-x-4">
-              <button 
-                onClick={() => navigate('/rider/profile')}
+              <button
+                onClick={() => navigate("/rider/profile")}
                 className="bg-[#67A177] text-white px-6 py-2 rounded-full hover:bg-[#5a8f68] transition-all font-semibold flex items-center space-x-2"
               >
                 <User className="w-5 h-5" />
                 <span>Profile</span>
               </button>
-              <button 
+              <button
                 onClick={handleLogout}
                 className="bg-red-500 text-white px-6 py-2 rounded-full hover:bg-red-600 transition-all font-semibold flex items-center space-x-2"
               >
@@ -589,15 +798,21 @@ const Home = () => {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div className="bg-white/20 backdrop-blur-sm rounded-2xl p-6 border border-white/30">
               <p className="text-white/80 text-sm mb-2">Today's Earnings</p>
-              <p className="text-3xl font-bold text-white">${riderStats.todaysEarnings}</p>
+              <p className="text-3xl font-bold text-white">
+                ${riderStats.todaysEarnings}
+              </p>
             </div>
             <div className="bg-white/20 backdrop-blur-sm rounded-2xl p-6 border border-white/30">
               <p className="text-white/80 text-sm mb-2">Deliveries Completed</p>
-              <p className="text-3xl font-bold text-white">{riderStats.deliveriesCompleted}</p>
+              <p className="text-3xl font-bold text-white">
+                {riderStats.deliveriesCompleted}
+              </p>
             </div>
             <div className="bg-white/20 backdrop-blur-sm rounded-2xl p-6 border border-white/30">
               <p className="text-white/80 text-sm mb-2">Available Requests</p>
-              <p className="text-3xl font-bold text-white">{riderStats.availableRequests}</p>
+              <p className="text-3xl font-bold text-white">
+                {riderStats.availableRequests}
+              </p>
             </div>
           </div>
         </div>
@@ -607,11 +822,11 @@ const Home = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-6">
         <div className="flex space-x-4">
           <button
-            onClick={() => setActiveTab('requests')}
+            onClick={() => setActiveTab("requests")}
             className={`flex-1 py-4 px-6 rounded-t-2xl font-semibold transition-all ${
-              activeTab === 'requests'
-                ? 'bg-[#DDEEDB] text-[#67A177] shadow-lg'
-                : 'bg-[#ACD4B1] text-gray-600 hover:bg-[#DDEEDB]/50'
+              activeTab === "requests"
+                ? "bg-[#DDEEDB] text-[#67A177] shadow-lg"
+                : "bg-[#ACD4B1] text-gray-600 hover:bg-[#DDEEDB]/50"
             }`}
           >
             <div className="flex items-center justify-center space-x-2">
@@ -623,11 +838,11 @@ const Home = () => {
             </div>
           </button>
           <button
-            onClick={() => setActiveTab('active')}
+            onClick={() => setActiveTab("active")}
             className={`flex-1 py-4 px-6 rounded-t-2xl font-semibold transition-all ${
-              activeTab === 'active'
-                ? 'bg-[#DDEEDB] text-[#67A177] shadow-lg'
-                : 'bg-[#ACD4B1] text-gray-600 hover:bg-[#DDEEDB]/50'
+              activeTab === "active"
+                ? "bg-[#DDEEDB] text-[#67A177] shadow-lg"
+                : "bg-[#ACD4B1] text-gray-600 hover:bg-[#DDEEDB]/50"
             }`}
           >
             <div className="flex items-center justify-center space-x-2">
@@ -639,11 +854,11 @@ const Home = () => {
             </div>
           </button>
           <button
-            onClick={() => setActiveTab('completed')}
+            onClick={() => setActiveTab("completed")}
             className={`flex-1 py-4 px-6 rounded-t-2xl font-semibold transition-all ${
-              activeTab === 'completed'
-                ? 'bg-[#DDEEDB] text-[#67A177] shadow-lg'
-                : 'bg-[#ACD4B1] text-gray-600 hover:bg-[#DDEEDB]/50'
+              activeTab === "completed"
+                ? "bg-[#DDEEDB] text-[#67A177] shadow-lg"
+                : "bg-[#ACD4B1] text-gray-600 hover:bg-[#DDEEDB]/50"
             }`}
           >
             <div className="flex items-center justify-center space-x-2">
@@ -661,9 +876,9 @@ const Home = () => {
       <div className="bg-[#DDEEDB] min-h-screen">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           {/* Show approval notice if not approved */}
-          {riderStatus && riderStatus !== 'Approved' && (
+          {riderStatus && riderStatus !== "Approved" && (
             <div className="mb-6">
-              <ApprovalMessage 
+              <ApprovalMessage
                 status={riderStatus}
                 entityType="rider account"
                 message="Your account is pending approval. You can view orders but cannot accept them until approved by admin."
@@ -671,7 +886,7 @@ const Home = () => {
             </div>
           )}
 
-          {activeTab === 'requests' ? (
+          {activeTab === "requests" ? (
             <div>
               {orderRequests.length > 0 ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -682,12 +897,16 @@ const Home = () => {
               ) : (
                 <div className="text-center py-16">
                   <Package className="w-20 h-20 text-gray-400 mx-auto mb-4" />
-                  <h3 className="text-2xl font-bold text-gray-600 mb-2">No Available Requests</h3>
-                  <p className="text-gray-500">New delivery requests will appear here</p>
+                  <h3 className="text-2xl font-bold text-gray-600 mb-2">
+                    No Available Requests
+                  </h3>
+                  <p className="text-gray-500">
+                    New delivery requests will appear here
+                  </p>
                 </div>
               )}
             </div>
-          ) : activeTab === 'active' ? (
+          ) : activeTab === "active" ? (
             <div>
               {activeOrders.length > 0 ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -698,8 +917,12 @@ const Home = () => {
               ) : (
                 <div className="text-center py-16">
                   <Bike className="w-20 h-20 text-gray-400 mx-auto mb-4" />
-                  <h3 className="text-2xl font-bold text-gray-600 mb-2">No Active Orders</h3>
-                  <p className="text-gray-500">Accept orders to start delivering</p>
+                  <h3 className="text-2xl font-bold text-gray-600 mb-2">
+                    No Active Orders
+                  </h3>
+                  <p className="text-gray-500">
+                    Accept orders to start delivering
+                  </p>
                 </div>
               )}
             </div>
@@ -714,8 +937,12 @@ const Home = () => {
               ) : (
                 <div className="text-center py-16">
                   <CheckCircle className="w-20 h-20 text-gray-400 mx-auto mb-4" />
-                  <h3 className="text-2xl font-bold text-gray-600 mb-2">No Completed Orders</h3>
-                  <p className="text-gray-500">Completed deliveries will appear here</p>
+                  <h3 className="text-2xl font-bold text-gray-600 mb-2">
+                    No Completed Orders
+                  </h3>
+                  <p className="text-gray-500">
+                    Completed deliveries will appear here
+                  </p>
                 </div>
               )}
             </div>
@@ -736,18 +963,54 @@ const Home = () => {
         </div>
       </footer>
 
+      {/* Toast Notification */}
+      {toast.show && (
+        <div className="fixed top-4 right-4 z-50 animate-fade-in-down">
+          <div
+            className={`rounded-lg shadow-2xl p-4 min-w-[300px] max-w-md ${
+              toast.type === "success"
+                ? "bg-green-500 text-white"
+                : toast.type === "error"
+                  ? "bg-red-500 text-white"
+                  : toast.type === "warning"
+                    ? "bg-yellow-500 text-white"
+                    : "bg-blue-500 text-white"
+            }`}
+          >
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-3">
+                {toast.type === "success" && (
+                  <CheckCircle className="w-6 h-6" />
+                )}
+                {toast.type === "error" && <X className="w-6 h-6" />}
+                {toast.type === "warning" && <Clock className="w-6 h-6" />}
+                <p className="font-medium">{toast.message}</p>
+              </div>
+              <button
+                onClick={() => setToast({ show: false, message: "", type: "" })}
+                className="ml-4 hover:opacity-75"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* PIN Verification Modal */}
       {showPinModal && selectedOrder && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl">
             <div className="flex items-center justify-between mb-6">
-              <h3 className="text-xl font-bold text-gray-800">Verify Customer PIN</h3>
+              <h3 className="text-xl font-bold text-gray-800">
+                Verify Customer PIN
+              </h3>
               <button
                 onClick={() => {
                   setShowPinModal(false);
                   setSelectedOrder(null);
-                  setCustomerPin('');
-                  setPinError('');
+                  setCustomerPin("");
+                  setPinError("");
                 }}
                 className="text-gray-400 hover:text-gray-600 transition-colors"
               >
@@ -758,11 +1021,15 @@ const Home = () => {
             <div className="mb-6">
               <div className="bg-[#ACD4B1] p-4 rounded-lg mb-4">
                 <p className="text-sm text-gray-600 mb-1">Order ID</p>
-                <p className="font-semibold text-gray-800">#{selectedOrder.id}</p>
+                <p className="font-semibold text-gray-800">
+                  #{selectedOrder.id}
+                </p>
               </div>
               <div className="bg-[#ACD4B1] p-4 rounded-lg">
                 <p className="text-sm text-gray-600 mb-1">Customer</p>
-                <p className="font-semibold text-gray-800">{selectedOrder.customerName}</p>
+                <p className="font-semibold text-gray-800">
+                  {selectedOrder.customerName}
+                </p>
               </div>
             </div>
 
@@ -777,9 +1044,9 @@ const Home = () => {
                 inputMode="numeric"
                 value={customerPin}
                 onChange={(e) => {
-                  const value = e.target.value.replace(/[^0-9]/g, '');
+                  const value = e.target.value.replace(/[^0-9]/g, "");
                   setCustomerPin(value);
-                  setPinError('');
+                  setPinError("");
                 }}
                 className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg text-center text-2xl font-bold tracking-widest focus:border-[#67A177] focus:outline-none"
                 placeholder="••••"
@@ -795,8 +1062,8 @@ const Home = () => {
                 onClick={() => {
                   setShowPinModal(false);
                   setSelectedOrder(null);
-                  setCustomerPin('');
-                  setPinError('');
+                  setCustomerPin("");
+                  setPinError("");
                 }}
                 className="px-4 py-3 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors font-semibold"
                 disabled={loading}
@@ -808,7 +1075,7 @@ const Home = () => {
                 className="px-4 py-3 bg-[#67A177] text-white rounded-lg hover:bg-[#5a8f68] transition-colors font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
                 disabled={loading || customerPin.length !== 4}
               >
-                {loading ? 'Verifying...' : 'Verify'}
+                {loading ? "Verifying..." : "Verify"}
               </button>
             </div>
           </div>

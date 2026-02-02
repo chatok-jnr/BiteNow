@@ -1,6 +1,13 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { ShoppingBag, MapPin, FileText, User, CreditCard, ArrowLeft } from "lucide-react";
+import {
+  ShoppingBag,
+  MapPin,
+  FileText,
+  User,
+  CreditCard,
+  ArrowLeft,
+} from "lucide-react";
 import axiosInstance from "../../utils/axios";
 import * as cartService from "../../utils/cartService";
 
@@ -11,20 +18,27 @@ function Checkout() {
     city: "",
     state: "",
     zip_code: "",
-    country: ""
+    country: "",
   });
   const [specialInstructions, setSpecialInstructions] = useState("");
   const [cart, setCart] = useState(null);
   const [restaurant, setRestaurant] = useState(null);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
+  const [toast, setToast] = useState({ show: false, message: "", type: "" });
   const user = JSON.parse(localStorage.getItem("user") || "{}");
+
+  // Toast notification helper
+  const showToast = (message, type = "info") => {
+    setToast({ show: true, message, type });
+    setTimeout(() => setToast({ show: false, message: "", type: "" }), 4000);
+  };
 
   useEffect(() => {
     const fetchCheckoutData = async () => {
       try {
         setLoading(true);
-        
+
         // Check authentication first
         const userData = localStorage.getItem("user");
         if (!userData) {
@@ -32,36 +46,42 @@ function Checkout() {
           navigate("/login");
           return;
         }
-        
-        console.log('🔄 Fetching cart for checkout...');
-        
+
+        console.log("🔄 Fetching cart for checkout...");
+
         // Fetch cart from backend
         const cartData = await cartService.getCart();
-        
+
         console.log("✅ Cart data received:", {
           hasCart: !!cartData,
           itemCount: cartData?.items?.length || 0,
-          restaurantId: cartData?.restaurant_id
+          restaurantId: cartData?.restaurant_id,
         });
-        
+
         if (!cartData || !cartData.items || cartData.items.length === 0) {
           // No cart or empty cart - redirect to home
-          alert("Your cart is empty. Please add items before checking out.");
-          navigate("/");
+          showToast(
+            "Your cart is empty. Please add items before checking out.",
+            "warning",
+          );
+          setTimeout(() => navigate("/"), 1500);
           return;
         }
-        
+
         setCart(cartData);
-        
+
         // Fetch restaurant details if restaurant_id exists
         if (cartData.restaurant_id) {
           try {
-            const restaurantResponse = await axiosInstance.get("/api/v1/restaurants");
+            const restaurantResponse = await axiosInstance.get(
+              "/api/v1/restaurants",
+            );
             if (restaurantResponse.data.status === "success") {
-              const foundRestaurant = restaurantResponse.data.data.restaurants.find(
-                (r) => r._id === cartData.restaurant_id
-              );
-              
+              const foundRestaurant =
+                restaurantResponse.data.data.restaurants.find(
+                  (r) => r._id === cartData.restaurant_id,
+                );
+
               if (foundRestaurant) {
                 setRestaurant({
                   id: foundRestaurant._id,
@@ -76,8 +96,8 @@ function Checkout() {
         }
       } catch (error) {
         console.error("Error fetching checkout data:", error);
-        alert("Failed to load checkout data. Please try again.");
-        navigate("/");
+        showToast("Failed to load checkout data. Please try again.", "error");
+        setTimeout(() => navigate("/"), 1500);
       } finally {
         setLoading(false);
       }
@@ -88,16 +108,20 @@ function Checkout() {
 
   const handleConfirmOrder = async () => {
     // Validate delivery address fields
-    if (!deliveryAddress.street.trim() || !deliveryAddress.city.trim() || 
-        !deliveryAddress.state.trim() || !deliveryAddress.zip_code.trim() || 
-        !deliveryAddress.country.trim()) {
-      alert("Please fill in all delivery address fields");
+    if (
+      !deliveryAddress.street.trim() ||
+      !deliveryAddress.city.trim() ||
+      !deliveryAddress.state.trim() ||
+      !deliveryAddress.zip_code.trim() ||
+      !deliveryAddress.country.trim()
+    ) {
+      showToast("Please fill in all delivery address fields", "warning");
       return;
     }
 
     try {
       setSubmitting(true);
-      
+
       // Create order from cart via backend API
       const orderPayload = {
         delivery_address: {
@@ -105,28 +129,34 @@ function Checkout() {
           city: deliveryAddress.city,
           state: deliveryAddress.state,
           zip_code: deliveryAddress.zip_code,
-          country: deliveryAddress.country
+          country: deliveryAddress.country,
         },
         payment_method: "cash",
-        special_instructions: specialInstructions || undefined
+        special_instructions: specialInstructions || undefined,
       };
-      
-      const response = await axiosInstance.post("/api/v1/orders/", orderPayload);
-      
+
+      const response = await axiosInstance.post(
+        "/api/v1/orders/",
+        orderPayload,
+      );
+
       if (response.data.status === "success") {
         // Show success message
-        alert("Order placed successfully!");
-        
+        showToast("Order placed successfully!", "success");
+
         // Navigate to order status page
-        navigate("/orderStatus");
+        setTimeout(() => navigate("/orderStatus"), 1500);
       }
     } catch (error) {
       console.error("Error placing order:", error);
-      
+
       if (error.response?.data?.message) {
-        alert(`Failed to place order: ${error.response.data.message}`);
+        showToast(
+          `Failed to place order: ${error.response.data.message}`,
+          "error",
+        );
       } else {
-        alert("Failed to place order. Please try again.");
+        showToast("Failed to place order. Please try again.", "error");
       }
     } finally {
       setSubmitting(false);
@@ -173,7 +203,9 @@ function Checkout() {
             >
               <ArrowLeft className="w-6 h-6 text-gray-600" />
             </button>
-            <h1 className="text-2xl font-bold text-gray-900">Review & Place Order</h1>
+            <h1 className="text-2xl font-bold text-gray-900">
+              Review & Place Order
+            </h1>
           </div>
         </div>
       </div>
@@ -200,7 +232,12 @@ function Checkout() {
                   <input
                     type="text"
                     value={deliveryAddress.street}
-                    onChange={(e) => setDeliveryAddress({...deliveryAddress, street: e.target.value})}
+                    onChange={(e) =>
+                      setDeliveryAddress({
+                        ...deliveryAddress,
+                        street: e.target.value,
+                      })
+                    }
                     placeholder="e.g., 123 Main Street, Apt 4B"
                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
                   />
@@ -213,7 +250,12 @@ function Checkout() {
                     <input
                       type="text"
                       value={deliveryAddress.city}
-                      onChange={(e) => setDeliveryAddress({...deliveryAddress, city: e.target.value})}
+                      onChange={(e) =>
+                        setDeliveryAddress({
+                          ...deliveryAddress,
+                          city: e.target.value,
+                        })
+                      }
                       placeholder="e.g., New York"
                       className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
                     />
@@ -225,7 +267,12 @@ function Checkout() {
                     <input
                       type="text"
                       value={deliveryAddress.state}
-                      onChange={(e) => setDeliveryAddress({...deliveryAddress, state: e.target.value})}
+                      onChange={(e) =>
+                        setDeliveryAddress({
+                          ...deliveryAddress,
+                          state: e.target.value,
+                        })
+                      }
                       placeholder="e.g., NY"
                       className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
                     />
@@ -239,7 +286,12 @@ function Checkout() {
                     <input
                       type="text"
                       value={deliveryAddress.zip_code}
-                      onChange={(e) => setDeliveryAddress({...deliveryAddress, zip_code: e.target.value})}
+                      onChange={(e) =>
+                        setDeliveryAddress({
+                          ...deliveryAddress,
+                          zip_code: e.target.value,
+                        })
+                      }
                       placeholder="e.g., 10001"
                       className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
                     />
@@ -251,7 +303,12 @@ function Checkout() {
                     <input
                       type="text"
                       value={deliveryAddress.country}
-                      onChange={(e) => setDeliveryAddress({...deliveryAddress, country: e.target.value})}
+                      onChange={(e) =>
+                        setDeliveryAddress({
+                          ...deliveryAddress,
+                          country: e.target.value,
+                        })
+                      }
                       placeholder="e.g., USA"
                       className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
                     />
@@ -292,15 +349,21 @@ function Checkout() {
               <div className="space-y-3">
                 <div className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
                   <span className="text-gray-600 font-medium w-20">Name:</span>
-                  <span className="text-gray-900">{user.name || "Customer"}</span>
+                  <span className="text-gray-900">
+                    {user.name || "Customer"}
+                  </span>
                 </div>
                 <div className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
                   <span className="text-gray-600 font-medium w-20">Phone:</span>
-                  <span className="text-gray-900">{user.phone || "Not provided"}</span>
+                  <span className="text-gray-900">
+                    {user.phone || "Not provided"}
+                  </span>
                 </div>
                 <div className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
                   <span className="text-gray-600 font-medium w-20">Email:</span>
-                  <span className="text-gray-900">{user.email || "Not provided"}</span>
+                  <span className="text-gray-900">
+                    {user.email || "Not provided"}
+                  </span>
                 </div>
               </div>
             </div>
@@ -318,8 +381,12 @@ function Checkout() {
               <div className="flex items-center space-x-3 p-4 bg-gradient-to-r from-primary/10 to-accent/10 rounded-lg border-2 border-primary">
                 <span className="text-3xl">💵</span>
                 <div>
-                  <p className="font-semibold text-gray-900">Cash on Delivery</p>
-                  <p className="text-sm text-gray-600">Pay when you receive your order</p>
+                  <p className="font-semibold text-gray-900">
+                    Cash on Delivery
+                  </p>
+                  <p className="text-sm text-gray-600">
+                    Pay when you receive your order
+                  </p>
                 </div>
               </div>
             </div>
@@ -337,36 +404,50 @@ function Checkout() {
 
               {/* Items List */}
               <div className="space-y-3 mb-4 border-b border-gray-200 pb-4 max-h-64 overflow-y-auto">
-                {cart && cart.items && cart.items.map((item, index) => (
-                  <div key={index} className="flex justify-between items-start p-2 hover:bg-gray-50 rounded-lg transition-colors">
-                    <div className="flex-1">
-                      <div className="flex items-center space-x-2">
-                        <span className="text-sm font-semibold text-primary">{item.quantity}x</span>
-                        <span className="text-sm text-gray-900 font-medium">
-                          {item.food_id?.name || `Item #${item.food_id?.slice?.(-6) || index + 1}`}
-                        </span>
+                {cart &&
+                  cart.items &&
+                  cart.items.map((item, index) => (
+                    <div
+                      key={index}
+                      className="flex justify-between items-start p-2 hover:bg-gray-50 rounded-lg transition-colors"
+                    >
+                      <div className="flex-1">
+                        <div className="flex items-center space-x-2">
+                          <span className="text-sm font-semibold text-primary">
+                            {item.quantity}x
+                          </span>
+                          <span className="text-sm text-gray-900 font-medium">
+                            {item.food_id?.name ||
+                              `Item #${item.food_id?.slice?.(-6) || index + 1}`}
+                          </span>
+                        </div>
                       </div>
+                      <span className="text-sm font-bold text-gray-900">
+                        ${item.total_price?.toFixed(2) || "0.00"}
+                      </span>
                     </div>
-                    <span className="text-sm font-bold text-gray-900">
-                      ${item.total_price?.toFixed(2) || '0.00'}
-                    </span>
-                  </div>
-                ))}
+                  ))}
               </div>
 
               {/* Cost Breakdown */}
               <div className="space-y-3 mb-6">
                 <div className="flex justify-between text-sm">
                   <span className="text-gray-600">Subtotal</span>
-                  <span className="font-semibold text-gray-900">${cart?.subtotal?.toFixed(2) || '0.00'}</span>
+                  <span className="font-semibold text-gray-900">
+                    ${cart?.subtotal?.toFixed(2) || "0.00"}
+                  </span>
                 </div>
                 <div className="flex justify-between text-sm">
                   <span className="text-gray-600">Delivery Fee</span>
-                  <span className="font-semibold text-gray-900">${cart?.delivery_charge?.toFixed(2) || '0.00'}</span>
+                  <span className="font-semibold text-gray-900">
+                    ${cart?.delivery_charge?.toFixed(2) || "0.00"}
+                  </span>
                 </div>
                 <div className="flex justify-between text-lg font-bold pt-3 border-t-2 border-gray-300">
                   <span className="text-gray-900">Total</span>
-                  <span className="text-primary text-xl">${cart?.total_amount?.toFixed(2) || '0.00'}</span>
+                  <span className="text-primary text-xl">
+                    ${cart?.total_amount?.toFixed(2) || "0.00"}
+                  </span>
                 </div>
               </div>
 
@@ -393,6 +474,38 @@ function Checkout() {
           </div>
         </div>
       </div>
+
+      {/* Toast Notification */}
+      {toast.show && (
+        <div className="fixed top-4 right-4 z-50 animate-fade-in-down">
+          <div
+            className={`rounded-lg shadow-2xl p-4 min-w-[300px] max-w-md ${
+              toast.type === "success"
+                ? "bg-green-500 text-white"
+                : toast.type === "error"
+                  ? "bg-red-500 text-white"
+                  : toast.type === "warning"
+                    ? "bg-yellow-500 text-white"
+                    : "bg-blue-500 text-white"
+            }`}
+          >
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-3">
+                {toast.type === "success" && <CreditCard className="w-6 h-6" />}
+                {toast.type === "error" && <MapPin className="w-6 h-6" />}
+                {toast.type === "warning" && <FileText className="w-6 h-6" />}
+                <p className="font-medium">{toast.message}</p>
+              </div>
+              <button
+                onClick={() => setToast({ show: false, message: "", type: "" })}
+                className="ml-4 hover:opacity-75"
+              >
+                <ArrowLeft className="w-5 h-5" />
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
