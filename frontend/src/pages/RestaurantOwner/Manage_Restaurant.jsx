@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Store, Plus, X, Search, MoreVertical, Edit2, Package, Trash2, ShoppingCart, User, Phone, Mail, MapPin, MessageSquare, ChefHat, Bike, AlertCircle, Loader, ArrowLeft } from 'lucide-react';
 import ApprovalMessage from '../../components/ApprovalMessage';
 import foodService from '../../utils/foodService';
-import { getOrdersByRestaurant, updateOrderStatusByRestaurant } from '../../utils/orderService';
+import { getOrdersByRestaurant, updateOrderStatusByRestaurant, verifyRiderPin } from '../../utils/orderService';
 import { getMyRestaurantById } from '../../utils/restaurantService';
 
 const Manage_Restaurant = () => {
@@ -392,18 +392,20 @@ const Manage_Restaurant = () => {
       setLoading(true);
       setError(null);
       
-      // You can add API call here to verify the PIN if needed
-      // For now, we'll just update the order status
-      await handleUpdateOrderStatus(selectedOrder._id, 'out_for_delivery');
+      // Call the API to verify the rider PIN
+      const response = await verifyRiderPin(selectedOrder._id, riderPin);
       
       setShowPinModal(false);
       setRiderPin('');
-      setSuccess('Rider verified! Order is now out for delivery.');
+      setSuccess(response.message || 'Rider verified! Order is now out for delivery.');
+      
+      // Refresh orders list to show updated status
+      await fetchOrders();
       
       setTimeout(() => setSuccess(null), 3000);
     } catch (err) {
       console.error('Error verifying rider PIN:', err);
-      setError(err.response?.data?.message || 'Failed to verify PIN');
+      setError(err.response?.data?.message || err.message || 'Failed to verify PIN');
     } finally {
       setLoading(false);
     }

@@ -114,16 +114,16 @@ export const updateOrderStatusByRestaurant = async (orderId, order_status) => {
 };
 
 /**
- * Verify rider for order (restaurant owner)
- * @param {string} orderId - Order ID
- * @param {string} riderId - Rider ID
+ * Verify rider PIN for order (restaurant owner)
+ * @param {string} order_id - Order ID
+ * @param {string} rider_otp - 4-digit rider PIN
  * @returns {Promise} Updated order
  */
-export const verifyRider = async (orderId, riderId) => {
+export const verifyRiderPin = async (order_id, rider_otp) => {
   try {
     const response = await axiosInstance.patch(
       "/api/v1/orders/restaurant/verify-rider",
-      { orderId, riderId }
+      { order_id, rider_otp }
     );
     return response.data;
   } catch (error) {
@@ -199,7 +199,7 @@ export default {
   cancelOrder,
   getOrdersByRestaurant,
   updateOrderStatusByRestaurant,
-  verifyRider,
+  verifyRiderPin,
   getLookForRider,
   getMyOrderList,
   availableToDeliver,
