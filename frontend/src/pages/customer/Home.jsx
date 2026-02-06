@@ -359,7 +359,7 @@ const Home = () => {
         </nav>
 
         {/* Hero Slider */}
-        <div className="relative h-[600px] overflow-hidden">
+        <div className="relative h-[calc(100vh-4rem)] overflow-hidden">
           {heroSlides.map((slide, index) => (
             <div
               key={index}
@@ -438,6 +438,7 @@ const Home = () => {
                     ...food,
                     id: food._id,
                     name: food.food_name,
+                    description: food.food_description,
                     image: food.food_image?.url,
                     price: food.food_price,
                     rating: food.rating || 4.5,
@@ -490,23 +491,24 @@ const Home = () => {
 
         {/* Restaurants List */}
         <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-          <div className="text-center mb-8">
-            <h2 className="text-4xl font-bold text-primary mb-3">
-              Explore Restaurants
-            </h2>
-            <div className="w-24 h-1 bg-primary mx-auto rounded-full"></div>
-          </div>
-
-          <div className="flex justify-end mb-6">
-            <select
-              value={sortBy}
-              onChange={(e) => setSortBy(e.target.value)}
-              className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary bg-white"
-            >
-              <option value="date">Sort by Date</option>
-              <option value="price-low">Sort by Price: Low to High</option>
-              <option value="price-high">Sort by Price: High to Low</option>
-            </select>
+          <div className="mb-8">
+            <div className="text-center mb-3">
+              <h2 className="text-4xl font-bold text-primary mb-3">
+                Explore Restaurants
+              </h2>
+              <div className="w-24 h-1 bg-primary mx-auto rounded-full"></div>
+            </div>
+            <div className="flex justify-end mt-6">
+              <select
+                value={sortBy}
+                onChange={(e) => setSortBy(e.target.value)}
+                className="px-6 py-2 border-2 border-primary rounded-full focus:outline-none focus:ring-2 focus:ring-primary bg-white text-gray-700 font-medium cursor-pointer hover:border-accent transition-colors"
+              >
+                <option value="date">Sort by Date</option>
+                <option value="price-low">Sort by Price: Low to High</option>
+                <option value="price-high">Sort by Price: High to Low</option>
+              </select>
+            </div>
           </div>
 
           {loading ? (

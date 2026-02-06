@@ -174,12 +174,13 @@ const OrderStatus = () => {
     };
 
     // Debug logging for PIN display
-    console.log('Order Transform Debug:', {
+    console.log("Order Transform Debug:", {
       orderId: transformed.id,
       status: transformed.status,
       customer_pin: order.customer_pin,
       confirmationPin: transformed.confirmationPin,
-      isOutForDelivery: transformed.status?.toLowerCase() === 'out_for_delivery'
+      isOutForDelivery:
+        transformed.status?.toLowerCase() === "out_for_delivery",
     });
 
     return transformed;
@@ -242,7 +243,7 @@ const OrderStatus = () => {
                 />
                 {item.name}
                 <span className="text-[#67A177] font-semibold">
-                  ${item.price.toFixed(2)}
+                  ৳{item.price.toFixed(2)}
                 </span>
               </span>
             ))}
@@ -344,7 +345,7 @@ const OrderStatus = () => {
           <div>
             <p className="text-sm text-gray-600">Total Amount</p>
             <p className="text-2xl font-bold text-[#67A177]">
-              ${order.total.toFixed(2)}
+              ৳{order.total.toFixed(2)}
             </p>
           </div>
           {isActive ? (

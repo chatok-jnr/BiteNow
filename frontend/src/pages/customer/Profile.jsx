@@ -8,7 +8,6 @@ import {
   Calendar,
   Camera,
   X,
-  DollarSign,
   LogOut,
   MapPin,
   Home as HomeIcon,
@@ -44,7 +43,6 @@ const Profile = () => {
     birthDate: "",
     gender: "",
     image: null,
-    totalSpent: 0,
     memberSince: "",
   });
 
@@ -141,7 +139,6 @@ const Profile = () => {
             customer.gender || customer.customer_gender || "",
           ),
           image: customer.photo?.url || customer.customer_image?.url || null,
-          totalSpent: 0, // This can be calculated from orders
           memberSince,
         };
 
@@ -529,23 +526,6 @@ const Profile = () => {
                       </div>
                     </div>
 
-                    {/* Total Spent */}
-                    <div className="bg-white rounded-2xl p-5 shadow-md">
-                      <div className="flex items-center space-x-3 mb-2">
-                        <div className="w-10 h-10 bg-[#DDEEDB] rounded-full flex items-center justify-center">
-                          <DollarSign className="w-5 h-5 text-[#67A177]" />
-                        </div>
-                        <div>
-                          <p className="text-sm text-gray-500 font-semibold">
-                            Total Spent
-                          </p>
-                          <p className="text-gray-800 font-medium text-xl">
-                            ${profileData.totalSpent.toFixed(2)}
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-
                     {/* Member Since */}
                     <div className="bg-white rounded-2xl p-5 shadow-md">
                       <div className="flex items-center space-x-3 mb-2">
@@ -723,24 +703,6 @@ const Profile = () => {
                   </div>
                 </div>
               )}
-            </div>
-          </div>
-
-          {/* Additional Stats Card */}
-          <div className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="bg-[#ACD4B1] rounded-2xl p-6 shadow-lg text-center">
-              <p className="text-4xl font-bold text-[#67A177] mb-2">42</p>
-              <p className="text-gray-700 font-semibold">Total Orders</p>
-            </div>
-            <div className="bg-[#ACD4B1] rounded-2xl p-6 shadow-lg text-center">
-              <p className="text-4xl font-bold text-[#67A177] mb-2">8</p>
-              <p className="text-gray-700 font-semibold">
-                Favorite Restaurants
-              </p>
-            </div>
-            <div className="bg-[#ACD4B1] rounded-2xl p-6 shadow-lg text-center">
-              <p className="text-4xl font-bold text-[#67A177] mb-2">4.8</p>
-              <p className="text-gray-700 font-semibold">Average Rating</p>
             </div>
           </div>
         </div>

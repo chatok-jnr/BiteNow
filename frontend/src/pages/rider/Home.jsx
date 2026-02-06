@@ -149,7 +149,10 @@ const Home = () => {
         // Update rider status from API response
         if (riderData.account_status) {
           setRiderStatus(riderData.account_status);
-          console.log("Rider status updated from API:", riderData.account_status);
+          console.log(
+            "Rider status updated from API:",
+            riderData.account_status,
+          );
         }
 
         console.log("Profile set:", {
@@ -471,13 +474,13 @@ const Home = () => {
           <div>
             <p className="text-xs text-gray-600">Earnings</p>
             <p className="text-lg font-bold text-[#67A177]">
-              ${order.deliveryFee.toFixed(2)}
+              ৳{order.deliveryFee.toFixed(2)}
             </p>
           </div>
           <div className="text-right">
             <p className="text-xs text-gray-600">Value</p>
             <p className="text-sm font-semibold text-gray-800">
-              ${order.orderValue.toFixed(2)}
+              ৳{order.orderValue.toFixed(2)}
             </p>
           </div>
         </div>
@@ -616,7 +619,7 @@ const Home = () => {
           <div>
             <p className="text-xs text-gray-600">Earnings</p>
             <p className="text-lg font-bold text-[#67A177]">
-              ${order.deliveryFee.toFixed(2)}
+              ৳{order.deliveryFee.toFixed(2)}
             </p>
           </div>
           <div className="flex items-center space-x-1 text-xs text-gray-600">
@@ -721,7 +724,7 @@ const Home = () => {
           <div>
             <p className="text-xs text-gray-600">Earned</p>
             <p className="text-lg font-bold text-[#67A177]">
-              ${order.deliveryFee.toFixed(2)}
+              ৳{order.deliveryFee.toFixed(2)}
             </p>
           </div>
           <div className="flex items-center space-x-1 text-xs text-gray-600">
@@ -793,7 +796,7 @@ const Home = () => {
             <div className="bg-white/20 backdrop-blur-sm rounded-2xl p-6 border border-white/30">
               <p className="text-white/80 text-sm mb-2">Today's Earnings</p>
               <p className="text-3xl font-bold text-white">
-                ${riderStats.todaysEarnings}
+                ৳{riderStats.todaysEarnings}
               </p>
             </div>
             <div className="bg-white/20 backdrop-blur-sm rounded-2xl p-6 border border-white/30">
