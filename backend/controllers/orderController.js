@@ -465,10 +465,11 @@ exports.availableToDeliver = async (req, res) => {
 //   }
 // }; 
 
-//Verify Rider Pin
+//Verify Rider Pin (Restaurant Side)
 exports.verifyRider = async (req, res) => {
   try{
     const {order_id, rider_otp} = req.body;
+    
     if(!order_id || !rider_otp) {
       return res.status(400).json({
         status:'failed',
@@ -476,8 +477,10 @@ exports.verifyRider = async (req, res) => {
       });
     }
 
+    // Find order with restaurant and rider_pin information
     const orderInfo = await Order.findById(order_id)
-    .select('+rider_pin');
+      .select('+rider_pin')
+      .populate('restaurant_id', 'owner_id restaurant_name');
 
     if(!orderInfo) {
       return res.status(404).json({
@@ -486,7 +489,28 @@ exports.verifyRider = async (req, res) => {
       });
     }
 
-    const areYouRider = (orderInfo.rider_pin === rider_otp);
+    // Verify restaurant ownership (for restaurant owner access)
+    if(req.user && req.user._id) {
+      if (!orderInfo.restaurant_id || !orderInfo.restaurant_id.owner_id) {
+        return res.status(400).json({
+          status: 'failed',
+          message: 'Restaurant information not found for this order'
+        });
+      }
+
+      const owner_id = orderInfo.restaurant_id.owner_id.toString();
+      const userId = req.user._id.toString();
+      
+      if(owner_id !== userId) {
+        return res.status(403).json({
+          status:'failed',
+          message:'You are not authorized to verify riders for this order'
+        });
+      }
+    }
+
+    // Verify rider PIN (convert to number for comparison)
+    const areYouRider = (orderInfo.rider_pin === parseInt(rider_otp));
 
     if(!areYouRider) {
       return res.status(400).json({
@@ -495,13 +519,19 @@ exports.verifyRider = async (req, res) => {
       });
     }
 
-    await Order.findByIdAndUpdate(order_id, {
-      order_status:'out_for_delivery'
-    });
+    // Update order status to out_for_delivery
+    const updatedOrder = await Order.findByIdAndUpdate(
+      order_id, 
+      { order_status: 'out_for_delivery' },
+      { new: true }
+    );
 
     res.status(200).json({
       status:'success',
-      message:"He is Our Rider"
+      message:'Rider verified successfully. Order is now out for delivery',
+      data: {
+        order: updatedOrder
+      }
     });
   } catch(err) {
     res.status(400).json({
@@ -525,12 +555,18 @@ exports.verifyCustomer = async (req, res) => {
     const order = await Order.findById(order_id)
     .select('+customer_pin');
 
-    console.log(`Debug = ${order.customer_pin} $`);
+    if(!order) {
+      return res.status(404).json({
+        status:'failed',
+        message:'Order not found'
+      });
+    }
 
-    if(order.customer_pin.toString() !== customer_pin.toString()) {
+    // Verify customer PIN (convert to number for comparison)
+    if(order.customer_pin !== parseInt(customer_pin)) {
       return res.status(400).json({
         status:'failed',
-        message:'Wrong Pin NUmber'
+        message:'Wrong Pin Number'
       });
     }
 
