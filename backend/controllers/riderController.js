@@ -185,7 +185,22 @@ exports.updateRider = async (req, res) => {
     }
 
     //Step 05 => update the rider and show data
-    Object.assign(rider, update);
+    // Handle nested properties with dot notation
+    Object.keys(update).forEach((key) => {
+      if (key.includes(".")) {
+        // Handle nested properties like "rider_contact_info.emergency_contact"
+        const keys = key.split(".");
+        if (keys.length === 2) {
+          if (!rider[keys[0]]) {
+            rider[keys[0]] = {};
+          }
+          rider[keys[0]][keys[1]] = update[key];
+        }
+      } else {
+        // Handle regular properties
+        rider[key] = update[key];
+      }
+    });
     await rider.save();
     res.status(200).json({
       status: "success",
