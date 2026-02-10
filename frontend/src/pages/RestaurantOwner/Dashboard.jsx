@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import {
   Store,
-  DollarSign,
+  Coins,
   TrendingUp,
   Package,
   ShoppingBag,
@@ -10,18 +10,18 @@ import {
   Menu,
   ChevronRight,
   Star,
-  AlertCircle,
 } from "lucide-react";
 import OwnerSidebar from "../../components/OwnerSidebar";
 import ApprovalMessage from "../../components/ApprovalMessage";
 import { getOwnerDashboard } from "../../utils/restaurantOwnerService";
+import { useNotification } from "../../contexts/NotificationContext";
 
 const Dashboard = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [restaurantData, setRestaurantData] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
   const [ownerStatus, setOwnerStatus] = useState(null);
+  const { showError } = useNotification();
 
   useEffect(() => {
     fetchDashboardData();
@@ -43,7 +43,6 @@ const Dashboard = () => {
   const fetchDashboardData = async () => {
     try {
       setLoading(true);
-      setError(null);
       const response = await getOwnerDashboard();
 
       if (response.status === "success" && response.myRestaurants) {
@@ -67,7 +66,7 @@ const Dashboard = () => {
       }
     } catch (err) {
       console.error("Failed to fetch dashboard data:", err);
-      setError(err.message || "Failed to load dashboard data");
+      showError(err.message || "Failed to load dashboard data");
     } finally {
       setLoading(false);
     }
@@ -99,28 +98,6 @@ const Dashboard = () => {
           <div className="text-center">
             <div className="w-16 h-16 border-4 border-[#67A177] border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
             <p className="text-gray-600">Loading dashboard...</p>
-          </div>
-        </div>
-      );
-    }
-
-    if (error) {
-      return (
-        <div className="flex items-center justify-center min-h-[400px]">
-          <div className="bg-red-50 border border-red-200 rounded-2xl p-6 max-w-md">
-            <div className="flex items-center space-x-3 mb-2">
-              <AlertCircle className="w-6 h-6 text-red-500" />
-              <h3 className="text-lg font-semibold text-red-800">
-                Error Loading Dashboard
-              </h3>
-            </div>
-            <p className="text-red-600">{error}</p>
-            <button
-              onClick={fetchDashboardData}
-              className="mt-4 px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors"
-            >
-              Retry
-            </button>
           </div>
         </div>
       );
@@ -166,7 +143,7 @@ const Dashboard = () => {
           <div className="bg-[#ACD4B1] rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all">
             <div className="flex items-center justify-between mb-4">
               <div className="w-12 h-12 bg-[#67A177] rounded-full flex items-center justify-center">
-                <DollarSign className="w-6 h-6 text-white" />
+                <Coins className="w-6 h-6 text-white" />
               </div>
               <ChevronRight className="w-5 h-5 text-gray-400" />
             </div>

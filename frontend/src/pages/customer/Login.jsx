@@ -13,21 +13,16 @@ import {
 } from "lucide-react";
 import { loginCustomer } from "../../utils/authService";
 import { migrateGuestCart } from "../../utils/cartService";
+import { useNotification } from "../../contexts/NotificationContext";
 
 const Login = () => {
   const navigate = useNavigate();
+  const { showSuccess, showError } = useNotification();
   const [isLogin, setIsLogin] = useState(true);
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
-  const [toast, setToast] = useState({ show: false, message: "", type: "" });
-
-  // Toast notification helper
-  const showToast = (message, type = "info") => {
-    setToast({ show: true, message, type });
-    setTimeout(() => setToast({ show: false, message: "", type: "" }), 4000);
-  };
 
   // Redirect to home if already logged in
   useEffect(() => {
@@ -377,40 +372,6 @@ const Login = () => {
           </div>
         </div>
       </div>
-
-      {/* Toast Notification */}
-      {toast.show && (
-        <div className="fixed top-4 right-4 z-50 animate-fade-in-down">
-          <div
-            className={`rounded-lg shadow-2xl p-4 min-w-[300px] max-w-md ${
-              toast.type === "success"
-                ? "bg-green-500 text-white"
-                : toast.type === "error"
-                  ? "bg-red-500 text-white"
-                  : toast.type === "warning"
-                    ? "bg-yellow-500 text-white"
-                    : "bg-blue-500 text-white"
-            }`}
-          >
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-3">
-                {toast.type === "success" && (
-                  <ShoppingCart className="w-6 h-6" />
-                )}
-                {toast.type === "error" && <Lock className="w-6 h-6" />}
-                {toast.type === "warning" && <Mail className="w-6 h-6" />}
-                <p className="font-medium">{toast.message}</p>
-              </div>
-              <button
-                onClick={() => setToast({ show: false, message: "", type: "" })}
-                className="ml-4 hover:opacity-75"
-              >
-                <Eye className="w-5 h-5" />
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 };

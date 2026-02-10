@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Store,
@@ -8,51 +8,54 @@ import {
   Mail,
   Menu,
   Image,
-  FileText,
   ChevronRight,
   Star,
   Package,
   Phone,
   Trash2,
+  Edit,
+  Navigation,
+  Search,
 } from "lucide-react";
 import OwnerSidebar from "../../components/OwnerSidebar";
 import ApprovalMessage from "../../components/ApprovalMessage";
+import { useNotification } from "../../contexts/NotificationContext";
 import {
   getMyRestaurants,
   createRestaurant,
   deleteRestaurant,
   uploadRestaurantImage,
+  updateRestaurant,
+  updateRestaurantImage,
 } from "../../utils/restaurantService";
 import axiosInstance from "../../utils/axios";
 
 const Restaurants = () => {
   const navigate = useNavigate();
+  const { showSuccess, showError, showWarning, confirm } = useNotification();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [showAddModal, setShowAddModal] = useState(false);
+  const [isEditMode, setIsEditMode] = useState(false);
+  const [editingRestaurantId, setEditingRestaurantId] = useState(null);
   const [restaurants, setRestaurants] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
   const [imageFile, setImageFile] = useState(null); // Store actual file for upload
   const [ownerStatus, setOwnerStatus] = useState(null);
+  const [loadingLocation, setLoadingLocation] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [searchResults, setSearchResults] = useState([]);
+  const [showSearchResults, setShowSearchResults] = useState(false);
 
   const [formData, setFormData] = useState({
     restaurant_name: "",
     restaurant_description: "",
-    restaurant_address: "", // This should be a string
-    address_details: {
-      // Internal use only for the form
-      street: "",
-      city: "",
-      state: "",
-      country: "",
-      zipCode: "",
-    },
+    restaurant_address: "",
     coordinates: [90.4125, 23.8103], // Dhaka, Bangladesh
     restaurant_contact_info: {
       phone: "",
       email: "",
     },
-    restaurant_category: [], // Note: singular 'category'
+    restaurant_category: [],
     restaurant_opening_hours: {
       monday: { open: "09:00", close: "22:00" },
       tuesday: { open: "09:00", close: "22:00" },
@@ -93,6 +96,7 @@ const Restaurants = () => {
   useEffect(() => {
     fetchOwnerProfile(); // Fetch fresh profile data first
     fetchRestaurants();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Fetch fresh owner profile from backend to get latest status
@@ -173,7 +177,6 @@ const Restaurants = () => {
   const fetchRestaurants = async () => {
     try {
       setLoading(true);
-      setError(null);
       const response = await getMyRestaurants();
 
       console.log("Fetch restaurants response:", response);
@@ -198,37 +201,138 @@ const Restaurants = () => {
       }
     } catch (err) {
       console.error("Error fetching restaurants:", err);
-      setError(err.message || "Failed to fetch restaurants");
+      showError(err.message || "Failed to fetch restaurants");
       setRestaurants([]);
     } finally {
       setLoading(false);
     }
   };
 
+  // Use browser geolocation to get current position
+  const handleUseMyLocation = async () => {
+    if (!navigator.geolocation) {
+      alert("Geolocation is not supported by your browser");
+      return;
+    }
+
+    setLoadingLocation(true);
+    navigator.geolocation.getCurrentPosition(
+      async (position) => {
+        const { latitude, longitude } = position.coords;
+
+        // Reverse geocode to get address
+        try {
+          const fullAddress = await reverseGeocode(longitude, latitude);
+
+          setFormData((prev) => ({
+            ...prev,
+            coordinates: [longitude, latitude],
+            restaurant_address: fullAddress,
+          }));
+
+          showSuccess("Location set successfully!");
+        } catch (err) {
+          console.error("Reverse geocoding error:", err);
+          // Still set coordinates even if reverse geocoding fails
+          setFormData((prev) => ({
+            ...prev,
+            coordinates: [longitude, latitude],
+            restaurant_address: `${latitude}, ${longitude}`,
+          }));
+          showError(
+            "Location coordinates set, but couldn't fetch address details",
+          );
+        }
+        setLoadingLocation(false);
+      },
+      (error) => {
+        console.error("Geolocation error:", error);
+        showError(
+          "Unable to retrieve your location. Please check your browser settings.",
+        );
+        setLoadingLocation(false);
+      },
+      { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 },
+    );
+  };
+
+  // Search for addresses using Mapbox Geocoding API
+  const handleAddressSearch = async (query) => {
+    if (!query || query.length < 3) {
+      setSearchResults([]);
+      setShowSearchResults(false);
+      return;
+    }
+
+    try {
+      // Using Mapbox Geocoding API
+      const MAPBOX_TOKEN =
+        import.meta.env.VITE_MAPBOX_ACCESS_TOKEN ||
+        "pk.eyJ1IjoiYml0ZW5vd2FwcCIsImEiOiJjbTU1bDJyeWwwNXJwMmtzNWhwaGV1emU3In0.kEVkESt-xSfPz3lfKJQ0RA";
+      const response = await fetch(
+        `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(query)}.json?access_token=${MAPBOX_TOKEN}&limit=5&types=address,place,poi`,
+      );
+
+      if (!response.ok) {
+        throw new Error("Geocoding request failed");
+      }
+
+      const data = await response.json();
+      setSearchResults(data.features || []);
+      setShowSearchResults(true);
+    } catch (err) {
+      console.error("Geocoding error:", err);
+      setSearchResults([]);
+    }
+  };
+
+  // Reverse geocode coordinates to get address
+  const reverseGeocode = async (longitude, latitude) => {
+    try {
+      const MAPBOX_TOKEN =
+        import.meta.env.VITE_MAPBOX_ACCESS_TOKEN ||
+        "pk.eyJ1IjoiYml0ZW5vd2FwcCIsImEiOiJjbTU1bDJyeWwwNXJwMmtzNWhwaGV1emU3In0.kEVkESt-xSfPz3lfKJQ0RA";
+      const response = await fetch(
+        `https://api.mapbox.com/geocoding/v5/mapbox.places/${longitude},${latitude}.json?access_token=${MAPBOX_TOKEN}`,
+      );
+
+      if (!response.ok) {
+        throw new Error("Reverse geocoding failed");
+      }
+
+      const data = await response.json();
+      if (!data.features || data.features.length === 0) {
+        throw new Error("No address found");
+      }
+
+      const feature = data.features[0];
+      return feature.place_name; // Return full address string
+    } catch (err) {
+      console.error("Reverse geocoding error:", err);
+      throw err;
+    }
+  };
+
+  // Select a location from search results
+  const handleSelectLocation = (feature) => {
+    const [longitude, latitude] = feature.center;
+
+    setFormData((prev) => ({
+      ...prev,
+      coordinates: [longitude, latitude],
+      restaurant_address: feature.place_name,
+    }));
+
+    setSearchQuery("");
+    setShowSearchResults(false);
+    setSearchResults([]);
+  };
+
   const handleInputChange = (e) => {
     const { name, value } = e.target;
 
     // Handle nested fields
-    if (name.startsWith("address_")) {
-      const field = name.replace("address_", "");
-      setFormData((prev) => {
-        const newAddressDetails = { ...prev.address_details, [field]: value };
-        // Build the full address string
-        const addressParts = [
-          newAddressDetails.street,
-          newAddressDetails.city,
-          newAddressDetails.state,
-          newAddressDetails.country,
-          newAddressDetails.zipCode,
-        ].filter((part) => part && part.trim());
-
-        return {
-          ...prev,
-          address_details: newAddressDetails,
-          restaurant_address: addressParts.join(", "),
-        };
-      });
-    } else if (name.startsWith("contact_")) {
+    if (name.startsWith("contact_")) {
       const field = name.replace("contact_", "");
       setFormData((prev) => ({
         ...prev,
@@ -267,7 +371,7 @@ const Restaurants = () => {
       // Check file size (limit to 5MB)
       const maxSize = 5 * 1024 * 1024; // 5MB in bytes
       if (file.size > maxSize) {
-        alert(
+        showError(
           "Image file is too large. Please select an image smaller than 5MB.",
         );
         e.target.value = ""; // Clear the input
@@ -282,7 +386,9 @@ const Restaurants = () => {
         "image/webp",
       ];
       if (!allowedTypes.includes(file.type)) {
-        alert("Invalid file type. Please upload a JPEG, PNG, or WebP image.");
+        showError(
+          "Invalid file type. Please upload a JPEG, PNG, or WebP image.",
+        );
         e.target.value = "";
         return;
       }
@@ -300,9 +406,9 @@ const Restaurants = () => {
 
     console.log(`Debug = ${ownerStatus}`);
 
-    // Check approval status first
-    if (ownerStatus !== "Approved") {
-      alert("Your account must be approved before you can add restaurants");
+    // Check approval status first (only for creating new restaurants)
+    if (!isEditMode && ownerStatus !== "Approved") {
+      showError("Your account must be approved before you can add restaurants");
       return;
     }
 
@@ -310,17 +416,17 @@ const Restaurants = () => {
     if (
       !formData.restaurant_name ||
       !formData.restaurant_description ||
-      !formData.address_details.street ||
+      !formData.restaurant_address ||
       !formData.restaurant_contact_info.phone
     ) {
-      alert(
-        "Please fill in all required fields (Name, Description, Street, Phone)",
+      showError(
+        "Please fill in all required fields (Name, Description, Address, Phone)",
       );
       return;
     }
 
     if (formData.restaurant_category.length === 0) {
-      alert("Please select at least one category");
+      showError("Please select at least one category");
       return;
     }
 
@@ -332,29 +438,17 @@ const Restaurants = () => {
       const owner_id = user._id || user.id;
 
       if (!owner_id) {
-        alert("Owner ID not found. Please login again.");
+        showError("Owner ID not found. Please login again.");
         return;
       }
 
-      // Build full address string from parts
-      const addressParts = [
-        formData.address_details.street,
-        formData.address_details.city,
-        formData.address_details.state,
-        formData.address_details.country,
-        formData.address_details.zipCode,
-      ].filter((part) => part && part.trim());
-
-      const fullAddress = addressParts.join(", ");
-
       // Prepare data for API matching backend schema
       const restaurantData = {
-        owner_id,
         restaurant_name: formData.restaurant_name.trim(),
-        restaurant_address: fullAddress || formData.address_details.street, // String format
+        restaurant_address: formData.restaurant_address.trim(),
         restaurant_location: {
           type: "Point",
-          coordinates: formData.coordinates, // [longitude, latitude]
+          coordinates: formData.coordinates,
         },
         restaurant_description: formData.restaurant_description.trim(),
         restaurant_contact_info: {
@@ -363,17 +457,46 @@ const Restaurants = () => {
             email: formData.restaurant_contact_info.email.trim(),
           }),
         },
-        restaurant_category: formData.restaurant_category, // Note: singular
+        restaurant_category: formData.restaurant_category,
         restaurant_opening_hours: formData.restaurant_opening_hours,
       };
 
-      console.log("Creating restaurant with data:", restaurantData);
+      // Add owner_id only for creating new restaurants
+      if (!isEditMode) {
+        restaurantData.owner_id = owner_id;
+      }
 
-      const response = await createRestaurant(restaurantData);
+      console.log(
+        isEditMode
+          ? "Updating restaurant with data:"
+          : "Creating restaurant with data:",
+        restaurantData,
+      );
 
-      console.log("✅ API Response received:", response);
+      let response;
+      if (isEditMode) {
+        // Update existing restaurant
+        response = await updateRestaurant(editingRestaurantId, restaurantData);
 
-      if (response.status === "success" || response.success) {
+        // Upload/update image if one was selected
+        if (imageFile && editingRestaurantId) {
+          try {
+            console.log("Updating image for restaurant:", editingRestaurantId);
+            await updateRestaurantImage(editingRestaurantId, imageFile);
+            console.log("Image updated successfully");
+          } catch (imgError) {
+            console.error("Image update failed:", imgError);
+            showWarning(
+              "Restaurant updated but image update failed. You can update the image later.",
+            );
+          }
+        }
+
+        showSuccess("Restaurant updated successfully!");
+      } else {
+        // Create new restaurant
+        response = await createRestaurant(restaurantData);
+
         const newRestaurant = response.data?.restaurant || response.data;
 
         // Upload image if one was selected
@@ -384,28 +507,36 @@ const Restaurants = () => {
             console.log("Image uploaded successfully");
           } catch (imgError) {
             console.error("Image upload failed:", imgError);
-            // Don't fail the whole operation if image upload fails
-            alert(
+            showWarning(
               "Restaurant created but image upload failed. You can add an image later.",
             );
           }
         }
 
-        alert("Restaurant created successfully!");
-        setShowAddModal(false);
-        resetForm();
-        setImageFile(null);
-        // Refresh the list
-        await fetchRestaurants();
-      } else {
-        alert(response.message || "Failed to create restaurant");
+        showSuccess("Restaurant created successfully!");
       }
+
+      setShowAddModal(false);
+      resetForm();
+      setImageFile(null);
+      setIsEditMode(false);
+      setEditingRestaurantId(null);
+
+      // Refresh the list
+      await fetchRestaurants();
     } catch (err) {
-      console.error("Error creating restaurant:", err);
+      console.error(
+        isEditMode
+          ? "Error updating restaurant:"
+          : "Error creating restaurant:",
+        err,
+      );
       console.error("Full error object:", JSON.stringify(err, null, 2));
 
       // Extract error message from various possible formats
-      let errorMsg = "Failed to create restaurant";
+      let errorMsg = isEditMode
+        ? "Failed to update restaurant"
+        : "Failed to create restaurant";
 
       if (err.message) {
         errorMsg = err.message;
@@ -423,18 +554,23 @@ const Restaurants = () => {
         errorMsg += "\n\nValidation Errors:\n" + errorDetails;
       }
 
-      alert(errorMsg);
+      showError(errorMsg);
     } finally {
       setLoading(false);
     }
   };
 
   const handleDeleteRestaurant = async (restaurantId) => {
-    if (
-      !window.confirm(
+    const confirmed = await confirm({
+      title: "Delete Restaurant",
+      message:
         "Are you sure you want to delete this restaurant? This action cannot be undone.",
-      )
-    ) {
+      confirmText: "Delete",
+      cancelText: "Cancel",
+      type: "danger",
+    });
+
+    if (!confirmed) {
       return;
     }
 
@@ -445,13 +581,48 @@ const Restaurants = () => {
       // Refresh the restaurant list
       await fetchRestaurants();
 
-      alert("Restaurant deleted successfully!");
+      showSuccess("Restaurant deleted successfully!");
     } catch (err) {
       console.error("Error deleting restaurant:", err);
-      alert(err.message || "Failed to delete restaurant");
+      showError(err.message || "Failed to delete restaurant");
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleEditRestaurant = (restaurant) => {
+    // Parse coordinates from restaurant data
+    let coordinates = [90.4125, 23.8103]; // Default to Dhaka
+    if (restaurant.restaurant_location?.coordinates) {
+      coordinates = restaurant.restaurant_location.coordinates;
+    }
+
+    setFormData({
+      restaurant_name: restaurant.restaurant_name || "",
+      restaurant_description: restaurant.restaurant_description || "",
+      restaurant_address: restaurant.restaurant_address || "",
+      coordinates,
+      restaurant_contact_info: {
+        phone: restaurant.restaurant_contact_info?.phone || "",
+        email: restaurant.restaurant_contact_info?.email || "",
+      },
+      restaurant_category: restaurant.restaurant_category || [],
+      restaurant_opening_hours: restaurant.restaurant_opening_hours || {
+        monday: { open: "09:00", close: "22:00" },
+        tuesday: { open: "09:00", close: "22:00" },
+        wednesday: { open: "09:00", close: "22:00" },
+        thursday: { open: "09:00", close: "22:00" },
+        friday: { open: "09:00", close: "22:00" },
+        saturday: { open: "09:00", close: "22:00" },
+        sunday: { open: "09:00", close: "22:00" },
+      },
+      restaurant_image:
+        restaurant.restaurant_image?.url || restaurant.restaurant_image || "",
+    });
+
+    setIsEditMode(true);
+    setEditingRestaurantId(restaurant._id);
+    setShowAddModal(true);
   };
 
   const handleManageRestaurant = (restaurant) => {
@@ -469,13 +640,6 @@ const Restaurants = () => {
       restaurant_name: "",
       restaurant_description: "",
       restaurant_address: "",
-      address_details: {
-        street: "",
-        city: "",
-        state: "",
-        country: "",
-        zipCode: "",
-      },
       coordinates: [90.4125, 23.8103], // Dhaka, Bangladesh
       restaurant_contact_info: {
         phone: "",
@@ -492,7 +656,12 @@ const Restaurants = () => {
         sunday: { open: "09:00", close: "22:00" },
       },
     });
-    setImageFile(null); // Clear image file
+    setImageFile(null);
+    setIsEditMode(false);
+    setEditingRestaurantId(null);
+    setSearchQuery("");
+    setSearchResults([]);
+    setShowSearchResults(false);
   };
 
   return (
@@ -529,7 +698,7 @@ const Restaurants = () => {
                   console.log(`Debug = ${ownerStatus}`);
 
                   if (ownerStatus !== "Approved") {
-                    alert(
+                    showError(
                       "Your account must be approved before you can add restaurants",
                     );
                     return;
@@ -552,13 +721,6 @@ const Restaurants = () => {
                   entityType="restaurant owner account"
                   message="Your account is pending approval. You can view your restaurants but cannot add new ones until approved."
                 />
-              </div>
-            )}
-
-            {/* Error Message */}
-            {error && (
-              <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg mb-4">
-                {error}
               </div>
             )}
 
@@ -676,9 +838,18 @@ const Restaurants = () => {
                         <ChevronRight className="w-5 h-5" />
                       </button>
                       <button
+                        onClick={() => handleEditRestaurant(restaurant)}
+                        disabled={loading}
+                        className="bg-blue-500 text-white px-4 py-3 rounded-full hover:bg-blue-600 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                        title="Edit Restaurant"
+                      >
+                        <Edit className="w-5 h-5" />
+                      </button>
+                      <button
                         onClick={() => handleDeleteRestaurant(restaurant._id)}
                         disabled={loading}
                         className="bg-red-500 text-white px-4 py-3 rounded-full hover:bg-red-600 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                        title="Delete Restaurant"
                       >
                         <Trash2 className="w-5 h-5" />
                       </button>
@@ -700,11 +871,23 @@ const Restaurants = () => {
       </div>
 
       {showAddModal && (
-        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 overflow-y-auto">
-          <div className="bg-[#DDEEDB] rounded-2xl max-w-4xl w-full my-8 max-h-[90vh] overflow-y-auto">
+        <div
+          className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4 overflow-y-auto"
+          onClick={(e) => {
+            // Close modal if clicking on the backdrop (not the modal content)
+            if (e.target === e.currentTarget) {
+              setShowAddModal(false);
+              resetForm();
+            }
+          }}
+        >
+          <div
+            className="bg-[#DDEEDB] rounded-2xl max-w-4xl w-full my-8 max-h-[90vh] overflow-y-auto"
+            onClick={(e) => e.stopPropagation()}
+          >
             <div className="sticky top-0 bg-[#8DBC96] p-6 flex items-center justify-between rounded-t-2xl z-10">
               <h2 className="text-2xl font-bold text-white">
-                Add New Restaurant
+                {isEditMode ? "Edit Restaurant" : "Add New Restaurant"}
               </h2>
               <button
                 onClick={() => {
@@ -809,81 +992,109 @@ const Restaurants = () => {
                 <h3 className="text-xl font-bold text-gray-800">
                   Location & Address
                 </h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">
-                      Street *
-                    </label>
-                    <input
-                      type="text"
-                      name="address_street"
-                      value={formData.address_details.street}
-                      onChange={handleInputChange}
-                      className="w-full px-4 py-3 rounded-lg border-2 border-[#8DBC96] focus:border-[#67A177] focus:outline-none bg-white"
-                      placeholder="Street address"
-                    />
+
+                {/* Location Selector */}
+                <div className="bg-[#DDEEDB] p-4 rounded-lg space-y-3">
+                  <label className="block text-sm font-semibold text-gray-700">
+                    Quick Location Selection
+                  </label>
+                  <div className="flex flex-col sm:flex-row gap-3">
+                    <button
+                      type="button"
+                      onClick={handleUseMyLocation}
+                      disabled={loadingLocation}
+                      className="flex-1 bg-[#67A177] text-white px-4 py-3 rounded-lg hover:bg-[#5a8f68] transition-all font-semibold flex items-center justify-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      <Navigation className="w-5 h-5" />
+                      <span>
+                        {loadingLocation
+                          ? "Getting Location..."
+                          : "Use My Location"}
+                      </span>
+                    </button>
                   </div>
-                  <div>
+
+                  {/* Address Search */}
+                  <div className="relative">
                     <label className="block text-sm font-semibold text-gray-700 mb-2">
-                      City
+                      Search Address
                     </label>
-                    <input
-                      type="text"
-                      name="address_city"
-                      value={formData.address_details.city}
-                      onChange={handleInputChange}
-                      className="w-full px-4 py-3 rounded-lg border-2 border-[#8DBC96] focus:border-[#67A177] focus:outline-none bg-white"
-                      placeholder="City"
-                    />
+                    <div className="relative">
+                      <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+                      <input
+                        type="text"
+                        value={searchQuery}
+                        onChange={(e) => {
+                          setSearchQuery(e.target.value);
+                          handleAddressSearch(e.target.value);
+                        }}
+                        onFocus={() =>
+                          searchResults.length > 0 && setShowSearchResults(true)
+                        }
+                        className="w-full pl-10 pr-4 py-3 rounded-lg border-2 border-[#8DBC96] focus:border-[#67A177] focus:outline-none bg-white"
+                        placeholder="Search for an address..."
+                      />
+                    </div>
+
+                    {/* Search Results Dropdown */}
+                    {showSearchResults && searchResults.length > 0 && (
+                      <div className="absolute z-20 w-full mt-1 bg-white border-2 border-[#8DBC96] rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                        {searchResults.map((result, index) => (
+                          <button
+                            key={index}
+                            type="button"
+                            onClick={() => handleSelectLocation(result)}
+                            className="w-full text-left px-4 py-3 hover:bg-[#DDEEDB] transition-colors border-b border-gray-200 last:border-b-0"
+                          >
+                            <div className="flex items-start space-x-2">
+                              <MapPin className="w-4 h-4 text-[#67A177] mt-1 flex-shrink-0" />
+                              <div>
+                                <p className="font-medium text-gray-800 text-sm">
+                                  {result.text}
+                                </p>
+                                <p className="text-xs text-gray-600">
+                                  {result.place_name}
+                                </p>
+                              </div>
+                            </div>
+                          </button>
+                        ))}
+                      </div>
+                    )}
                   </div>
-                  <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">
-                      State/Division
-                    </label>
-                    <input
-                      type="text"
-                      name="address_state"
-                      value={formData.address_details.state}
-                      onChange={handleInputChange}
-                      className="w-full px-4 py-3 rounded-lg border-2 border-[#8DBC96] focus:border-[#67A177] focus:outline-none bg-white"
-                      placeholder="State or Division"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">
-                      Country
-                    </label>
-                    <input
-                      type="text"
-                      name="address_country"
-                      value={formData.address_details.country}
-                      onChange={handleInputChange}
-                      className="w-full px-4 py-3 rounded-lg border-2 border-[#8DBC96] focus:border-[#67A177] focus:outline-none bg-white"
-                      placeholder="Country"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">
-                      Zip Code
-                    </label>
-                    <input
-                      type="text"
-                      name="address_zipCode"
-                      value={formData.address_details.zipCode}
-                      onChange={handleInputChange}
-                      className="w-full px-4 py-3 rounded-lg border-2 border-[#8DBC96] focus:border-[#67A177] focus:outline-none bg-white"
-                      placeholder="Zip code"
-                    />
-                  </div>
+
+                  {/* Current Coordinates Display */}
+                  {formData.coordinates && (
+                    <div className="bg-white p-3 rounded-lg">
+                      <p className="text-xs text-gray-600 mb-1">
+                        Selected Coordinates:
+                      </p>
+                      <p className="text-sm font-medium text-gray-800">
+                        Lat: {formData.coordinates[1]?.toFixed(6)}, Lng:{" "}
+                        {formData.coordinates[0]?.toFixed(6)}
+                      </p>
+                    </div>
+                  )}
                 </div>
-                {formData.restaurant_address && (
-                  <div className="bg-[#DDEEDB] p-3 rounded-lg">
-                    <p className="text-xs text-gray-600 mb-1">Full Address:</p>
-                    <p className="text-sm font-medium text-gray-800">
-                      {formData.restaurant_address}
-                    </p>
-                  </div>
-                )}
+
+                {/* Full Address Field */}
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    Full Address *
+                  </label>
+                  <textarea
+                    name="restaurant_address"
+                    value={formData.restaurant_address}
+                    onChange={handleInputChange}
+                    rows="3"
+                    className="w-full px-4 py-3 rounded-lg border-2 border-[#8DBC96] focus:border-[#67A177] focus:outline-none bg-white resize-none"
+                    placeholder="Enter full address or use location tools above to auto-fill"
+                  />
+                  <p className="text-xs text-gray-500 mt-1">
+                    💡 Tip: Use &quot;Use My Location&quot; or &quot;Search
+                    Address&quot; to automatically fill this field
+                  </p>
+                </div>
               </div>
 
               <div className="bg-[#ACD4B1] p-6 rounded-xl space-y-4">
@@ -988,7 +1199,13 @@ const Restaurants = () => {
                   disabled={loading}
                   className="flex-1 bg-[#67A177] text-white py-3 rounded-full hover:bg-[#5a8f68] transition-all font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  {loading ? "Creating..." : "Add Restaurant"}
+                  {loading
+                    ? isEditMode
+                      ? "Updating..."
+                      : "Creating..."
+                    : isEditMode
+                      ? "Update Restaurant"
+                      : "Add Restaurant"}
                 </button>
               </div>
             </div>

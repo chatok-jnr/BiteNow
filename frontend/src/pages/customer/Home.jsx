@@ -20,16 +20,17 @@ import {
   removeFromCart,
   clearCart,
 } from "../../utils/cartService";
+import { useNotification } from "../../contexts/NotificationContext";
 
 const Home = () => {
   const navigate = useNavigate();
+  const { showError } = useNotification();
   const [currentSlide, setCurrentSlide] = useState(0);
   const [restaurantPage, setRestaurantPage] = useState(0);
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [cartItems, setCartItems] = useState([]);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [sortBy, setSortBy] = useState("date");
-  const [toast, setToast] = useState({ show: false, message: "", type: "" });
   const [showClearCartModal, setShowClearCartModal] = useState(false);
 
   // API data states
@@ -69,12 +70,6 @@ const Home = () => {
         "Browse, order, and track your food with our intuitive platform. Food delivery made simple.",
     },
   ];
-
-  // Toast notification helper
-  const showToast = (message, type = "info") => {
-    setToast({ show: true, message, type });
-    setTimeout(() => setToast({ show: false, message: "", type: "" }), 4000);
-  };
 
   // Fetch data on component mount
   useEffect(() => {
@@ -203,10 +198,7 @@ const Home = () => {
       await fetchCartData();
     } catch (err) {
       console.error("Error adding to cart:", err);
-      showToast(
-        err.response?.data?.message || "Failed to add item to cart",
-        "error",
-      );
+      showError(err.response?.data?.message || "Failed to add item to cart");
     }
   };
 
@@ -223,10 +215,7 @@ const Home = () => {
       await fetchCartData();
     } catch (err) {
       console.error("Error updating quantity:", err);
-      showToast(
-        err.response?.data?.message || "Failed to update quantity",
-        "error",
-      );
+      showError(err.response?.data?.message || "Failed to update quantity");
     }
   };
 
@@ -248,10 +237,7 @@ const Home = () => {
       }
     } catch (err) {
       console.error("Error removing item:", err);
-      showToast(
-        err.response?.data?.message || "Failed to remove item",
-        "error",
-      );
+      showError(err.response?.data?.message || "Failed to remove item");
     }
   };
 
@@ -270,7 +256,7 @@ const Home = () => {
       console.log("✅ Cart cleared successfully");
     } catch (err) {
       console.error("Error clearing cart:", err);
-      showToast(err.response?.data?.message || "Failed to clear cart", "error");
+      showError(err.response?.data?.message || "Failed to clear cart");
     } finally {
       setShowClearCartModal(false);
     }
@@ -357,7 +343,6 @@ const Home = () => {
             </div>
           </div>
         </nav>
-
         {/* Hero Slider */}
         <div className="relative h-[calc(100vh-4rem)] overflow-hidden">
           {heroSlides.map((slide, index) => (
@@ -411,7 +396,6 @@ const Home = () => {
             ))}
           </div>
         </div>
-
         {/* Top 4 Most Sold Foods */}
         <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
           <div className="text-center mb-12">
@@ -451,7 +435,6 @@ const Home = () => {
             </div>
           )}
         </section>
-
         {/* Top 4 Discounted Foods */}
         {/* <section className="bg-surface py-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -488,7 +471,6 @@ const Home = () => {
           )}
         </div>
       </section> */}
-
         {/* Restaurants List */}
         <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
           <div className="mb-8">
@@ -549,7 +531,6 @@ const Home = () => {
             </>
           )}
         </section>
-
         {/* Footer */}
         <footer className="bg-secondary text-white py-8">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -579,44 +560,11 @@ const Home = () => {
               </p>
             </div>
           </div>
+          \n{" "}
         </footer>
+        \n{" "}
       </div>
-
-      {/* Toast Notification */}
-      {toast.show && (
-        <div className="fixed top-4 right-4 z-50 animate-fade-in-down">
-          <div
-            className={`rounded-lg shadow-2xl p-4 min-w-[300px] max-w-md ${
-              toast.type === "success"
-                ? "bg-green-500 text-white"
-                : toast.type === "error"
-                  ? "bg-red-500 text-white"
-                  : toast.type === "warning"
-                    ? "bg-yellow-500 text-white"
-                    : "bg-blue-500 text-white"
-            }`}
-          >
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-3">
-                {toast.type === "success" && (
-                  <ShoppingCart className="w-6 h-6" />
-                )}
-                {toast.type === "error" && <Package className="w-6 h-6" />}
-                {toast.type === "warning" && <Star className="w-6 h-6" />}
-                <p className="font-medium">{toast.message}</p>
-              </div>
-              <button
-                onClick={() => setToast({ show: false, message: "", type: "" })}
-                className="ml-4 hover:opacity-75"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Clear Cart Confirmation Modal */}
+      \n\n {/* Clear Cart Confirmation Modal */}
       {showClearCartModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl">
@@ -649,7 +597,6 @@ const Home = () => {
           </div>
         </div>
       )}
-
       <CartSidebar
         isOpen={isCartOpen}
         onClose={() => setIsCartOpen(false)}

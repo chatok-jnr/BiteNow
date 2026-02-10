@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef } from "react";
 import {
   getRestaurantOwner,
   updateRestaurantOwner,
@@ -8,10 +8,23 @@ import {
   uploadOwnerDocuments,
   deleteAllOwnerDocuments,
   deleteOwnerDocument,
-  deleteRestaurantOwner
-} from '../../utils/restaurantOwnerService';
-import { User, Mail, Phone, MapPin, Camera, Save, Menu, Lock, Trash2, Store, ChevronRight } from 'lucide-react';
-import OwnerSidebar from '../../components/OwnerSidebar';
+  deleteRestaurantOwner,
+} from "../../utils/restaurantOwnerService";
+import {
+  User,
+  Mail,
+  Phone,
+  MapPin,
+  Camera,
+  Save,
+  Menu,
+  Lock,
+  Trash2,
+  Store,
+  ChevronRight,
+} from "lucide-react";
+import OwnerSidebar from "../../components/OwnerSidebar";
+import { useNotification } from "../../contexts/NotificationContext";
 
 const Profile = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -21,17 +34,18 @@ const Profile = () => {
   const [profileData, setProfileData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [passwordData, setPasswordData] = useState({
-    currentPassword: '',
-    newPassword: '',
-    confirmPassword: ''
+    currentPassword: "",
+    newPassword: "",
+    confirmPassword: "",
   });
   const [uploadingDoc, setUploadingDoc] = useState(false);
-  const [docError, setDocError] = useState('');
+  const [docError, setDocError] = useState("");
   const fileInputRef = useRef();
+  const { showSuccess, showError, confirm } = useNotification();
 
   // Fetch profile data on mount
   useEffect(() => {
-    const user = JSON.parse(localStorage.getItem('user'));
+    const user = JSON.parse(localStorage.getItem("user"));
     if (user && user.id) {
       fetchProfile(user.id);
     }
@@ -52,12 +66,12 @@ const Profile = () => {
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setProfileData(prev => ({ ...prev, [name]: value }));
+    setProfileData((prev) => ({ ...prev, [name]: value }));
   };
 
   const handlePasswordChange = (e) => {
     const { name, value } = e.target;
-    setPasswordData(prev => ({ ...prev, [name]: value }));
+    setPasswordData((prev) => ({ ...prev, [name]: value }));
   };
 
   // Upload or update profile image
@@ -74,7 +88,7 @@ const Profile = () => {
       }
       fetchProfile(profileData._id);
     } catch (err) {
-      alert('Failed to upload image');
+      showError("Failed to upload image");
     }
   };
 
@@ -91,11 +105,11 @@ const Profile = () => {
         restaurant_owner_dob: profileData.restaurant_owner_dob,
       };
       await updateRestaurantOwner(profileData._id, updateFields);
-      alert('Profile updated successfully!');
+      showSuccess("Profile updated successfully!");
       setIsEditing(false);
       fetchProfile(profileData._id);
     } catch (err) {
-      alert('Failed to update profile');
+      showError("Failed to update profile");
     }
   };
 
@@ -104,66 +118,94 @@ const Profile = () => {
     const files = Array.from(e.target.files || []);
     if (!files.length || !profileData?._id) return;
     setUploadingDoc(true);
-    setDocError('');
+    setDocError("");
     try {
       // Only allow PDF files
-      const pdfs = files.filter(f => f.type === 'application/pdf');
+      const pdfs = files.filter((f) => f.type === "application/pdf");
       if (!pdfs.length) {
-        setDocError('Only PDF files are allowed.');
+        setDocError("Only PDF files are allowed.");
         setUploadingDoc(false);
         return;
       }
       await uploadOwnerDocuments(profileData._id, pdfs);
       fetchProfile(profileData._id);
     } catch (err) {
-      setDocError('Failed to upload document(s)');
+      setDocError("Failed to upload document(s)");
     }
     setUploadingDoc(false);
-    if (fileInputRef.current) fileInputRef.current.value = '';
+    if (fileInputRef.current) fileInputRef.current.value = "";
   };
 
   // Delete a document
   const handleDeleteDoc = async (docId) => {
     if (!profileData?._id || !docId) return;
-    if (!window.confirm('Delete this document?')) return;
+    const confirmed = await confirm({
+      title: "Delete Document",
+      message:
+        "Are you sure you want to delete this document? This action cannot be undone.",
+      confirmText: "Delete",
+      cancelText: "Cancel",
+      type: "danger",
+    });
+    if (!confirmed) return;
     try {
       await deleteOwnerDocument(profileData._id, docId);
       fetchProfile(profileData._id);
     } catch (err) {
-      alert('Failed to delete document');
+      showError("Failed to delete document");
     }
   };
 
   const handlePasswordSubmit = (e) => {
     e.preventDefault();
     if (passwordData.newPassword !== passwordData.confirmPassword) {
-      alert('Passwords do not match!');
+      showError("Passwords do not match!");
       return;
     }
     if (passwordData.newPassword.length < 8) {
-      alert('Password must be at least 8 characters long!');
+      showError("Password must be at least 8 characters long!");
       return;
     }
     // Add API call here
-    alert('Password changed successfully!');
+    showSuccess("Password changed successfully!");
     setShowChangePassword(false);
-    setPasswordData({ currentPassword: '', newPassword: '', confirmPassword: '' });
+    setPasswordData({
+      currentPassword: "",
+      newPassword: "",
+      confirmPassword: "",
+    });
   };
 
-  const handleDeleteAccount = () => {
-    if (window.confirm('Are you absolutely sure? This action cannot be undone and will delete all your restaurants and data.')) {
+  const handleDeleteAccount = async () => {
+    const confirmed = await confirm({
+      title: "Delete Account",
+      message:
+        "Are you absolutely sure? This action cannot be undone and will delete all your restaurants and data.",
+      confirmText: "Delete Account",
+      cancelText: "Cancel",
+      type: "danger",
+    });
+    if (confirmed) {
       // Add API call here
-      alert('Account deleted');
+      showSuccess("Account deleted");
       // Redirect to login
     }
     setShowDeleteAccount(false);
   };
 
   if (loading) {
-    return <div className="flex items-center justify-center h-screen">Loading...</div>;
+    return (
+      <div className="flex items-center justify-center h-screen">
+        Loading...
+      </div>
+    );
   }
   if (!profileData) {
-    return <div className="flex items-center justify-center h-screen">Profile not found.</div>;
+    return (
+      <div className="flex items-center justify-center h-screen">
+        Profile not found.
+      </div>
+    );
   }
 
   return (
@@ -191,7 +233,13 @@ const Profile = () => {
               <div className="bg-gradient-to-r from-[#8DBC96] to-[#67A177] p-8 text-center">
                 <div className="relative inline-block">
                   <img
-                    src={profileData.restaurant_owner_image?.url || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(profileData.restaurant_owner_name || 'Owner')}
+                    src={
+                      profileData.restaurant_owner_image?.url ||
+                      "https://ui-avatars.com/api/?name=" +
+                        encodeURIComponent(
+                          profileData.restaurant_owner_name || "Owner",
+                        )
+                    }
                     alt="Profile"
                     className="w-32 h-32 rounded-full border-4 border-white shadow-xl object-cover"
                   />
@@ -207,78 +255,103 @@ const Profile = () => {
                     </label>
                   )}
                 </div>
-                <h2 className="text-2xl font-bold text-white mt-4">{profileData.restaurant_owner_name}</h2>
+                <h2 className="text-2xl font-bold text-white mt-4">
+                  {profileData.restaurant_owner_name}
+                </h2>
                 <p className="text-white/90">Restaurant Owner</p>
-                <p className="text-white/70 text-sm mt-2">Member since {profileData.restaurant_owner_created_at ? new Date(profileData.restaurant_owner_created_at).toLocaleDateString() : ''}</p>
+                <p className="text-white/70 text-sm mt-2">
+                  Member since{" "}
+                  {profileData.restaurant_owner_created_at
+                    ? new Date(
+                        profileData.restaurant_owner_created_at,
+                      ).toLocaleDateString()
+                    : ""}
+                </p>
               </div>
               {/* Profile Information */}
               <div className="p-8">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
-                    <label className="text-sm font-semibold text-gray-600 mb-2 block">Full Name</label>
+                    <label className="text-sm font-semibold text-gray-600 mb-2 block">
+                      Full Name
+                    </label>
                     {isEditing ? (
                       <input
                         type="text"
                         name="restaurant_owner_name"
-                        value={profileData.restaurant_owner_name || ''}
+                        value={profileData.restaurant_owner_name || ""}
                         onChange={handleInputChange}
                         className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#8DBC96]"
                       />
                     ) : (
                       <div className="flex items-center space-x-3 px-4 py-3 bg-gray-50 rounded-xl">
                         <User className="w-5 h-5 text-[#67A177]" />
-                        <span className="text-gray-800">{profileData.restaurant_owner_name}</span>
+                        <span className="text-gray-800">
+                          {profileData.restaurant_owner_name}
+                        </span>
                       </div>
                     )}
                   </div>
                   <div>
-                    <label className="text-sm font-semibold text-gray-600 mb-2 block">Email Address</label>
+                    <label className="text-sm font-semibold text-gray-600 mb-2 block">
+                      Email Address
+                    </label>
                     {isEditing ? (
                       <input
                         type="email"
                         name="restaurant_owner_email"
-                        value={profileData.restaurant_owner_email || ''}
+                        value={profileData.restaurant_owner_email || ""}
                         onChange={handleInputChange}
                         className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#8DBC96]"
                       />
                     ) : (
                       <div className="flex items-center space-x-3 px-4 py-3 bg-gray-50 rounded-xl">
                         <Mail className="w-5 h-5 text-[#67A177]" />
-                        <span className="text-gray-800">{profileData.restaurant_owner_email}</span>
+                        <span className="text-gray-800">
+                          {profileData.restaurant_owner_email}
+                        </span>
                       </div>
                     )}
                   </div>
                   <div>
-                    <label className="text-sm font-semibold text-gray-600 mb-2 block">Phone Number</label>
+                    <label className="text-sm font-semibold text-gray-600 mb-2 block">
+                      Phone Number
+                    </label>
                     {isEditing ? (
                       <input
                         type="tel"
                         name="restaurant_owner_phone"
-                        value={profileData.restaurant_owner_phone || ''}
+                        value={profileData.restaurant_owner_phone || ""}
                         onChange={handleInputChange}
                         className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#8DBC96]"
                       />
                     ) : (
                       <div className="flex items-center space-x-3 px-4 py-3 bg-gray-50 rounded-xl">
                         <Phone className="w-5 h-5 text-[#67A177]" />
-                        <span className="text-gray-800">{profileData.restaurant_owner_phone}</span>
+                        <span className="text-gray-800">
+                          {profileData.restaurant_owner_phone}
+                        </span>
                       </div>
                     )}
                   </div>
                   <div>
-                    <label className="text-sm font-semibold text-gray-600 mb-2 block">Address</label>
+                    <label className="text-sm font-semibold text-gray-600 mb-2 block">
+                      Address
+                    </label>
                     {isEditing ? (
                       <input
                         type="text"
                         name="restaurant_owner_address"
-                        value={profileData.restaurant_owner_address || ''}
+                        value={profileData.restaurant_owner_address || ""}
                         onChange={handleInputChange}
                         className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#8DBC96]"
                       />
                     ) : (
                       <div className="flex items-center space-x-3 px-4 py-3 bg-gray-50 rounded-xl">
                         <MapPin className="w-5 h-5 text-[#67A177]" />
-                        <span className="text-gray-800">{profileData.restaurant_owner_address}</span>
+                        <span className="text-gray-800">
+                          {profileData.restaurant_owner_address}
+                        </span>
                       </div>
                     )}
                   </div>
@@ -287,7 +360,9 @@ const Profile = () => {
                 {/* Document Management Section */}
                 <div className="mt-8">
                   <div className="flex items-center justify-between mb-2">
-                    <h3 className="text-lg font-bold text-[#67A177]">Documents</h3>
+                    <h3 className="text-lg font-bold text-[#67A177]">
+                      Documents
+                    </h3>
                     <label className="inline-block">
                       <input
                         type="file"
@@ -301,19 +376,29 @@ const Profile = () => {
                         type="button"
                         className="px-4 py-2 bg-[#8DBC96] text-white rounded-lg hover:bg-[#67A177] transition-all text-sm"
                         disabled={uploadingDoc}
-                        onClick={() => fileInputRef.current && fileInputRef.current.click()}
+                        onClick={() =>
+                          fileInputRef.current && fileInputRef.current.click()
+                        }
                       >
-                        {uploadingDoc ? 'Uploading...' : 'Add Document'}
+                        {uploadingDoc ? "Uploading..." : "Add Document"}
                       </button>
                     </label>
                   </div>
-                  {docError && <div className="text-red-500 text-sm mb-2">{docError}</div>}
+                  {docError && (
+                    <div className="text-red-500 text-sm mb-2">{docError}</div>
+                  )}
                   <div className="space-y-2">
-                    {(profileData.restaurant_owner_documents && profileData.restaurant_owner_documents.length > 0) ? (
+                    {profileData.restaurant_owner_documents &&
+                    profileData.restaurant_owner_documents.length > 0 ? (
                       profileData.restaurant_owner_documents.map((doc, idx) => (
-                        <div key={doc.public_id || idx} className="flex items-center justify-between bg-gray-50 rounded-lg px-4 py-2">
+                        <div
+                          key={doc.public_id || idx}
+                          className="flex items-center justify-between bg-gray-50 rounded-lg px-4 py-2"
+                        >
                           <div className="flex items-center gap-2">
-                            <span className="text-[#67A177] font-semibold">Document {idx + 1}</span>
+                            <span className="text-[#67A177] font-semibold">
+                              Document {idx + 1}
+                            </span>
                             {doc.url && (
                               <a
                                 href={doc.url}
@@ -335,7 +420,9 @@ const Profile = () => {
                         </div>
                       ))
                     ) : (
-                      <div className="text-gray-500 text-sm">No documents uploaded.</div>
+                      <div className="text-gray-500 text-sm">
+                        No documents uploaded.
+                      </div>
                     )}
                   </div>
                 </div>

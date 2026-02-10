@@ -16,3 +16,44 @@
 .animate-fade-in-down {
   animation: fade-in-down 0.3s ease-out;
 }
+
+@keyframes slideInRight {
+  0% {
+    opacity: 0;
+    transform: translateX(100%);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.animate-slideInRight {
+  animation: slideInRight 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes shrink {
+  0% {
+    width: 100%;
+  }
+  100% {
+    width: 0%;
+  }
+}
+
+.animate-shrink {
+  animation: shrink 4s linear;
+}
+
+@keyframes shrinkSlow {
+  0% {
+    width: 100%;
+  }
+  100% {
+    width: 0%;
+  }
+}
+
+.animate-shrinkSlow {
+  animation: shrinkSlow 5s linear;
+}

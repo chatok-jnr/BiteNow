@@ -22,21 +22,17 @@ import {
   removeFromCart,
   clearCart,
 } from "../../utils/cartService";
+import { useNotification } from "../../contexts/NotificationContext";
 
 const RestaurantDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { showSuccess, showError } = useNotification();
   const [sortBy, setSortBy] = useState("default");
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [cartItems, setCartItems] = useState([]);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [toast, setToast] = useState({ show: false, message: "", type: "" });
   const [showClearModal, setShowClearModal] = useState(false);
-
-  const showToast = (message, type) => {
-    setToast({ show: true, message, type });
-    setTimeout(() => setToast({ show: false, message: "", type: "" }), 4000);
-  };
 
   // API data states
   const [restaurant, setRestaurant] = useState(null);
@@ -134,10 +130,7 @@ const RestaurantDetail = () => {
       await fetchCartData();
     } catch (err) {
       console.error("Error adding to cart:", err);
-      showToast(
-        err.response?.data?.message || "Failed to add item to cart",
-        "error",
-      );
+      showError(err.response?.data?.message || "Failed to add item to cart");
     }
   };
 
@@ -154,10 +147,7 @@ const RestaurantDetail = () => {
       await fetchCartData();
     } catch (err) {
       console.error("Error updating quantity:", err);
-      showToast(
-        err.response?.data?.message || "Failed to update quantity",
-        "error",
-      );
+      showError(err.response?.data?.message || "Failed to update quantity");
     }
   };
 
@@ -179,10 +169,7 @@ const RestaurantDetail = () => {
       }
     } catch (err) {
       console.error("Error removing item:", err);
-      showToast(
-        err.response?.data?.message || "Failed to remove item",
-        "error",
-      );
+      showError(err.response?.data?.message || "Failed to remove item");
     }
   };
 
@@ -200,11 +187,11 @@ const RestaurantDetail = () => {
       setShowClearModal(false);
 
       console.log("✅ Cart cleared successfully");
-      showToast("Cart cleared successfully!", "success");
+      showSuccess("Cart cleared successfully!");
     } catch (err) {
       console.error("Error clearing cart:", err);
       setShowClearModal(false);
-      showToast(err.response?.data?.message || "Failed to clear cart", "error");
+      showError(err.response?.data?.message || "Failed to clear cart");
     }
   };
 
@@ -268,32 +255,6 @@ const RestaurantDetail = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Toast Notification */}
-      {toast.show && (
-        <div
-          className={`fixed top-4 right-4 z-50 px-6 py-4 rounded-lg shadow-lg ${
-            toast.type === "success"
-              ? "bg-green-500"
-              : toast.type === "error"
-                ? "bg-red-500"
-                : toast.type === "warning"
-                  ? "bg-yellow-500"
-                  : "bg-blue-500"
-          } text-white flex items-center space-x-3 animate-fade-in-down`}
-        >
-          {toast.type === "success" && <CheckCircle className="w-6 h-6" />}
-          {toast.type === "error" && <X className="w-6 h-6" />}
-          {toast.type === "warning" && <Clock className="w-6 h-6" />}
-          <span className="font-medium">{toast.message}</span>
-          <button
-            onClick={() => setToast({ show: false, message: "", type: "" })}
-            className="ml-4 hover:bg-white/20 rounded-full p-1"
-          >
-            <X className="w-4 h-4" />
-          </button>
-        </div>
-      )}
-
       {/* Clear Cart Confirmation Modal */}
       {showClearModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">

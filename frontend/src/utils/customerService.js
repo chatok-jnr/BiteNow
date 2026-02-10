@@ -36,7 +36,7 @@ export const updateCustomerProfile = async (customerId, profileData) => {
         customer_birth_date: profileData.birthDate,
         customer_gender: capitalizeGender(profileData.gender),
         customer_address: profileData.address,
-      }
+      },
     );
     return response.data;
   } catch (error) {
@@ -57,7 +57,7 @@ export const uploadCustomerImage = async (customerId, imageFile) => {
 
     const response = await axiosInstance.post(
       `/api/v1/customer/${customerId}/image`,
-      formData
+      formData,
       // Don't set Content-Type header - axios will automatically set it with the correct boundary
     );
     return response.data;
@@ -79,7 +79,7 @@ export const updateCustomerImage = async (customerId, imageFile) => {
 
     const response = await axiosInstance.patch(
       `/api/v1/customer/${customerId}/image`,
-      formData
+      formData,
       // Don't set Content-Type header - axios will automatically set it with the correct boundary
     );
     return response.data;
@@ -96,7 +96,98 @@ export const updateCustomerImage = async (customerId, imageFile) => {
 export const deleteCustomerImage = async (customerId) => {
   try {
     const response = await axiosInstance.delete(
-      `/api/v1/customer/${customerId}/image`
+      `/api/v1/customer/${customerId}/image`,
+    );
+    return response.data;
+  } catch (error) {
+    throw error.response?.data || error;
+  }
+};
+
+/**
+ * Get all saved addresses for a customer
+ * @param {string} customerId - Customer ID
+ * @returns {Promise} List of addresses
+ */
+export const getCustomerAddresses = async (customerId) => {
+  try {
+    const response = await axiosInstance.get(
+      `/api/v1/customer/${customerId}/addresses`,
+    );
+    return response.data;
+  } catch (error) {
+    throw error.response?.data || error;
+  }
+};
+
+/**
+ * Add a new address for a customer
+ * @param {string} customerId - Customer ID
+ * @param {Object} addressData - Address data
+ * @returns {Promise} Created address
+ */
+export const addCustomerAddress = async (customerId, addressData) => {
+  try {
+    const response = await axiosInstance.post(
+      `/api/v1/customer/${customerId}/addresses`,
+      addressData,
+    );
+    return response.data;
+  } catch (error) {
+    throw error.response?.data || error;
+  }
+};
+
+/**
+ * Update a saved address
+ * @param {string} customerId - Customer ID
+ * @param {string} addressId - Address ID
+ * @param {Object} addressData - Updated address data
+ * @returns {Promise} Updated address
+ */
+export const updateCustomerAddress = async (
+  customerId,
+  addressId,
+  addressData,
+) => {
+  try {
+    const response = await axiosInstance.patch(
+      `/api/v1/customer/${customerId}/addresses/${addressId}`,
+      addressData,
+    );
+    return response.data;
+  } catch (error) {
+    throw error.response?.data || error;
+  }
+};
+
+/**
+ * Delete a saved address
+ * @param {string} customerId - Customer ID
+ * @param {string} addressId - Address ID
+ * @returns {Promise} Delete response
+ */
+export const deleteCustomerAddress = async (customerId, addressId) => {
+  try {
+    const response = await axiosInstance.delete(
+      `/api/v1/customer/${customerId}/addresses/${addressId}`,
+    );
+    return response.data;
+  } catch (error) {
+    throw error.response?.data || error;
+  }
+};
+
+/**
+ * Set an address as default
+ * @param {string} customerId - Customer ID
+ * @param {string} addressId - Address ID
+ * @returns {Promise} Update response
+ */
+export const setDefaultAddress = async (customerId, addressId) => {
+  try {
+    const response = await axiosInstance.patch(
+      `/api/v1/customer/${customerId}/addresses/${addressId}/default`,
     );
     return response.data;
   } catch (error) {
@@ -110,4 +201,9 @@ export default {
   uploadCustomerImage,
   updateCustomerImage,
   deleteCustomerImage,
+  getCustomerAddresses,
+  addCustomerAddress,
+  updateCustomerAddress,
+  deleteCustomerAddress,
+  setDefaultAddress,
 };

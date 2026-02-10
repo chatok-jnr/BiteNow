@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import {
   ShoppingCart,
   Mail,
@@ -7,33 +7,28 @@ import {
   User,
   Calendar,
   Camera,
-  X,
   LogOut,
   MapPin,
   Home as HomeIcon,
   Package,
-  CheckCircle,
-  Clock,
 } from "lucide-react";
 import {
   getCustomerProfile,
   updateCustomerProfile,
   updateCustomerImage,
   uploadCustomerImage,
+  setDefaultAddress,
+  getCustomerAddresses,
 } from "../../utils/customerService";
+import { useNotification } from "../../contexts/NotificationContext";
 
 const Profile = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  const { showSuccess, showError } = useNotification();
   const [isEditing, setIsEditing] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [debugInfo, setDebugInfo] = useState("");
-  const [toast, setToast] = useState({ show: false, message: "", type: "" });
-
-  const showToast = (message, type) => {
-    setToast({ show: true, message, type });
-    setTimeout(() => setToast({ show: false, message: "", type: "" }), 4000);
-  };
 
   const [profileData, setProfileData] = useState({
     name: "",
@@ -44,6 +39,8 @@ const Profile = () => {
     gender: "",
     image: null,
     memberSince: "",
+    savedAddresses: [],
+    defaultAddressId: null,
   });
 
   const [editForm, setEditForm] = useState({
@@ -53,13 +50,14 @@ const Profile = () => {
     birthDate: "",
     gender: "",
     image: "",
+    selectedAddressId: null,
   });
 
   const [imageFile, setImageFile] = useState(null);
 
-  // Load user data when component mounts
+  // Load user data when component mounts or when returning to profile page
   useEffect(() => {
-    console.log("Profile component mounted");
+    console.log("Profile component mounted or location changed");
     const checkAuth = async () => {
       const token = localStorage.getItem("token");
       const userString = localStorage.getItem("user");
@@ -76,7 +74,7 @@ const Profile = () => {
     };
 
     checkAuth();
-  }, [navigate]);
+  }, [navigate, location.pathname]);
 
   const fetchCustomerProfile = async () => {
     try {
@@ -95,7 +93,6 @@ const Profile = () => {
       const response = await getCustomerProfile(customerId);
 
       console.log("Profile API response:", response);
-      setDebugInfo(JSON.stringify(response, null, 2));
 
       if (response && response.data) {
         // Handle different response structures - backend uses "userRespone" (typo)
@@ -123,11 +120,32 @@ const Profile = () => {
           return gender.charAt(0).toUpperCase() + gender.slice(1).toLowerCase();
         };
 
+        // Fetch saved addresses separately to ensure we get the latest data
+        let savedAddresses = [];
+        let defaultAddress = null;
+
+        try {
+          const addressResponse = await getCustomerAddresses(customerId);
+          console.log("Addresses API response:", addressResponse);
+          savedAddresses = addressResponse.data?.addresses || [];
+          defaultAddress = savedAddresses.find((addr) => addr.isDefault);
+          console.log("Default address found:", defaultAddress);
+        } catch (addressErr) {
+          console.error("Error fetching addresses:", addressErr);
+          // Fallback to addresses from customer profile if separate fetch fails
+          savedAddresses = customer.saved_addresses || [];
+          defaultAddress = savedAddresses.find((addr) => addr.isDefault);
+        }
+
         const userData = {
           name: customer.name || customer.customer_name || "User",
           email: customer.email || customer.customer_email || "",
           phone: customer.phone || customer.customer_phone || "",
-          address: customer.address || customer.customer_address || "",
+          address:
+            defaultAddress?.address ||
+            customer.address ||
+            customer.customer_address ||
+            "",
           birthDate: customer.dob
             ? new Date(customer.dob).toISOString().split("T")[0]
             : customer.customer_birth_date
@@ -140,6 +158,8 @@ const Profile = () => {
           ),
           image: customer.photo?.url || customer.customer_image?.url || null,
           memberSince,
+          savedAddresses: savedAddresses,
+          defaultAddressId: defaultAddress?._id || null,
         };
 
         console.log("Setting profile data:", userData);
@@ -152,6 +172,7 @@ const Profile = () => {
           birthDate: userData.birthDate,
           gender: userData.gender,
           image: userData.image,
+          selectedAddressId: userData.defaultAddressId,
         });
       } else {
         console.error("Unexpected API response format:", response);
@@ -220,6 +241,15 @@ const Profile = () => {
 
       console.log("Update response:", response);
 
+      // Update default address if changed
+      if (
+        editForm.selectedAddressId &&
+        editForm.selectedAddressId !== profileData.defaultAddressId
+      ) {
+        console.log("Updating default address to:", editForm.selectedAddressId);
+        await setDefaultAddress(customerId, editForm.selectedAddressId);
+      }
+
       // Upload or update image if selected
       if (imageFile) {
         console.log("Processing image upload/update...");
@@ -247,7 +277,7 @@ const Profile = () => {
       await fetchCustomerProfile();
       setIsEditing(false);
       setImageFile(null);
-      showToast("Profile updated successfully!", "success");
+      showSuccess("Profile updated successfully!");
     } catch (err) {
       console.error("Error updating profile:", err);
       console.error("Error response:", err.response?.data);
@@ -256,10 +286,9 @@ const Profile = () => {
           err.message ||
           "Failed to update profile",
       );
-      showToast(
+      showError(
         "Failed to update profile: " +
           (err.response?.data?.message || err.message),
-        "error",
       );
     } finally {
       setLoading(false);
@@ -297,32 +326,6 @@ const Profile = () => {
 
   return (
     <div className="min-h-screen bg-[#C4E2C4] flex flex-col">
-      {/* Toast Notification */}
-      {toast.show && (
-        <div
-          className={`fixed top-4 right-4 z-50 px-6 py-4 rounded-lg shadow-lg ${
-            toast.type === "success"
-              ? "bg-green-500"
-              : toast.type === "error"
-                ? "bg-red-500"
-                : toast.type === "warning"
-                  ? "bg-yellow-500"
-                  : "bg-blue-500"
-          } text-white flex items-center space-x-3 animate-fade-in-down`}
-        >
-          {toast.type === "success" && <CheckCircle className="w-6 h-6" />}
-          {toast.type === "error" && <X className="w-6 h-6" />}
-          {toast.type === "warning" && <Clock className="w-6 h-6" />}
-          <span className="font-medium">{toast.message}</span>
-          <button
-            onClick={() => setToast({ show: false, message: "", type: "" })}
-            className="ml-4 hover:bg-white/20 rounded-full p-1"
-          >
-            <X className="w-4 h-4" />
-          </button>
-        </div>
-      )}
-
       {/* Navbar */}
       <nav className="sticky top-0 z-50 bg-[#67A177] shadow-md">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -467,18 +470,18 @@ const Profile = () => {
                       </div>
                     </div>
 
-                    {/* Address */}
+                    {/* Default Address */}
                     <div className="bg-white rounded-2xl p-5 shadow-md">
                       <div className="flex items-center space-x-3 mb-2">
                         <div className="w-10 h-10 bg-[#DDEEDB] rounded-full flex items-center justify-center">
                           <MapPin className="w-5 h-5 text-[#67A177]" />
                         </div>
-                        <div>
+                        <div className="flex-1">
                           <p className="text-sm text-gray-500 font-semibold">
-                            Address
+                            Default Delivery Address
                           </p>
                           <p className="text-gray-800 font-medium">
-                            {profileData.address || "Not provided"}
+                            {profileData.address || "No address saved"}
                           </p>
                         </div>
                       </div>
@@ -541,6 +544,31 @@ const Profile = () => {
                           </p>
                         </div>
                       </div>
+                    </div>
+                  </div>
+
+                  {/* Address Management Section */}
+                  <div className="mt-8 bg-white rounded-2xl p-5 shadow-md">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center space-x-3">
+                        <div className="w-10 h-10 bg-[#DDEEDB] rounded-full flex items-center justify-center">
+                          <MapPin className="w-5 h-5 text-[#67A177]" />
+                        </div>
+                        <div>
+                          <p className="text-sm text-gray-500 font-semibold">
+                            Saved Addresses
+                          </p>
+                          <p className="text-gray-800 font-medium">
+                            Manage your delivery addresses
+                          </p>
+                        </div>
+                      </div>
+                      <button
+                        onClick={() => navigate("/addresses")}
+                        className="bg-[#67A177] text-white px-6 py-2 rounded-full font-semibold hover:bg-[#5a8f68] transition-all"
+                      >
+                        Manage
+                      </button>
                     </div>
                   </div>
 
@@ -611,24 +639,40 @@ const Profile = () => {
                     </div>
                   </div>
 
-                  {/* Address Input */}
+                  {/* Select Default Address */}
                   <div>
                     <label className="block text-sm font-semibold text-gray-700 mb-2">
-                      Address
+                      Default Delivery Address
                     </label>
-                    <div className="relative">
-                      <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500">
-                        <MapPin className="w-5 h-5" />
-                      </div>
-                      <input
-                        type="text"
-                        name="address"
-                        value={editForm.address}
+                    {profileData.savedAddresses.length > 0 ? (
+                      <select
+                        name="selectedAddressId"
+                        value={editForm.selectedAddressId || ""}
                         onChange={handleEditChange}
-                        placeholder="Your address"
-                        className="w-full pl-12 pr-4 py-3 bg-white rounded-full border-2 border-transparent focus:border-[#67A177] focus:outline-none transition-all"
-                      />
-                    </div>
+                        className="w-full px-4 py-3 bg-white rounded-full border-2 border-transparent focus:border-[#67A177] focus:outline-none transition-all"
+                      >
+                        <option value="">Select an address</option>
+                        {profileData.savedAddresses.map((addr) => (
+                          <option key={addr._id} value={addr._id}>
+                            {addr.label} - {addr.address}
+                          </option>
+                        ))}
+                      </select>
+                    ) : (
+                      <div className="bg-gray-50 rounded-lg p-4 text-center">
+                        <p className="text-gray-600 mb-3">
+                          No saved addresses yet
+                        </p>
+                        <button
+                          type="button"
+                          onClick={() => navigate("/addresses")}
+                          className="bg-[#67A177] text-white px-6 py-2 rounded-full font-semibold hover:bg-[#5a8f68] transition-all inline-flex items-center gap-2"
+                        >
+                          <MapPin className="w-4 h-4" />
+                          Add Address
+                        </button>
+                      </div>
+                    )}
                   </div>
 
                   {/* Birth Date Input */}

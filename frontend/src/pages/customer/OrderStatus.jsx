@@ -16,20 +16,16 @@ import {
   LogOut,
 } from "lucide-react";
 import { getUserOrders } from "../../utils/orderService";
+import { useNotification } from "../../contexts/NotificationContext";
 
 const OrderStatus = () => {
   const navigate = useNavigate();
+  const { showError } = useNotification();
   const [activeTab, setActiveTab] = useState("active");
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [toast, setToast] = useState({ show: false, message: "", type: "" });
-
-  const showToast = (message, type) => {
-    setToast({ show: true, message, type });
-    setTimeout(() => setToast({ show: false, message: "", type: "" }), 4000);
-  };
 
   // Fetch orders on component mount
   useEffect(() => {
@@ -364,32 +360,6 @@ const OrderStatus = () => {
 
   return (
     <div className="min-h-screen bg-[#C4E2C4]">
-      {/* Toast Notification */}
-      {toast.show && (
-        <div
-          className={`fixed top-4 right-4 z-50 px-6 py-4 rounded-lg shadow-lg ${
-            toast.type === "success"
-              ? "bg-green-500"
-              : toast.type === "error"
-                ? "bg-red-500"
-                : toast.type === "warning"
-                  ? "bg-yellow-500"
-                  : "bg-blue-500"
-          } text-white flex items-center space-x-3 animate-fade-in-down`}
-        >
-          {toast.type === "success" && <CheckCircle className="w-6 h-6" />}
-          {toast.type === "error" && <X className="w-6 h-6" />}
-          {toast.type === "warning" && <Clock className="w-6 h-6" />}
-          <span className="font-medium">{toast.message}</span>
-          <button
-            onClick={() => setToast({ show: false, message: "", type: "" })}
-            className="ml-4 hover:bg-white/20 rounded-full p-1"
-          >
-            <X className="w-4 h-4" />
-          </button>
-        </div>
-      )}
-
       {/* Navbar */}
       <nav className="sticky top-0 z-50 bg-[#67A177] shadow-md">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

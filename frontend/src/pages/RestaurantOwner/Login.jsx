@@ -10,14 +10,14 @@ import {
   Loader,
 } from "lucide-react";
 import { loginRestaurantOwner } from "../../utils/authService";
+import { useNotification } from "../../contexts/NotificationContext";
 
 const Login = () => {
   const navigate = useNavigate();
   const [isLogin, setIsLogin] = useState(true);
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
-  const [success, setSuccess] = useState("");
+  const { showError } = useNotification();
 
   // Redirect to profile if already logged in
   useEffect(() => {
@@ -34,18 +34,16 @@ const Login = () => {
 
   const handleLoginChange = (e) => {
     setLoginForm({ ...loginForm, [e.target.name]: e.target.value });
-    setError(""); // Clear error on input change
   };
 
   const handleLoginSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
-    setError("");
 
     try {
       // Validate inputs
       if (!loginForm.emailOrPhone || !loginForm.password) {
-        setError("Please enter both email and password");
+        showError("Please enter both email and password");
         setLoading(false);
         return;
       }
@@ -85,11 +83,11 @@ const Login = () => {
         navigate("/restaurant_owner/dashboard");
       } else {
         console.error("❌ Login failed - Invalid response:", response);
-        setError("Login failed. Please try again.");
+        showError("Login failed. Please try again.");
       }
     } catch (err) {
       console.error("Login error:", err);
-      setError(err.message || "Invalid email or password");
+      showError(err.message || "Invalid email or password");
     } finally {
       setLoading(false);
     }
@@ -187,20 +185,6 @@ const Login = () => {
                     Welcome back! Please login to manage your restaurant
                   </p>
                 </div>
-
-                {/* Error Message */}
-                {error && (
-                  <div className="bg-red-500/20 border border-red-500/50 text-white px-4 py-3 rounded-lg text-sm animate-fade-in">
-                    {error}
-                  </div>
-                )}
-
-                {/* Success Message */}
-                {success && (
-                  <div className="bg-green-500/20 border border-green-500/50 text-white px-4 py-3 rounded-lg text-sm animate-fade-in">
-                    {success}
-                  </div>
-                )}
 
                 <form onSubmit={handleLoginSubmit} className="space-y-4">
                   {/* Username Input */}

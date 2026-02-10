@@ -22,6 +22,7 @@ import {
   ArrowLeft,
 } from "lucide-react";
 import ApprovalMessage from "../../components/ApprovalMessage";
+import { useNotification } from "../../contexts/NotificationContext";
 import foodService from "../../utils/foodService";
 import {
   getOrdersByRestaurant,
@@ -31,6 +32,7 @@ import { getMyRestaurantById } from "../../utils/restaurantService";
 
 const Manage_Restaurant = () => {
   const navigate = useNavigate();
+  const { showSuccess, showError, showWarning, confirm } = useNotification();
   const [activeMode, setActiveMode] = useState("food");
   const [orderStatus, setOrderStatus] = useState("pending");
   const [showAddFoodModal, setShowAddFoodModal] = useState(false);
@@ -46,8 +48,6 @@ const Manage_Restaurant = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [activeDropdown, setActiveDropdown] = useState(null);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
-  const [success, setSuccess] = useState(null);
   const [imageFile, setImageFile] = useState(null);
   const [imagePreview, setImagePreview] = useState(null);
 
@@ -111,7 +111,7 @@ const Manage_Restaurant = () => {
 
     try {
       setLoading(true);
-      setError(null);
+
       console.log("Fetching restaurant details for ID:", restaurantId);
 
       const response = await getMyRestaurantById(restaurantId);
@@ -128,7 +128,7 @@ const Manage_Restaurant = () => {
       }
     } catch (err) {
       console.error("Error fetching restaurant details:", err);
-      setError(
+      showError(
         err.response?.data?.message || "Failed to fetch restaurant details",
       );
       // If fetch fails, redirect back to restaurants page
@@ -159,13 +159,13 @@ const Manage_Restaurant = () => {
 
     try {
       setLoading(true);
-      setError(null);
+
       const response = await foodService.getFoodsByRestaurant(restaurantId);
       console.log("Foods response:", response);
       setFoods(response.data?.foods || []);
     } catch (err) {
       console.error("Error fetching foods:", err);
-      setError(err.response?.data?.message || "Failed to fetch foods");
+      showError(err.response?.data?.message || "Failed to fetch foods");
     } finally {
       setLoading(false);
     }
@@ -176,13 +176,13 @@ const Manage_Restaurant = () => {
 
     try {
       setLoading(true);
-      setError(null);
+
       const response = await getOrdersByRestaurant(restaurantId);
       console.log("Orders response:", response);
       setAllOrders(response.data?.myOrder || []);
     } catch (err) {
       console.error("Error fetching orders:", err);
-      setError(err.response?.data?.message || "Failed to fetch orders");
+      showError(err.response?.data?.message || "Failed to fetch orders");
     } finally {
       setLoading(false);
     }
@@ -195,28 +195,28 @@ const Manage_Restaurant = () => {
       !foodForm.food_quantity ||
       !foodForm.food_description
     ) {
-      setError("Please fill all required fields");
+      showError("Please fill all required fields");
       return;
     }
 
     if (parseFloat(foodForm.food_price) < 50) {
-      setError("Food price cannot be less than 50");
+      showError("Food price cannot be less than 50");
       return;
     }
 
     if (foodForm.food_description.trim().length < 10) {
-      setError("Food description must be at least 10 characters");
+      showError("Food description must be at least 10 characters");
       return;
     }
 
     // Check approval status
     if (ownerStatus !== "Approved") {
-      setError("Your account must be approved before you can add food items");
+      showError("Your account must be approved before you can add food items");
       return;
     }
 
     if (restaurantStatus !== "Accepted") {
-      setError(
+      showError(
         "This restaurant must be accepted before you can add food items",
       );
       return;
@@ -224,7 +224,6 @@ const Manage_Restaurant = () => {
 
     try {
       setLoading(true);
-      setError(null);
 
       const foodData = {
         restaurant_id: restaurantId,
@@ -252,14 +251,14 @@ const Manage_Restaurant = () => {
         } catch (imgError) {
           console.error("Image upload failed:", imgError);
           // Don't fail the whole operation if image upload fails
-          setSuccess(
+          showSuccess(
             "Food added but image upload failed. You can add an image later.",
           );
         }
       }
 
       if (!imageFile || newFood._id) {
-        setSuccess("Food added successfully!");
+        showSuccess("Food added successfully!");
       }
 
       setShowAddFoodModal(false);
@@ -276,11 +275,9 @@ const Manage_Restaurant = () => {
 
       // Refresh foods list
       await fetchFoods();
-
-      setTimeout(() => setSuccess(null), 3000);
     } catch (err) {
       console.error("Error adding food:", err);
-      setError(err.response?.data?.message || "Failed to add food");
+      showError(err.response?.data?.message || "Failed to add food");
     } finally {
       setLoading(false);
     }
@@ -293,23 +290,22 @@ const Manage_Restaurant = () => {
       !foodForm.food_price ||
       !foodForm.food_description
     ) {
-      setError("Please fill all required fields");
+      showError("Please fill all required fields");
       return;
     }
 
     if (parseFloat(foodForm.food_price) < 50) {
-      setError("Food price cannot be less than 50");
+      showError("Food price cannot be less than 50");
       return;
     }
 
     if (foodForm.food_description.trim().length < 10) {
-      setError("Food description must be at least 10 characters");
+      showError("Food description must be at least 10 characters");
       return;
     }
 
     try {
       setLoading(true);
-      setError(null);
 
       const updateData = {
         food_name: foodForm.food_name,
@@ -324,17 +320,15 @@ const Manage_Restaurant = () => {
 
       await foodService.updateFood(selectedFood._id, updateData);
 
-      setSuccess("Food updated successfully!");
+      showSuccess("Food updated successfully!");
       setShowEditFoodModal(false);
       setSelectedFood(null);
 
       // Refresh foods list
       await fetchFoods();
-
-      setTimeout(() => setSuccess(null), 3000);
     } catch (err) {
       console.error("Error updating food:", err);
-      setError(err.response?.data?.message || "Failed to update food");
+      showError(err.response?.data?.message || "Failed to update food");
     } finally {
       setLoading(false);
     }
@@ -345,21 +339,18 @@ const Manage_Restaurant = () => {
 
     try {
       setLoading(true);
-      setError(null);
 
       await foodService.deleteFood(foodToDelete);
 
-      setSuccess("Food deleted successfully!");
+      showSuccess("Food deleted successfully!");
       setShowDeleteConfirmModal(false);
       setFoodToDelete(null);
 
       // Refresh foods list
       await fetchFoods();
-
-      setTimeout(() => setSuccess(null), 3000);
     } catch (err) {
       console.error("Error deleting food:", err);
-      setError(err.response?.data?.message || "Failed to delete food");
+      showError(err.response?.data?.message || "Failed to delete food");
     } finally {
       setLoading(false);
     }
@@ -369,26 +360,24 @@ const Manage_Restaurant = () => {
     const quantity = prompt("Enter quantity to add to stock:");
 
     if (!quantity || isNaN(quantity) || parseInt(quantity) <= 0) {
-      setError("Please enter a valid quantity");
+      showError("Please enter a valid quantity");
       return;
     }
 
     try {
       setLoading(true);
-      setError(null);
+
       setActiveDropdown(null);
 
       await foodService.restockFood(foodId, parseInt(quantity));
 
-      setSuccess("Food restocked successfully!");
+      showSuccess("Food restocked successfully!");
 
       // Refresh foods list
       await fetchFoods();
-
-      setTimeout(() => setSuccess(null), 3000);
     } catch (err) {
       console.error("Error restocking food:", err);
-      setError(err.response?.data?.message || "Failed to restock food");
+      showError(err.response?.data?.message || "Failed to restock food");
     } finally {
       setLoading(false);
     }
@@ -397,33 +386,30 @@ const Manage_Restaurant = () => {
   const handleUpdateOrderStatus = async (orderId, newStatus) => {
     // Check approval status
     if (ownerStatus !== "Approved") {
-      setError("Your account must be approved to manage orders");
+      showError("Your account must be approved to manage orders");
       return;
     }
 
     if (restaurantStatus !== "Accepted") {
-      setError("This restaurant must be accepted to manage orders");
+      showError("This restaurant must be accepted to manage orders");
       return;
     }
 
     try {
       setLoading(true);
-      setError(null);
 
       console.log("Updating order status:", { orderId, newStatus });
       const response = await updateOrderStatusByRestaurant(orderId, newStatus);
       console.log("Update response:", response);
 
-      setSuccess(`Order status updated to ${newStatus}!`);
+      showSuccess(`Order status updated to ${newStatus}!`);
 
       // Refresh orders list
       await fetchOrders();
-
-      setTimeout(() => setSuccess(null), 3000);
     } catch (err) {
       console.error("Error updating order status:", err);
       console.error("Error details:", err.response?.data);
-      setError(
+      showError(
         err.response?.data?.message ||
           err.message ||
           "Failed to update order status",
@@ -435,13 +421,12 @@ const Manage_Restaurant = () => {
 
   const handleVerifyPin = async () => {
     if (!riderPin || riderPin.length !== 4) {
-      setError("Please enter a valid 4-digit PIN");
+      showError("Please enter a valid 4-digit PIN");
       return;
     }
 
     try {
       setLoading(true);
-      setError(null);
 
       // You can add API call here to verify the PIN if needed
       // For now, we'll just update the order status
@@ -449,12 +434,10 @@ const Manage_Restaurant = () => {
 
       setShowPinModal(false);
       setRiderPin("");
-      setSuccess("Rider verified! Order is now out for delivery.");
-
-      setTimeout(() => setSuccess(null), 3000);
+      showSuccess("Rider verified! Order is now out for delivery.");
     } catch (err) {
       console.error("Error verifying rider PIN:", err);
-      setError(err.response?.data?.message || "Failed to verify PIN");
+      showError(err.response?.data?.message || "Failed to verify PIN");
     } finally {
       setLoading(false);
     }
@@ -466,13 +449,13 @@ const Manage_Restaurant = () => {
 
     // Validate file type
     if (!file.type.startsWith("image/")) {
-      setError("Please select a valid image file");
+      showError("Please select a valid image file");
       return;
     }
 
     // Validate file size (max 5MB)
     if (file.size > 5 * 1024 * 1024) {
-      setError("Image size should not exceed 5MB");
+      showError("Image size should not exceed 5MB");
       return;
     }
 
@@ -696,26 +679,6 @@ const Manage_Restaurant = () => {
 
   return (
     <div className="min-h-screen bg-[#C4E2C4]">
-      {/* Success/Error Messages */}
-      {success && (
-        <div className="fixed top-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg z-50 flex items-center space-x-2">
-          <span>{success}</span>
-          <button onClick={() => setSuccess(null)}>
-            <X className="w-5 h-5" />
-          </button>
-        </div>
-      )}
-
-      {error && (
-        <div className="fixed top-4 right-4 bg-red-500 text-white px-6 py-3 rounded-lg shadow-lg z-50 flex items-center space-x-2">
-          <AlertCircle className="w-5 h-5" />
-          <span>{error}</span>
-          <button onClick={() => setError(null)}>
-            <X className="w-5 h-5" />
-          </button>
-        </div>
-      )}
-
       {/* Header */}
       <div className="bg-[#8DBC96] py-8 shadow-md">
         <div className="max-w-7xl mx-auto px-4">
@@ -730,7 +693,7 @@ const Manage_Restaurant = () => {
             <Store className="w-24 h-24 text-white" />
             <div>
               <h1 className="text-4xl font-bold text-white mb-2">
-                Manage Restaurant
+                {restaurant?.restaurant_name || "Manage Restaurant"}
               </h1>
               <p className="text-white/90">Food & Order Management</p>
             </div>
