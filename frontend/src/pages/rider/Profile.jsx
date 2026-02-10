@@ -924,83 +924,6 @@ const Profile = () => {
         </div>
       </div>
 
-      {/* Completed Orders Section */}
-      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="bg-[#ACD4B1] rounded-2xl shadow-lg overflow-hidden">
-          <div className="bg-[#8DBC96] p-6">
-            <h2 className="text-2xl font-bold text-white flex items-center space-x-2">
-              <CheckCircle className="w-6 h-6" />
-              <span>Completed Orders ({completedOrders.length})</span>
-            </h2>
-          </div>
-          <div className="p-6">
-            {completedOrders.length > 0 ? (
-              <div className="space-y-4">
-                {completedOrders.map((order, index) => (
-                  <div
-                    key={order._id || index}
-                    className="bg-[#DDEEDB] rounded-xl p-4 hover:shadow-md transition-shadow"
-                  >
-                    <div className="flex justify-between items-start mb-3">
-                      <div>
-                        <p className="text-sm text-gray-600">Order ID</p>
-                        <p className="font-semibold text-gray-800">
-                          {order._id?.substring(0, 8)}...
-                        </p>
-                      </div>
-                      <div className="text-right">
-                        <p className="text-sm text-gray-600">Status</p>
-                        <p className="font-semibold text-green-600">
-                          {order.order_status}
-                        </p>
-                      </div>
-                    </div>
-                    <div className="grid grid-cols-2 gap-3 text-sm">
-                      <div>
-                        <p className="text-gray-600">Restaurant</p>
-                        <p className="font-semibold text-gray-800">
-                          {order.restaurant_id?.restaurant_name || "N/A"}
-                        </p>
-                      </div>
-                      <div>
-                        <p className="text-gray-600">Delivery Fee</p>
-                        <p className="font-semibold text-gray-800">
-                          ৳{order.delivery_fee?.toFixed(2) || "0.00"}
-                        </p>
-                      </div>
-                      <div>
-                        <p className="text-gray-600">Date</p>
-                        <p className="font-semibold text-gray-800">
-                          {order.createdAt
-                            ? new Date(order.createdAt).toLocaleDateString()
-                            : "N/A"}
-                        </p>
-                      </div>
-                      <div>
-                        <p className="text-gray-600">Total Amount</p>
-                        <p className="font-semibold text-gray-800">
-                          ৳{order.total_amount?.toFixed(2) || "0.00"}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div className="text-center py-12">
-                <Package className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-                <p className="text-gray-600 font-semibold">
-                  No completed orders yet
-                </p>
-                <p className="text-sm text-gray-500 mt-2">
-                  Your completed deliveries will appear here
-                </p>
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
-
       {/* Toast Notification */}
       {toast.show && (
         <div className="fixed top-4 right-4 z-50 animate-fade-in-down">
@@ -1115,7 +1038,7 @@ const Profile = () => {
             </div>
             <span className="text-2xl font-bold">BiteNow Rider</span>
           </div>
-          <p className="text-white/80">© 2024 BiteNow. All rights reserved.</p>
+          <p className="text-white/80">© 2026 BiteNow. All rights reserved.</p>
         </div>
       </footer>
     </div>

@@ -423,7 +423,7 @@ function Checkout() {
                         </div>
                       </div>
                       <span className="text-sm font-bold text-gray-900">
-                        ${item.total_price?.toFixed(2) || "0.00"}
+                        ৳{item.total_price?.toFixed(2) || "0.00"}
                       </span>
                     </div>
                   ))}
@@ -434,19 +434,19 @@ function Checkout() {
                 <div className="flex justify-between text-sm">
                   <span className="text-gray-600">Subtotal</span>
                   <span className="font-semibold text-gray-900">
-                    ${cart?.subtotal?.toFixed(2) || "0.00"}
+                    ৳{cart?.subtotal?.toFixed(2) || "0.00"}
                   </span>
                 </div>
                 <div className="flex justify-between text-sm">
                   <span className="text-gray-600">Delivery Fee</span>
                   <span className="font-semibold text-gray-900">
-                    ${cart?.delivery_charge?.toFixed(2) || "0.00"}
+                    ৳{cart?.delivery_charge?.toFixed(2) || "0.00"}
                   </span>
                 </div>
                 <div className="flex justify-between text-lg font-bold pt-3 border-t-2 border-gray-300">
                   <span className="text-gray-900">Total</span>
                   <span className="text-primary text-xl">
-                    ${cart?.total_amount?.toFixed(2) || "0.00"}
+                    ৳{cart?.total_amount?.toFixed(2) || "0.00"}
                   </span>
                 </div>
               </div>

@@ -956,7 +956,7 @@ const Home = () => {
             </div>
             <span className="text-2xl font-bold">BiteNow Rider</span>
           </div>
-          <p className="text-white/80">© 2024 BiteNow. All rights reserved.</p>
+          <p className="text-white/80">© 2026 BiteNow. All rights reserved.</p>
         </div>
       </footer>
 

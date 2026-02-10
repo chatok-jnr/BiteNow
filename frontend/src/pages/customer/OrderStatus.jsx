@@ -486,7 +486,7 @@ const OrderStatus = () => {
                       {item.name}
                     </span>
                     <span className="text-[#67A177] font-semibold">
-                      ${item.price.toFixed(2)}
+                      ৳{item.price.toFixed(2)}
                     </span>
                   </li>
                 ))}
@@ -496,7 +496,7 @@ const OrderStatus = () => {
               <div className="flex justify-between items-center mb-2">
                 <span className="text-gray-600">Delivery Charge</span>
                 <span className="text-[#67A177] font-semibold">
-                  $
+                  ৳
                   {selectedOrder.deliveryCharge
                     ? selectedOrder.deliveryCharge.toFixed(2)
                     : "0.00"}
@@ -505,7 +505,7 @@ const OrderStatus = () => {
               <div className="flex justify-between items-center mb-2">
                 <span className="text-gray-600">Total Amount</span>
                 <span className="text-[#67A177] font-bold">
-                  ${selectedOrder.total.toFixed(2)}
+                  ৳{selectedOrder.total.toFixed(2)}
                 </span>
               </div>
               {selectedOrder.confirmationPin &&

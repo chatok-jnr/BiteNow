@@ -575,7 +575,7 @@ const Home = () => {
                 </a>
               </div>
               <p className="text-white/80">
-                © 2024 BiteNow. All rights reserved.
+                © 2026 BiteNow. All rights reserved.
               </p>
             </div>
           </div>

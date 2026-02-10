@@ -375,7 +375,7 @@ const Dashboard = () => {
         <footer className="bg-[#8DBC96] text-white py-6 mt-auto">
           <div className="max-w-7xl mx-auto px-4 text-center">
             <p className="text-white/80">
-              © 2024 BiteNow. All rights reserved.
+              © 2026 BiteNow. All rights reserved.
             </p>
           </div>
         </footer>

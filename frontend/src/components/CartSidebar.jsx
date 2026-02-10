@@ -1,15 +1,26 @@
-import React from 'react';
-import { X, Minus, Plus, Trash2, ShoppingCart } from 'lucide-react';
+import React from "react";
+import { X, Minus, Plus, Trash2, ShoppingCart } from "lucide-react";
 
-const CartSidebar = ({ isOpen, onClose, cartItems, onUpdateQuantity, onRemoveItem, onClearCart, onCheckout }) => {
-  const totalPrice = cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+const CartSidebar = ({
+  isOpen,
+  onClose,
+  cartItems,
+  onUpdateQuantity,
+  onRemoveItem,
+  onClearCart,
+  onCheckout,
+}) => {
+  const totalPrice = cartItems.reduce(
+    (sum, item) => sum + item.price * item.quantity,
+    0,
+  );
 
   return (
     <>
       {/* Sidebar */}
-      <div 
+      <div
         className={`fixed top-0 right-0 h-full w-full sm:w-96 bg-white shadow-2xl z-50 transform transition-transform duration-300 ease-in-out ${
-          isOpen ? 'translate-x-0' : 'translate-x-full'
+          isOpen ? "translate-x-0" : "translate-x-full"
         }`}
       >
         {/* Header */}
@@ -20,7 +31,7 @@ const CartSidebar = ({ isOpen, onClose, cartItems, onUpdateQuantity, onRemoveIte
           </div>
           <div className="flex items-center gap-2">
             {cartItems.length > 0 && onClearCart && (
-              <button 
+              <button
                 onClick={onClearCart}
                 className="text-xs bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded-full transition-colors"
                 title="Clear entire cart"
@@ -28,7 +39,7 @@ const CartSidebar = ({ isOpen, onClose, cartItems, onUpdateQuantity, onRemoveIte
                 Clear All
               </button>
             )}
-            <button 
+            <button
               onClick={onClose}
               className="p-2 hover:bg-white/10 rounded-full transition-colors"
             >
@@ -38,7 +49,10 @@ const CartSidebar = ({ isOpen, onClose, cartItems, onUpdateQuantity, onRemoveIte
         </div>
 
         {/* Cart Items */}
-        <div className="flex-1 overflow-y-auto p-4" style={{ height: 'calc(100vh - 200px)' }}>
+        <div
+          className="flex-1 overflow-y-auto p-4"
+          style={{ height: "calc(100vh - 200px)" }}
+        >
           {cartItems.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-full text-gray-400">
               <ShoppingCart className="w-16 h-16 mb-4" />
@@ -48,27 +62,41 @@ const CartSidebar = ({ isOpen, onClose, cartItems, onUpdateQuantity, onRemoveIte
           ) : (
             <div className="space-y-4">
               {cartItems.map((item) => (
-                <div key={item.id} className="bg-gray-50 rounded-lg p-3 flex items-center space-x-3">
-                  <img 
-                    src={item.image} 
+                <div
+                  key={item.id}
+                  className="bg-gray-50 rounded-lg p-3 flex items-center space-x-3"
+                >
+                  <img
+                    src={item.image}
                     alt={item.name}
                     className="w-20 h-20 object-cover rounded-lg"
                   />
                   <div className="flex-1">
-                    <h3 className="font-semibold text-gray-800 text-sm line-clamp-1">{item.name}</h3>
-                    <p className="text-primary font-bold mt-1">${item.price}</p>
-                    
+                    <h3 className="font-semibold text-gray-800 text-sm line-clamp-1">
+                      {item.name}
+                    </h3>
+                    <p className="text-primary font-bold mt-1">৳{item.price}</p>
+
                     {/* Quantity Controls */}
                     <div className="flex items-center space-x-2 mt-2">
                       <button
-                        onClick={() => onUpdateQuantity(item.id, Math.max(1, item.quantity - 1))}
+                        onClick={() =>
+                          onUpdateQuantity(
+                            item.id,
+                            Math.max(1, item.quantity - 1),
+                          )
+                        }
                         className="w-7 h-7 bg-gray-200 rounded-full flex items-center justify-center hover:bg-gray-300 transition-colors"
                       >
                         <Minus className="w-4 h-4" />
                       </button>
-                      <span className="w-8 text-center font-semibold">{item.quantity}</span>
+                      <span className="w-8 text-center font-semibold">
+                        {item.quantity}
+                      </span>
                       <button
-                        onClick={() => onUpdateQuantity(item.id, item.quantity + 1)}
+                        onClick={() =>
+                          onUpdateQuantity(item.id, item.quantity + 1)
+                        }
                         className="w-7 h-7 bg-primary text-white rounded-full flex items-center justify-center hover:bg-accent transition-colors"
                       >
                         <Plus className="w-4 h-4" />
@@ -91,10 +119,14 @@ const CartSidebar = ({ isOpen, onClose, cartItems, onUpdateQuantity, onRemoveIte
         {cartItems.length > 0 && (
           <div className="border-t border-gray-200 p-4 bg-white">
             <div className="flex justify-between items-center mb-4">
-              <span className="text-lg font-semibold text-gray-700">Total:</span>
-              <span className="text-2xl font-bold text-primary">${totalPrice.toFixed(2)}</span>
+              <span className="text-lg font-semibold text-gray-700">
+                Total:
+              </span>
+              <span className="text-2xl font-bold text-primary">
+                ৳{totalPrice.toFixed(2)}
+              </span>
             </div>
-            <button 
+            <button
               onClick={onCheckout}
               className="w-full bg-primary text-white py-3 rounded-full hover:bg-accent transition-colors font-semibold text-lg shadow-lg hover:shadow-xl"
             >
