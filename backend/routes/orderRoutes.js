@@ -1,8 +1,8 @@
-const express = require('express');
+const express = require("express");
 
-const orderController = require('./../controllers/orderController');
-const authMiddleware = require('../middleware/authMiddleware');
-const { route } = require('./authRoutes');
+const orderController = require("./../controllers/orderController");
+const authMiddleware = require("../middleware/authMiddleware");
+const { route } = require("./authRoutes");
 
 const router = express.Router();
 
@@ -11,43 +11,42 @@ router.use(authMiddleware.protect);
 
 //Routes for REstauratn
 router
-  .route('/restaurant/:restaurantId')
-  .get(authMiddleware.restrictTo('restaurant_owner'), orderController.getOrderByRestaurant);
+  .route("/restaurant/:restaurantId")
+  .get(
+    authMiddleware.restrictTo("restaurant_owner"),
+    orderController.getOrderByRestaurant,
+  );
+router.route("/restaurant/verify-rider").patch(orderController.verifyRider);
 router
-  .route('/restaurant/verify-rider')
-  .patch(orderController.verifyRider);
-router
-  .route('/restaurant/:orderId')
+  .route("/restaurant/:orderId")
   .patch(orderController.updateOrderStatusByRestaurant);
 
 //Routes for riders
-router
-  .route('/rider')
-  .get(orderController.getLookForRider);
-router
-  .route('/rider/my-order')
-  .get(orderController.getMyOrderList);
+router.route("/rider").get(orderController.getLookForRider);
+router.route("/rider/my-order").get(orderController.getMyOrderList);
 
-router
-  .route('/rider/verify-customer')
-  .patch(orderController.verifyCustomer);
+router.route("/rider/verify-customer").patch(orderController.verifyCustomer);
 
-router
-  .route('/rider/:orderId')
-  .patch(orderController.availableToDeliver);
+router.route("/rider/:orderId").patch(orderController.availableToDeliver);
 
 //Regular Order routes
-router.route('/')
+router
+  .route("/")
   .get(orderController.getUserOrders)
   .post(orderController.createOrder);
 
-router.route('/:id')
-  .get(orderController.getOrder);
+// Migration endpoint - call once to fix existing orders
+router
+  .route("/migrate/locations")
+  .post(
+    authMiddleware.restrictTo("admin"),
+    orderController.migrateOrderLocations,
+  );
 
-router.route('/:id/status')
-  .patch(orderController.updateOrderStatus);
+router.route("/:id").get(orderController.getOrder);
 
-router.route('/:id/cancel')
-  .post(orderController.cancelOrder);
+router.route("/:id/status").patch(orderController.updateOrderStatus);
+
+router.route("/:id/cancel").post(orderController.cancelOrder);
 
 module.exports = router;

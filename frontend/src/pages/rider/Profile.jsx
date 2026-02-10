@@ -453,70 +453,72 @@ const Profile = () => {
       </div>
 
       {/* Main Content */}
-      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Left Column - Stats */}
-          <div className="lg:col-span-1 space-y-6">
-            {/* Rating Card */}
-            <div className="bg-[#ACD4B1] rounded-2xl p-6 shadow-lg">
-              <div className="text-center">
-                <div className="w-24 h-24 mx-auto mb-4 bg-[#67A177] rounded-full flex items-center justify-center">
-                  <Star className="w-12 h-12 fill-yellow-400 text-yellow-400" />
-                </div>
-                <p className="text-sm text-gray-600 mb-2">Rider Rating</p>
-                <p className="text-4xl font-bold text-[#67A177]">
-                  {profileData.stats?.average_rating?.toFixed(1) || "0.0"}
-                </p>
-                <p className="text-xs text-gray-500 mt-2">
-                  Based on customer reviews
-                </p>
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Stats Row - Horizontal Layout */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+          {/* Rating Card */}
+          <div className="bg-[#ACD4B1] rounded-2xl p-6 shadow-lg">
+            <div className="text-center">
+              <div className="w-16 h-16 mx-auto mb-3 bg-[#67A177] rounded-full flex items-center justify-center">
+                <Star className="w-8 h-8 fill-yellow-400 text-yellow-400" />
               </div>
-            </div>
-
-            {/* Earnings Card */}
-            <div className="bg-[#ACD4B1] rounded-2xl p-6 shadow-lg">
-              <div className="flex items-center space-x-3 mb-4">
-                <div className="w-12 h-12 bg-[#67A177] rounded-full flex items-center justify-center">
-                  <Package className="w-6 h-6 text-white" />
-                </div>
-                <div>
-                  <p className="text-sm text-gray-600">Total Deliveries</p>
-                  <p className="text-2xl font-bold text-[#67A177]">
-                    {profileData.stats?.total_deliveries || 0}
-                  </p>
-                </div>
-              </div>
-              <div className="pt-4 border-t border-[#8DBC96]/30">
-                <p className="text-xs text-gray-600">Completed Orders</p>
-                <p className="text-sm font-semibold text-gray-800">
-                  {completedOrders.length}
-                </p>
-              </div>
-            </div>
-
-            {/* Orders Card */}
-            <div className="bg-[#ACD4B1] rounded-2xl p-6 shadow-lg">
-              <div className="flex items-center space-x-3">
-                <div className="w-12 h-12 bg-[#67A177] rounded-full flex items-center justify-center">
-                  <Package className="w-6 h-6 text-white" />
-                </div>
-                <div>
-                  <p className="text-sm text-gray-600">Account Status</p>
-                  <p className="text-2xl font-bold text-[#67A177]">
-                    {profileData.account_status || "N/A"}
-                  </p>
-                </div>
-              </div>
+              <p className="text-xs text-gray-600 mb-1">Rating</p>
+              <p className="text-3xl font-bold text-[#67A177]">
+                {profileData.stats?.average_rating?.toFixed(1) || "0.0"}
+              </p>
             </div>
           </div>
 
-          {/* Right Column - Profile Details */}
-          <div className="lg:col-span-2">
+          {/* Total Deliveries Card */}
+          <div className="bg-[#ACD4B1] rounded-2xl p-6 shadow-lg">
+            <div className="text-center">
+              <div className="w-16 h-16 mx-auto mb-3 bg-[#67A177] rounded-full flex items-center justify-center">
+                <Package className="w-8 h-8 text-white" />
+              </div>
+              <p className="text-xs text-gray-600 mb-1">Total Deliveries</p>
+              <p className="text-3xl font-bold text-[#67A177]">
+                {profileData.stats?.total_deliveries || 0}
+              </p>
+            </div>
+          </div>
+
+          {/* Completed Orders Card */}
+          <div className="bg-[#ACD4B1] rounded-2xl p-6 shadow-lg">
+            <div className="text-center">
+              <div className="w-16 h-16 mx-auto mb-3 bg-[#67A177] rounded-full flex items-center justify-center">
+                <CheckCircle className="w-8 h-8 text-white" />
+              </div>
+              <p className="text-xs text-gray-600 mb-1">Completed</p>
+              <p className="text-3xl font-bold text-[#67A177]">
+                {completedOrders.length}
+              </p>
+            </div>
+          </div>
+
+          {/* Account Status Card */}
+          <div className="bg-[#ACD4B1] rounded-2xl p-6 shadow-lg">
+            <div className="text-center">
+              <div className="w-16 h-16 mx-auto mb-3 bg-[#67A177] rounded-full flex items-center justify-center">
+                <Bike className="w-8 h-8 text-white" />
+              </div>
+              <p className="text-xs text-gray-600 mb-1">Status</p>
+              <p className="text-lg font-bold text-[#67A177] capitalize">
+                {profileData.account_status || "N/A"}
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* Profile Details - Full Width */}
+        <div className="space-y-6">
+          {/* Profile Information Card */}
+          <div>
             <div className="bg-[#ACD4B1] rounded-2xl shadow-lg overflow-hidden">
               {/* Header */}
-              <div className="bg-[#8DBC96] p-6 flex justify-between items-center">
-                <h2 className="text-2xl font-bold text-white">
-                  Profile Information
+              <div className="bg-[#8DBC96] p-6 flex flex-col sm:flex-row justify-between items-center gap-4">
+                <h2 className="text-2xl font-bold text-white flex items-center space-x-2">
+                  <User className="w-6 h-6" />
+                  <span>Profile Information</span>
                 </h2>
                 {!isEditing ? (
                   <button
@@ -539,9 +541,9 @@ const Profile = () => {
 
               <div className="p-6">
                 {/* Profile Photo */}
-                <div className="flex justify-center mb-6">
+                <div className="flex justify-center mb-8">
                   <div className="relative">
-                    <div className="w-32 h-32 rounded-full border-4 border-[#67A177] overflow-hidden bg-gray-200 flex items-center justify-center">
+                    <div className="w-32 h-32 rounded-full border-4 border-[#67A177] shadow-lg overflow-hidden bg-gray-200 flex items-center justify-center">
                       {editForm.imageFile || profileData?.image?.url ? (
                         <img
                           src={
@@ -570,10 +572,10 @@ const Profile = () => {
                   </div>
                 </div>
 
-                {/* Form Fields */}
-                <div className="space-y-4">
+                {/* Form Fields - Grid Layout */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {/* Name */}
-                  <div className="bg-[#DDEEDB] p-4 rounded-xl">
+                  <div className="bg-[#DDEEDB] p-4 rounded-xl md:col-span-2">
                     <label className="flex items-center space-x-2 text-sm text-gray-600 mb-2">
                       <User className="w-4 h-4 text-[#67A177]" />
                       <span>Full Name</span>
@@ -594,7 +596,7 @@ const Profile = () => {
                   </div>
 
                   {/* Email (Read Only) */}
-                  <div className="bg-[#DDEEDB] p-4 rounded-xl">
+                  <div className="bg-[#DDEEDB] p-4 rounded-xl md:col-span-2">
                     <label className="flex items-center space-x-2 text-sm text-gray-600 mb-2">
                       <Mail className="w-4 h-4 text-[#67A177]" />
                       <span>Email Address</span>
@@ -701,7 +703,7 @@ const Profile = () => {
                   </div>
 
                   {/* Date of Birth */}
-                  <div className="bg-[#DDEEDB] p-4 rounded-xl">
+                  <div className="bg-[#DDEEDB] p-4 rounded-xl md:col-span-2">
                     <label className="flex items-center space-x-2 text-sm text-gray-600 mb-2">
                       <Calendar className="w-4 h-4 text-[#67A177]" />
                       <span>Date of Birth</span>
@@ -732,7 +734,7 @@ const Profile = () => {
                   {/* Password Fields (Only in Edit Mode) */}
                   {isEditing && (
                     <>
-                      <div className="bg-[#DDEEDB] p-4 rounded-xl">
+                      <div className="bg-[#DDEEDB] p-4 rounded-xl md:col-span-2">
                         <label className="flex items-center space-x-2 text-sm text-gray-600 mb-2">
                           <span>
                             New Password (Leave blank to keep current)
@@ -761,7 +763,7 @@ const Profile = () => {
                         </div>
                       </div>
 
-                      <div className="bg-[#DDEEDB] p-4 rounded-xl">
+                      <div className="bg-[#DDEEDB] p-4 rounded-xl md:col-span-2">
                         <label className="flex items-center space-x-2 text-sm text-gray-600 mb-2">
                           <span>Confirm New Password</span>
                         </label>
@@ -808,13 +810,16 @@ const Profile = () => {
               </div>
             </div>
 
-            {/* Documents Section - Always Visible */}
-            <div className="bg-[#ACD4B1] rounded-2xl shadow-lg overflow-hidden mt-6">
+            {/* Documents Section */}
+            <div className="bg-[#ACD4B1] rounded-2xl shadow-lg overflow-hidden">
               <div className="bg-[#8DBC96] p-6">
                 <h2 className="text-2xl font-bold text-white flex items-center space-x-2">
                   <FileText className="w-6 h-6" />
-                  <span>My Documents</span>
+                  <span>Required Documents</span>
                 </h2>
+                <p className="text-white/80 text-sm mt-1">
+                  Upload and manage your rider verification documents
+                </p>
               </div>
               <div className="p-6">
                 <div className="bg-[#DDEEDB] p-4 rounded-xl">

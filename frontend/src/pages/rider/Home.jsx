@@ -630,7 +630,11 @@ const Home = () => {
 
         {/* Action Buttons */}
         <div className="grid grid-cols-2 gap-2">
-          <button className="bg-[#DDEEDB] text-[#67A177] py-2 rounded-full hover:bg-[#C4E2C4] transition-all font-semibold text-sm">
+          <button
+            onClick={() => navigate(`/rider/map/${order.id}`)}
+            className="bg-[#DDEEDB] text-[#67A177] py-2 rounded-full hover:bg-[#C4E2C4] transition-all font-semibold text-sm flex items-center justify-center gap-1"
+          >
+            <Navigation className="w-4 h-4" />
             Navigate
           </button>
           <button

@@ -26,6 +26,7 @@ import RestaurantOwnerLogin from "./pages/RestaurantOwner/Login";
 import RiderHome from "./pages/rider/Home";
 import RiderProfile from "./pages/rider/Profile";
 import RiderLogin from "./pages/rider/Login";
+import RiderMap from "./pages/rider/RiderMap";
 
 function App() {
   return (
@@ -81,6 +82,7 @@ function App() {
               <Route path="/rider/login" element={<RiderLogin />} />
               <Route path="/rider/home" element={<RiderHome />} />
               <Route path="/rider/profile" element={<RiderProfile />} />
+              <Route path="/rider/map/:orderId" element={<RiderMap />} />
             </Routes>
           </main>
         </div>
