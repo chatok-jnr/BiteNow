@@ -531,21 +531,23 @@ const Home = () => {
           </div>
         </div>
 
-        {/* Rider PIN - Show to Restaurant */}
-        <div className="mb-3 bg-[#67A177] p-3 rounded-lg">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-white text-xs font-semibold">
-                Your PIN (Show to Restaurant)
-              </p>
-            </div>
-            <div className="bg-white px-4 py-1.5 rounded-lg">
-              <p className="text-xl font-bold text-[#67A177] tracking-wider">
-                {order.riderPin || "N/A"}
-              </p>
+        {/* Rider PIN - Show to Restaurant only when ready_for_pickup */}
+        {order.status === "ready_for_pickup" && (
+          <div className="mb-3 bg-[#67A177] p-3 rounded-lg">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-white text-xs font-semibold">
+                  Your PIN (Show to Restaurant)
+                </p>
+              </div>
+              <div className="bg-white px-4 py-1.5 rounded-lg">
+                <p className="text-xl font-bold text-[#67A177] tracking-wider">
+                  {order.riderPin || "N/A"}
+                </p>
+              </div>
             </div>
           </div>
-        </div>
+        )}
 
         {/* Customer Info */}
         <div className="mb-3 bg-[#DDEEDB] p-2 rounded-lg">

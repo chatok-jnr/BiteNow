@@ -9,14 +9,22 @@ const router = express.Router();
 // Protect all order routes - user must be authenticated
 router.use(authMiddleware.protect);
 
-//Routes for REstauratn
+//Routes for Restaurant
+// IMPORTANT: Specific routes must come before parameterized routes
+router
+  .route("/restaurant/verify-rider")
+  .patch(
+    authMiddleware.restrictTo("restaurant_owner"),
+    orderController.verifyRider
+  );
+
 router
   .route("/restaurant/:restaurantId")
   .get(
     authMiddleware.restrictTo("restaurant_owner"),
     orderController.getOrderByRestaurant,
   );
-router.route("/restaurant/verify-rider").patch(orderController.verifyRider);
+
 router
   .route("/restaurant/:orderId")
   .patch(orderController.updateOrderStatusByRestaurant);

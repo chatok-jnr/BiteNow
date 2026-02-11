@@ -27,6 +27,7 @@ import foodService from "../../utils/foodService";
 import {
   getOrdersByRestaurant,
   updateOrderStatusByRestaurant,
+  verifyRiderPin,
 } from "../../utils/orderService";
 import { getMyRestaurantById } from "../../utils/restaurantService";
 
@@ -428,13 +429,15 @@ const Manage_Restaurant = () => {
     try {
       setLoading(true);
 
-      // You can add API call here to verify the PIN if needed
-      // For now, we'll just update the order status
-      await handleUpdateOrderStatus(selectedOrder._id, "out_for_delivery");
+      // Call API to verify the rider PIN
+      await verifyRiderPin(selectedOrder._id, riderPin);
 
       setShowPinModal(false);
       setRiderPin("");
       showSuccess("Rider verified! Order is now out for delivery.");
+      
+      // Refresh orders after successful verification
+      await fetchOrders();
     } catch (err) {
       console.error("Error verifying rider PIN:", err);
       showError(err.response?.data?.message || "Failed to verify PIN");

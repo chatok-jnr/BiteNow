@@ -512,7 +512,10 @@ exports.availableToDeliver = async (req, res) => {
 //Verify Rider Pin (Restaurant Side)
 exports.verifyRider = async (req, res) => {
   try {
+    console.log(`Debug = verify rider is working`);
     const { order_id, rider_otp } = req.body;
+
+    console.log("Request body:", { order_id, rider_otp });
 
     if (!order_id || !rider_otp) {
       return res.status(400).json({
@@ -523,7 +526,6 @@ exports.verifyRider = async (req, res) => {
 
     // Find order with restaurant and rider_pin information
     const orderInfo = await Order.findById(order_id)
-      .select("+rider_pin")
       .populate("restaurant_id", "owner_id restaurant_name");
 
     if (!orderInfo) {
@@ -532,6 +534,10 @@ exports.verifyRider = async (req, res) => {
         message: `No order found with this id: ${order_id}`,
       });
     }
+
+    console.log("Order rider_pin from DB:", orderInfo.rider_pin);
+    console.log("Rider OTP from request:", rider_otp);
+    console.log("Parsed OTP:", parseInt(rider_otp));
 
     // Verify restaurant ownership (for restaurant owner access)
     if (req.user && req.user._id) {
@@ -554,7 +560,11 @@ exports.verifyRider = async (req, res) => {
     }
 
     // Verify rider PIN (convert to number for comparison)
-    const areYouRider = orderInfo.rider_pin === parseInt(rider_otp);
+    const parsedOtp = parseInt(rider_otp);
+    const areYouRider = orderInfo.rider_pin === parsedOtp;
+
+    console.log("Comparison result:", areYouRider);
+    console.log("Types - DB:", typeof orderInfo.rider_pin, "Request:", typeof parsedOtp);
 
     if (!areYouRider) {
       return res.status(400).json({
@@ -578,6 +588,7 @@ exports.verifyRider = async (req, res) => {
       },
     });
   } catch (err) {
+    console.error("Error in verifyRider:", err);
     res.status(400).json({
       status: "failed",
       message: err.message,
