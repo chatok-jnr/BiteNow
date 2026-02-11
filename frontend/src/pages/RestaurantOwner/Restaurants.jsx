@@ -6,7 +6,6 @@ import {
   X,
   MapPin,
   Mail,
-  Menu,
   Image,
   ChevronRight,
   Star,
@@ -17,7 +16,7 @@ import {
   Navigation,
   Search,
 } from "lucide-react";
-import OwnerSidebar from "../../components/OwnerSidebar";
+import OwnerNavbar from "../../components/OwnerNavbar";
 import ApprovalMessage from "../../components/ApprovalMessage";
 import { useNotification } from "../../contexts/NotificationContext";
 import {
@@ -33,7 +32,6 @@ import axiosInstance from "../../utils/axios";
 const Restaurants = () => {
   const navigate = useNavigate();
   const { showSuccess, showError, showWarning, confirm } = useNotification();
-  const [sidebarOpen, setSidebarOpen] = useState(false);
   const [showAddModal, setShowAddModal] = useState(false);
   const [isEditMode, setIsEditMode] = useState(false);
   const [editingRestaurantId, setEditingRestaurantId] = useState(null);
@@ -665,53 +663,39 @@ const Restaurants = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#C4E2C4] flex">
-      <OwnerSidebar sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
+    <div className="min-h-screen bg-bgPrimary flex flex-col">
+      <OwnerNavbar />
 
-      <div className="flex-1 flex flex-col min-h-screen">
-        <header className="bg-[#8DBC96] shadow-md lg:hidden">
-          <div className="px-4 py-4 flex items-center justify-between">
-            <button onClick={() => setSidebarOpen(true)} className="text-white">
-              <Menu className="w-6 h-6" />
+      <main className="flex-1 p-4 lg:p-8">
+        <div className="max-w-7xl mx-auto">
+          <div className="flex items-center justify-between mb-8">
+            <div>
+              <h1 className="text-4xl font-bold text-gray-800 mb-2">
+                My Restaurants
+              </h1>
+              <p className="text-gray-600">
+                Manage all your restaurant locations
+              </p>
+            </div>
+            <button
+              onClick={() => {
+                console.log(`Debug = ${ownerStatus}`);
+
+                if (ownerStatus !== "Approved") {
+                  showError(
+                    "Your account must be approved before you can add restaurants",
+                  );
+                  return;
+                }
+                setShowAddModal(true);
+              }}
+              disabled={loading}
+              className="bg-primary text-white px-6 py-3 rounded-full hover:bg-accent-dark transition-all font-semibold flex items-center space-x-2 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <Plus className="w-5 h-5" />
+              <span>Add Restaurant</span>
             </button>
-            <div className="flex items-center space-x-2">
-              <Store className="w-6 h-6 text-white" />
-              <span className="text-xl font-bold text-white">BiteNow</span>
-            </div>
-            <div className="w-6" />
           </div>
-        </header>
-
-        <main className="flex-1 p-4 lg:p-8">
-          <div className="max-w-7xl mx-auto">
-            <div className="flex items-center justify-between mb-8">
-              <div>
-                <h1 className="text-4xl font-bold text-gray-800 mb-2">
-                  My Restaurants
-                </h1>
-                <p className="text-gray-600">
-                  Manage all your restaurant locations
-                </p>
-              </div>
-              <button
-                onClick={() => {
-                  console.log(`Debug = ${ownerStatus}`);
-
-                  if (ownerStatus !== "Approved") {
-                    showError(
-                      "Your account must be approved before you can add restaurants",
-                    );
-                    return;
-                  }
-                  setShowAddModal(true);
-                }}
-                disabled={loading}
-                className="bg-[#67A177] text-white px-6 py-3 rounded-full hover:bg-[#5a8f68] transition-all font-semibold flex items-center space-x-2 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                <Plus className="w-5 h-5" />
-                <span>Add Restaurant</span>
-              </button>
-            </div>
 
             {/* Show approval notice if not approved */}
             {ownerStatus && ownerStatus !== "Approved" && (
@@ -727,14 +711,14 @@ const Restaurants = () => {
             {/* Loading State */}
             {loading && restaurants.length === 0 && (
               <div className="text-center py-12">
-                <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-[#67A177]"></div>
+                <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
                 <p className="mt-4 text-gray-600">Loading restaurants...</p>
               </div>
             )}
 
             {/* Empty State */}
             {!loading && restaurants.length === 0 && (
-              <div className="text-center py-12 bg-[#ACD4B1] rounded-2xl">
+              <div className="text-center py-12 bg-tertiary rounded-2xl">
                 <Store className="w-16 h-16 text-gray-400 mx-auto mb-4" />
                 <h3 className="text-xl font-semibold text-gray-700 mb-2">
                   No restaurants yet
@@ -747,7 +731,7 @@ const Restaurants = () => {
                 {ownerStatus === "Approved" && (
                   <button
                     onClick={() => setShowAddModal(true)}
-                    className="bg-[#67A177] text-white px-6 py-3 rounded-full hover:bg-[#5a8f68] transition-all font-semibold inline-flex items-center space-x-2"
+                    className="bg-primary text-white px-6 py-3 rounded-full hover:bg-accent-dark transition-all font-semibold inline-flex items-center space-x-2"
                   >
                     <Plus className="w-5 h-5" />
                     <span>Add Restaurant</span>
@@ -761,7 +745,7 @@ const Restaurants = () => {
               {restaurants.map((restaurant) => (
                 <div
                   key={restaurant._id}
-                  className="bg-[#ACD4B1] rounded-2xl overflow-hidden shadow-lg hover:shadow-xl transition-all"
+                  className="bg-tertiary rounded-2xl overflow-hidden shadow-lg hover:shadow-xl transition-all"
                 >
                   <div className="aspect-video overflow-hidden relative">
                     <img
@@ -773,7 +757,7 @@ const Restaurants = () => {
                       alt={restaurant.restaurant_name}
                       className="w-full h-full object-cover hover:scale-110 transition-transform duration-500"
                     />
-                    <div className="absolute top-4 right-4 bg-[#67A177] text-white px-3 py-1 rounded-full text-sm font-semibold">
+                    <div className="absolute top-4 right-4 bg-primary text-white px-3 py-1 rounded-full text-sm font-semibold">
                       {restaurant.restaurant_category?.[0] || "Restaurant"}
                     </div>
                   </div>
@@ -786,7 +770,7 @@ const Restaurants = () => {
                     </p>
                     <div className="space-y-2 mb-4">
                       <div className="flex items-start space-x-2">
-                        <MapPin className="w-4 h-4 text-[#67A177] mt-0.5 flex-shrink-0" />
+                        <MapPin className="w-4 h-4 text-primary mt-0.5 flex-shrink-0" />
                         <p className="text-sm text-gray-700">
                           {restaurant.restaurant_address ||
                             "No address provided"}
@@ -794,7 +778,7 @@ const Restaurants = () => {
                       </div>
                       {restaurant.restaurant_contact_info?.phone && (
                         <div className="flex items-center space-x-2">
-                          <Phone className="w-4 h-4 text-[#67A177] flex-shrink-0" />
+                          <Phone className="w-4 h-4 text-primary flex-shrink-0" />
                           <p className="text-sm text-gray-700">
                             {restaurant.restaurant_contact_info.phone}
                           </p>
@@ -802,7 +786,7 @@ const Restaurants = () => {
                       )}
                       {restaurant.restaurant_contact_info?.email && (
                         <div className="flex items-center space-x-2">
-                          <Mail className="w-4 h-4 text-[#67A177] flex-shrink-0" />
+                          <Mail className="w-4 h-4 text-primary flex-shrink-0" />
                           <p className="text-sm text-gray-700">
                             {restaurant.restaurant_contact_info.email}
                           </p>
@@ -810,7 +794,7 @@ const Restaurants = () => {
                       )}
                     </div>
                     <div className="grid grid-cols-2 gap-2 mb-4">
-                      <div className="bg-[#DDEEDB] p-2 rounded-lg text-center">
+                      <div className="bg-surface p-2 rounded-lg text-center">
                         <div className="flex items-center justify-center mb-1">
                           <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
                         </div>
@@ -819,9 +803,9 @@ const Restaurants = () => {
                           {restaurant.restaurant_rating?.average || "N/A"}
                         </p>
                       </div>
-                      <div className="bg-[#DDEEDB] p-2 rounded-lg text-center">
+                      <div className="bg-surface p-2 rounded-lg text-center">
                         <div className="flex items-center justify-center mb-1">
-                          <Package className="w-4 h-4 text-[#67A177]" />
+                          <Package className="w-4 h-4 text-primary" />
                         </div>
                         <p className="text-xs text-gray-600">Sales</p>
                         <p className="font-bold text-gray-800">
@@ -832,7 +816,7 @@ const Restaurants = () => {
                     <div className="flex space-x-2">
                       <button
                         onClick={() => handleManageRestaurant(restaurant)}
-                        className="flex-1 bg-[#67A177] text-white py-3 rounded-full hover:bg-[#5a8f68] transition-all font-semibold flex items-center justify-center space-x-2"
+                        className="flex-1 bg-primary text-white py-3 rounded-full hover:bg-accent-dark transition-all font-semibold flex items-center justify-center space-x-2"
                       >
                         <span>Manage</span>
                         <ChevronRight className="w-5 h-5" />
@@ -861,14 +845,13 @@ const Restaurants = () => {
           </div>
         </main>
 
-        <footer className="bg-[#8DBC96] text-white py-6 mt-auto">
+        <footer className="bg-secondary text-white py-6 mt-auto">
           <div className="max-w-7xl mx-auto px-4 text-center">
             <p className="text-white/80">
               © 2026 BiteNow. All rights reserved.
             </p>
           </div>
         </footer>
-      </div>
 
       {showAddModal && (
         <div
@@ -882,10 +865,10 @@ const Restaurants = () => {
           }}
         >
           <div
-            className="bg-[#DDEEDB] rounded-2xl max-w-4xl w-full my-8 max-h-[90vh] overflow-y-auto"
+            className="bg-surface rounded-2xl max-w-4xl w-full my-8 max-h-[90vh] overflow-y-auto"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="sticky top-0 bg-[#8DBC96] p-6 flex items-center justify-between rounded-t-2xl z-10">
+            <div className="sticky top-0 bg-secondary p-6 flex items-center justify-between rounded-t-2xl z-10">
               <h2 className="text-2xl font-bold text-white">
                 {isEditMode ? "Edit Restaurant" : "Add New Restaurant"}
               </h2>
@@ -901,7 +884,7 @@ const Restaurants = () => {
             </div>
 
             <div className="p-6 space-y-6">
-              <div className="bg-[#ACD4B1] p-6 rounded-xl space-y-4">
+              <div className="bg-tertiary p-6 rounded-xl space-y-4">
                 <h3 className="text-xl font-bold text-gray-800">
                   Basic Information
                 </h3>
@@ -914,7 +897,7 @@ const Restaurants = () => {
                     name="restaurant_name"
                     value={formData.restaurant_name}
                     onChange={handleInputChange}
-                    className="w-full px-4 py-3 rounded-lg border-2 border-[#8DBC96] focus:border-[#67A177] focus:outline-none bg-white"
+                    className="w-full px-4 py-3 rounded-lg border-2 border-secondary focus:border-primary focus:outline-none bg-white"
                     placeholder="Enter restaurant name"
                   />
                 </div>
@@ -930,8 +913,8 @@ const Restaurants = () => {
                         onClick={() => handleCategoryToggle(type)}
                         className={`px-3 py-1 rounded-full text-sm font-medium transition-all ${
                           formData.restaurant_category.includes(type)
-                            ? "bg-[#67A177] text-white"
-                            : "bg-white text-gray-700 border border-[#8DBC96] hover:border-[#67A177]"
+                            ? "bg-primary text-white"
+                            : "bg-white text-gray-700 border border-secondary hover:border-primary"
                         }`}
                       >
                         {type}
@@ -952,7 +935,7 @@ const Restaurants = () => {
                     value={formData.restaurant_description}
                     onChange={handleInputChange}
                     rows="3"
-                    className="w-full px-4 py-3 rounded-lg border-2 border-[#8DBC96] focus:border-[#67A177] focus:outline-none bg-white resize-none"
+                    className="w-full px-4 py-3 rounded-lg border-2 border-secondary focus:border-primary focus:outline-none bg-white resize-none"
                     placeholder="Describe your restaurant"
                   />
                 </div>
@@ -969,9 +952,9 @@ const Restaurants = () => {
                       />
                     )}
                     <label className="flex-1 cursor-pointer">
-                      <div className="border-2 border-dashed border-[#8DBC96] rounded-lg p-4 hover:border-[#67A177] transition-colors bg-white">
+                      <div className="border-2 border-dashed border-secondary rounded-lg p-4 hover:border-primary transition-colors bg-white">
                         <div className="flex flex-col items-center space-y-2">
-                          <Image className="w-8 h-8 text-[#67A177]" />
+                          <Image className="w-8 h-8 text-primary" />
                           <span className="text-sm text-gray-600">
                             Click to upload
                           </span>
@@ -988,13 +971,13 @@ const Restaurants = () => {
                 </div>
               </div>
 
-              <div className="bg-[#ACD4B1] p-6 rounded-xl space-y-4">
+              <div className="bg-tertiary p-6 rounded-xl space-y-4">
                 <h3 className="text-xl font-bold text-gray-800">
                   Location & Address
                 </h3>
 
                 {/* Location Selector */}
-                <div className="bg-[#DDEEDB] p-4 rounded-lg space-y-3">
+                <div className="bg-surface p-4 rounded-lg space-y-3">
                   <label className="block text-sm font-semibold text-gray-700">
                     Quick Location Selection
                   </label>
@@ -1003,7 +986,7 @@ const Restaurants = () => {
                       type="button"
                       onClick={handleUseMyLocation}
                       disabled={loadingLocation}
-                      className="flex-1 bg-[#67A177] text-white px-4 py-3 rounded-lg hover:bg-[#5a8f68] transition-all font-semibold flex items-center justify-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="flex-1 bg-primary text-white px-4 py-3 rounded-lg hover:bg-accent-dark transition-all font-semibold flex items-center justify-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       <Navigation className="w-5 h-5" />
                       <span>
@@ -1031,23 +1014,23 @@ const Restaurants = () => {
                         onFocus={() =>
                           searchResults.length > 0 && setShowSearchResults(true)
                         }
-                        className="w-full pl-10 pr-4 py-3 rounded-lg border-2 border-[#8DBC96] focus:border-[#67A177] focus:outline-none bg-white"
+                        className="w-full pl-10 pr-4 py-3 rounded-lg border-2 border-secondary focus:border-primary focus:outline-none bg-white"
                         placeholder="Search for an address..."
                       />
                     </div>
 
                     {/* Search Results Dropdown */}
                     {showSearchResults && searchResults.length > 0 && (
-                      <div className="absolute z-20 w-full mt-1 bg-white border-2 border-[#8DBC96] rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                      <div className="absolute z-20 w-full mt-1 bg-white border-2 border-secondary rounded-lg shadow-lg max-h-60 overflow-y-auto">
                         {searchResults.map((result, index) => (
                           <button
                             key={index}
                             type="button"
                             onClick={() => handleSelectLocation(result)}
-                            className="w-full text-left px-4 py-3 hover:bg-[#DDEEDB] transition-colors border-b border-gray-200 last:border-b-0"
+                            className="w-full text-left px-4 py-3 hover:bg-surface transition-colors border-b border-gray-200 last:border-b-0"
                           >
                             <div className="flex items-start space-x-2">
-                              <MapPin className="w-4 h-4 text-[#67A177] mt-1 flex-shrink-0" />
+                              <MapPin className="w-4 h-4 text-primary mt-1 flex-shrink-0" />
                               <div>
                                 <p className="font-medium text-gray-800 text-sm">
                                   {result.text}
@@ -1087,7 +1070,7 @@ const Restaurants = () => {
                     value={formData.restaurant_address}
                     onChange={handleInputChange}
                     rows="3"
-                    className="w-full px-4 py-3 rounded-lg border-2 border-[#8DBC96] focus:border-[#67A177] focus:outline-none bg-white resize-none"
+                    className="w-full px-4 py-3 rounded-lg border-2 border-secondary focus:border-primary focus:outline-none bg-white resize-none"
                     placeholder="Enter full address or use location tools above to auto-fill"
                   />
                   <p className="text-xs text-gray-500 mt-1">
@@ -1097,7 +1080,7 @@ const Restaurants = () => {
                 </div>
               </div>
 
-              <div className="bg-[#ACD4B1] p-6 rounded-xl space-y-4">
+              <div className="bg-tertiary p-6 rounded-xl space-y-4">
                 <h3 className="text-xl font-bold text-gray-800">
                   Contact Information
                 </h3>
@@ -1110,7 +1093,7 @@ const Restaurants = () => {
                     name="contact_phone"
                     value={formData.restaurant_contact_info.phone}
                     onChange={handleInputChange}
-                    className="w-full px-4 py-3 rounded-lg border-2 border-[#8DBC96] focus:border-[#67A177] focus:outline-none bg-white"
+                    className="w-full px-4 py-3 rounded-lg border-2 border-secondary focus:border-primary focus:outline-none bg-white"
                     placeholder="+8801712345678"
                   />
                 </div>
@@ -1123,19 +1106,19 @@ const Restaurants = () => {
                     name="contact_email"
                     value={formData.restaurant_contact_info.email}
                     onChange={handleInputChange}
-                    className="w-full px-4 py-3 rounded-lg border-2 border-[#8DBC96] focus:border-[#67A177] focus:outline-none bg-white"
+                    className="w-full px-4 py-3 rounded-lg border-2 border-secondary focus:border-primary focus:outline-none bg-white"
                     placeholder="restaurant@example.com"
                   />
                 </div>
               </div>
 
-              <div className="bg-[#ACD4B1] p-6 rounded-xl">
+              <div className="bg-tertiary p-6 rounded-xl">
                 <h3 className="text-xl font-bold text-gray-800 mb-4">
                   Operating Hours
                 </h3>
                 <div className="space-y-3">
                   {daysOfWeek.map((day) => (
-                    <div key={day} className="bg-[#DDEEDB] p-4 rounded-lg">
+                    <div key={day} className="bg-surface p-4 rounded-lg">
                       <div className="flex flex-col md:flex-row md:items-center md:space-x-4">
                         <div className="flex items-center space-x-3 mb-3 md:mb-0 md:w-40">
                           <label className="text-sm font-semibold text-gray-700 capitalize">
@@ -1155,7 +1138,7 @@ const Restaurants = () => {
                               onChange={(e) =>
                                 handleHoursChange(day, "open", e.target.value)
                               }
-                              className="w-full px-3 py-2 rounded-lg border-2 border-[#8DBC96] focus:border-[#67A177] focus:outline-none bg-white text-sm"
+                              className="w-full px-3 py-2 rounded-lg border-2 border-secondary focus:border-primary focus:outline-none bg-white text-sm"
                             />
                           </div>
                           <span className="text-gray-600 mt-5">to</span>
@@ -1171,7 +1154,7 @@ const Restaurants = () => {
                               onChange={(e) =>
                                 handleHoursChange(day, "close", e.target.value)
                               }
-                              className="w-full px-3 py-2 rounded-lg border-2 border-[#8DBC96] focus:border-[#67A177] focus:outline-none bg-white text-sm"
+                              className="w-full px-3 py-2 rounded-lg border-2 border-secondary focus:border-primary focus:outline-none bg-white text-sm"
                             />
                           </div>
                         </div>
@@ -1197,7 +1180,7 @@ const Restaurants = () => {
                   type="button"
                   onClick={handleSubmit}
                   disabled={loading}
-                  className="flex-1 bg-[#67A177] text-white py-3 rounded-full hover:bg-[#5a8f68] transition-all font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="flex-1 bg-primary text-white py-3 rounded-full hover:bg-accent-dark transition-all font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {loading
                     ? isEditMode

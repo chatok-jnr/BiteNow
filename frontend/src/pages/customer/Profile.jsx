@@ -316,7 +316,7 @@ const Profile = () => {
 
   if (loading && !profileData.email) {
     return (
-      <div className="min-h-screen bg-[#C4E2C4] flex items-center justify-center">
+      <div className="min-h-screen bg-bgPrimary flex items-center justify-center">
         <div className="text-center">
           <p className="text-gray-600 text-xl">Loading profile...</p>
         </div>
@@ -325,38 +325,38 @@ const Profile = () => {
   }
 
   return (
-    <div className="min-h-screen bg-[#C4E2C4] flex flex-col">
+    <div className="min-h-screen bg-bgPrimary flex flex-col">
       {/* Navbar */}
-      <nav className="sticky top-0 z-50 bg-[#67A177] shadow-md">
+      <nav className="sticky top-0 z-50 bg-primary shadow-md">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div
               onClick={() => navigate("/")}
               className="flex items-center space-x-3 cursor-pointer"
             >
-              <div className="w-10 h-10 bg-[#ACD4B1] rounded-full flex items-center justify-center">
-                <ShoppingCart className="w-6 h-6 text-[#67A177]" />
+              <div className="w-10 h-10 bg-tertiary rounded-full flex items-center justify-center">
+                <ShoppingCart className="w-6 h-6 text-primary" />
               </div>
               <span className="text-2xl font-bold text-white">BiteNow</span>
             </div>
             <div className="flex items-center space-x-4">
               <button
                 onClick={() => navigate("/")}
-                className="text-white hover:text-[#ACD4B1] transition-colors font-medium px-4 py-2 flex items-center gap-2"
+                className="text-white hover:text-tertiary transition-colors font-medium px-4 py-2 flex items-center gap-2"
               >
                 <HomeIcon className="w-5 h-5" />
                 Home
               </button>
               <button
                 onClick={() => navigate("/orderStatus")}
-                className="text-white hover:text-[#ACD4B1] transition-colors font-medium px-4 py-2 flex items-center gap-2"
+                className="text-white hover:text-tertiary transition-colors font-medium px-4 py-2 flex items-center gap-2"
               >
                 <Package className="w-5 h-5" />
                 Orders
               </button>
               <button
                 onClick={() => navigate("/profile")}
-                className="bg-[#ACD4B1] text-[#67A177] px-6 py-2 rounded-full font-semibold flex items-center gap-2"
+                className="bg-tertiary text-primary px-6 py-2 rounded-full font-semibold flex items-center gap-2"
               >
                 <User className="w-5 h-5" />
                 Profile
@@ -382,9 +382,9 @@ const Profile = () => {
       <div className="flex-1 px-4 py-12">
         <div className="max-w-4xl mx-auto">
           {/* Profile Card */}
-          <div className="bg-[#ACD4B1] rounded-3xl shadow-2xl overflow-hidden">
+          <div className="bg-tertiary rounded-3xl shadow-2xl overflow-hidden">
             {/* Header Section */}
-            <div className="bg-[#8DBC96] h-32"></div>
+            <div className="bg-secondary h-32"></div>
 
             <div className="relative px-8 pb-8">
               {/* Error Message */}
@@ -401,15 +401,15 @@ const Profile = () => {
                     <img
                       src={isEditing ? editForm.image : profileData.image}
                       alt="Profile"
-                      className="w-32 h-32 rounded-full border-4 border-[#ACD4B1] object-cover shadow-xl"
+                      className="w-32 h-32 rounded-full border-4 border-tertiary object-cover shadow-xl"
                     />
                   ) : (
-                    <div className="w-32 h-32 rounded-full border-4 border-[#ACD4B1] bg-[#67A177] shadow-xl flex items-center justify-center">
+                    <div className="w-32 h-32 rounded-full border-4 border-tertiary bg-primary shadow-xl flex items-center justify-center">
                       <User className="w-16 h-16 text-white" />
                     </div>
                   )}
                   {isEditing && (
-                    <label className="absolute bottom-0 right-0 bg-[#67A177] w-10 h-10 rounded-full flex items-center justify-center cursor-pointer hover:bg-[#5a8f68] transition-all shadow-lg">
+                    <label className="absolute bottom-0 right-0 bg-primary w-10 h-10 rounded-full flex items-center justify-center cursor-pointer hover:bg-accent-dark transition-all shadow-lg">
                       <Camera className="w-5 h-5 text-white" />
                       <input
                         type="file"
@@ -439,8 +439,8 @@ const Profile = () => {
                     {/* Email */}
                     <div className="bg-white rounded-2xl p-5 shadow-md">
                       <div className="flex items-center space-x-3 mb-2">
-                        <div className="w-10 h-10 bg-[#DDEEDB] rounded-full flex items-center justify-center">
-                          <Mail className="w-5 h-5 text-[#67A177]" />
+                        <div className="w-10 h-10 bg-surface rounded-full flex items-center justify-center">
+                          <Mail className="w-5 h-5 text-primary" />
                         </div>
                         <div>
                           <p className="text-sm text-gray-500 font-semibold">
@@ -456,8 +456,8 @@ const Profile = () => {
                     {/* Phone */}
                     <div className="bg-white rounded-2xl p-5 shadow-md">
                       <div className="flex items-center space-x-3 mb-2">
-                        <div className="w-10 h-10 bg-[#DDEEDB] rounded-full flex items-center justify-center">
-                          <Phone className="w-5 h-5 text-[#67A177]" />
+                        <div className="w-10 h-10 bg-surface rounded-full flex items-center justify-center">
+                          <Phone className="w-5 h-5 text-primary" />
                         </div>
                         <div>
                           <p className="text-sm text-gray-500 font-semibold">
@@ -473,8 +473,8 @@ const Profile = () => {
                     {/* Default Address */}
                     <div className="bg-white rounded-2xl p-5 shadow-md">
                       <div className="flex items-center space-x-3 mb-2">
-                        <div className="w-10 h-10 bg-[#DDEEDB] rounded-full flex items-center justify-center">
-                          <MapPin className="w-5 h-5 text-[#67A177]" />
+                        <div className="w-10 h-10 bg-surface rounded-full flex items-center justify-center">
+                          <MapPin className="w-5 h-5 text-primary" />
                         </div>
                         <div className="flex-1">
                           <p className="text-sm text-gray-500 font-semibold">
@@ -490,8 +490,8 @@ const Profile = () => {
                     {/* Birth Date */}
                     <div className="bg-white rounded-2xl p-5 shadow-md">
                       <div className="flex items-center space-x-3 mb-2">
-                        <div className="w-10 h-10 bg-[#DDEEDB] rounded-full flex items-center justify-center">
-                          <Calendar className="w-5 h-5 text-[#67A177]" />
+                        <div className="w-10 h-10 bg-surface rounded-full flex items-center justify-center">
+                          <Calendar className="w-5 h-5 text-primary" />
                         </div>
                         <div>
                           <p className="text-sm text-gray-500 font-semibold">
@@ -515,8 +515,8 @@ const Profile = () => {
                     {/* Gender */}
                     <div className="bg-white rounded-2xl p-5 shadow-md">
                       <div className="flex items-center space-x-3 mb-2">
-                        <div className="w-10 h-10 bg-[#DDEEDB] rounded-full flex items-center justify-center">
-                          <User className="w-5 h-5 text-[#67A177]" />
+                        <div className="w-10 h-10 bg-surface rounded-full flex items-center justify-center">
+                          <User className="w-5 h-5 text-primary" />
                         </div>
                         <div>
                           <p className="text-sm text-gray-500 font-semibold">
@@ -532,8 +532,8 @@ const Profile = () => {
                     {/* Member Since */}
                     <div className="bg-white rounded-2xl p-5 shadow-md">
                       <div className="flex items-center space-x-3 mb-2">
-                        <div className="w-10 h-10 bg-[#DDEEDB] rounded-full flex items-center justify-center">
-                          <Calendar className="w-5 h-5 text-[#67A177]" />
+                        <div className="w-10 h-10 bg-surface rounded-full flex items-center justify-center">
+                          <Calendar className="w-5 h-5 text-primary" />
                         </div>
                         <div>
                           <p className="text-sm text-gray-500 font-semibold">
@@ -551,8 +551,8 @@ const Profile = () => {
                   <div className="mt-8 bg-white rounded-2xl p-5 shadow-md">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center space-x-3">
-                        <div className="w-10 h-10 bg-[#DDEEDB] rounded-full flex items-center justify-center">
-                          <MapPin className="w-5 h-5 text-[#67A177]" />
+                        <div className="w-10 h-10 bg-surface rounded-full flex items-center justify-center">
+                          <MapPin className="w-5 h-5 text-primary" />
                         </div>
                         <div>
                           <p className="text-sm text-gray-500 font-semibold">
@@ -565,7 +565,7 @@ const Profile = () => {
                       </div>
                       <button
                         onClick={() => navigate("/addresses")}
-                        className="bg-[#67A177] text-white px-6 py-2 rounded-full font-semibold hover:bg-[#5a8f68] transition-all"
+                        className="bg-primary text-white px-6 py-2 rounded-full font-semibold hover:bg-accent-dark transition-all"
                       >
                         Manage
                       </button>
@@ -576,7 +576,7 @@ const Profile = () => {
                   <div className="flex justify-center gap-4 mt-8">
                     <button
                       onClick={() => setIsEditing(true)}
-                      className="bg-[#67A177] text-white px-8 py-3 rounded-full font-bold text-lg hover:bg-[#5a8f68] transition-all hover:shadow-lg transform hover:-translate-y-0.5"
+                      className="bg-primary text-white px-8 py-3 rounded-full font-bold text-lg hover:bg-accent-dark transition-all hover:shadow-lg transform hover:-translate-y-0.5"
                     >
                       Update Profile
                     </button>
@@ -614,7 +614,7 @@ const Profile = () => {
                         value={editForm.name}
                         onChange={handleEditChange}
                         placeholder="Your name"
-                        className="w-full pl-12 pr-4 py-3 bg-white rounded-full border-2 border-transparent focus:border-[#67A177] focus:outline-none transition-all"
+                        className="w-full pl-12 pr-4 py-3 bg-white rounded-full border-2 border-transparent focus:border-primary focus:outline-none transition-all"
                       />
                     </div>
                   </div>
@@ -634,7 +634,7 @@ const Profile = () => {
                         value={editForm.phone}
                         onChange={handleEditChange}
                         placeholder="+1 (555) 000-0000"
-                        className="w-full pl-12 pr-4 py-3 bg-white rounded-full border-2 border-transparent focus:border-[#67A177] focus:outline-none transition-all"
+                        className="w-full pl-12 pr-4 py-3 bg-white rounded-full border-2 border-transparent focus:border-primary focus:outline-none transition-all"
                       />
                     </div>
                   </div>
@@ -649,7 +649,7 @@ const Profile = () => {
                         name="selectedAddressId"
                         value={editForm.selectedAddressId || ""}
                         onChange={handleEditChange}
-                        className="w-full px-4 py-3 bg-white rounded-full border-2 border-transparent focus:border-[#67A177] focus:outline-none transition-all"
+                        className="w-full px-4 py-3 bg-white rounded-full border-2 border-transparent focus:border-primary focus:outline-none transition-all"
                       >
                         <option value="">Select an address</option>
                         {profileData.savedAddresses.map((addr) => (
@@ -666,7 +666,7 @@ const Profile = () => {
                         <button
                           type="button"
                           onClick={() => navigate("/addresses")}
-                          className="bg-[#67A177] text-white px-6 py-2 rounded-full font-semibold hover:bg-[#5a8f68] transition-all inline-flex items-center gap-2"
+                          className="bg-primary text-white px-6 py-2 rounded-full font-semibold hover:bg-accent-dark transition-all inline-flex items-center gap-2"
                         >
                           <MapPin className="w-4 h-4" />
                           Add Address
@@ -689,7 +689,7 @@ const Profile = () => {
                         name="birthDate"
                         value={editForm.birthDate}
                         onChange={handleEditChange}
-                        className="w-full pl-12 pr-4 py-3 bg-white rounded-full border-2 border-transparent focus:border-[#67A177] focus:outline-none transition-all"
+                        className="w-full pl-12 pr-4 py-3 bg-white rounded-full border-2 border-transparent focus:border-primary focus:outline-none transition-all"
                       />
                     </div>
                   </div>
@@ -703,7 +703,7 @@ const Profile = () => {
                       name="gender"
                       value={editForm.gender}
                       onChange={handleEditChange}
-                      className="w-full px-4 py-3 bg-white rounded-full border-2 border-transparent focus:border-[#67A177] focus:outline-none transition-all"
+                      className="w-full px-4 py-3 bg-white rounded-full border-2 border-transparent focus:border-primary focus:outline-none transition-all"
                     >
                       <option value="">Select Gender</option>
                       <option value="Male">Male</option>
@@ -740,7 +740,7 @@ const Profile = () => {
                     </button>
                     <button
                       onClick={handleSave}
-                      className="flex-1 bg-[#67A177] text-white py-3 rounded-full font-bold text-lg hover:bg-[#5a8f68] transition-all hover:shadow-lg transform hover:-translate-y-0.5"
+                      className="flex-1 bg-primary text-white py-3 rounded-full font-bold text-lg hover:bg-accent-dark transition-all hover:shadow-lg transform hover:-translate-y-0.5"
                     >
                       Save Changes
                     </button>

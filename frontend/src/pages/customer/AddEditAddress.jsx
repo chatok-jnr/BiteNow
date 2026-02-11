@@ -273,38 +273,38 @@ const AddEditAddress = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#C4E2C4] flex flex-col">
+    <div className="min-h-screen bg-bgPrimary flex flex-col">
       {/* Navbar */}
-      <nav className="sticky top-0 z-50 bg-[#67A177] shadow-md">
+      <nav className="sticky top-0 z-50 bg-primary shadow-md">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div
               onClick={() => navigate("/")}
               className="flex items-center space-x-3 cursor-pointer"
             >
-              <div className="w-10 h-10 bg-[#ACD4B1] rounded-full flex items-center justify-center">
-                <ShoppingCart className="w-6 h-6 text-[#67A177]" />
+              <div className="w-10 h-10 bg-tertiary rounded-full flex items-center justify-center">
+                <ShoppingCart className="w-6 h-6 text-primary" />
               </div>
               <span className="text-2xl font-bold text-white">BiteNow</span>
             </div>
             <div className="flex items-center space-x-4">
               <button
                 onClick={() => navigate("/")}
-                className="text-white hover:text-[#ACD4B1] transition-colors font-medium px-4 py-2 flex items-center gap-2"
+                className="text-white hover:text-tertiary transition-colors font-medium px-4 py-2 flex items-center gap-2"
               >
                 <HomeIcon className="w-5 h-5" />
                 Home
               </button>
               <button
                 onClick={() => navigate("/orderStatus")}
-                className="text-white hover:text-[#ACD4B1] transition-colors font-medium px-4 py-2 flex items-center gap-2"
+                className="text-white hover:text-tertiary transition-colors font-medium px-4 py-2 flex items-center gap-2"
               >
                 <Package className="w-5 h-5" />
                 Orders
               </button>
               <button
                 onClick={() => navigate("/profile")}
-                className="text-white hover:text-[#ACD4B1] transition-colors font-medium px-4 py-2 flex items-center gap-2"
+                className="text-white hover:text-tertiary transition-colors font-medium px-4 py-2 flex items-center gap-2"
               >
                 <UserIcon className="w-5 h-5" />
                 Profile
@@ -335,7 +335,7 @@ const AddEditAddress = () => {
               onClick={() => navigate("/addresses")}
               className="p-2 bg-white rounded-full hover:bg-gray-100 transition-colors"
             >
-              <ArrowLeft className="w-6 h-6 text-[#67A177]" />
+              <ArrowLeft className="w-6 h-6 text-primary" />
             </button>
             <div>
               <h1 className="text-3xl font-bold text-gray-800">
@@ -352,7 +352,7 @@ const AddEditAddress = () => {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {/* Map Section */}
             <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
-              <div className="p-4 bg-[#67A177] text-white flex items-center justify-between">
+              <div className="p-4 bg-primary text-white flex items-center justify-between">
                 <h2 className="text-lg font-semibold flex items-center gap-2">
                   <MapPin className="w-5 h-5" />
                   Select Location
@@ -360,7 +360,7 @@ const AddEditAddress = () => {
                 <button
                   onClick={useMyLocation}
                   disabled={geolocating}
-                  className="bg-white text-[#67A177] px-4 py-2 rounded-full text-sm font-semibold hover:bg-gray-100 transition-all flex items-center gap-2 disabled:opacity-50"
+                  className="bg-white text-primary px-4 py-2 rounded-full text-sm font-semibold hover:bg-gray-100 transition-all flex items-center gap-2 disabled:opacity-50"
                 >
                   {geolocating ? (
                     <>
@@ -385,7 +385,7 @@ const AddEditAddress = () => {
                     placeholder="Search for an address..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    className="w-full pl-10 pr-4 py-3 border-2 border-gray-200 rounded-lg focus:border-[#67A177] focus:outline-none"
+                    className="w-full pl-10 pr-4 py-3 border-2 border-gray-200 rounded-lg focus:border-primary focus:outline-none"
                   />
                   {searching && (
                     <Loader className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 animate-spin" />
@@ -451,7 +451,7 @@ const AddEditAddress = () => {
                       }
                       className={`p-3 border-2 rounded-lg font-semibold transition-all flex flex-col items-center gap-2 ${
                         formData.label === label
-                          ? "border-[#67A177] bg-[#DDEEDB] text-[#67A177]"
+                          ? "border-primary bg-surface text-primary"
                           : "border-gray-200 hover:border-gray-300"
                       }`}
                     >
@@ -476,7 +476,7 @@ const AddEditAddress = () => {
                     value={formData.label === "Other" ? "" : formData.label}
                     onChange={handleInputChange}
                     placeholder="e.g., Friend's House, Gym, etc."
-                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-[#67A177] focus:outline-none"
+                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-primary focus:outline-none"
                   />
                 </div>
               )}
@@ -492,7 +492,7 @@ const AddEditAddress = () => {
                   onChange={handleInputChange}
                   placeholder="Enter full address..."
                   rows="3"
-                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-[#67A177] focus:outline-none resize-none"
+                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-primary focus:outline-none resize-none"
                 />
               </div>
 
@@ -524,7 +524,7 @@ const AddEditAddress = () => {
                   disabled={
                     loading || !formData.label || !formData.lat || !formData.lng
                   }
-                  className="flex-1 bg-[#67A177] text-white py-3 rounded-full font-semibold hover:bg-[#5a8f68] transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                  className="flex-1 bg-primary text-white py-3 rounded-full font-semibold hover:bg-accent-dark transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                 >
                   {loading ? (
                     <>

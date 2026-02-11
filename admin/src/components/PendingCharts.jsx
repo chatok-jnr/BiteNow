@@ -16,16 +16,16 @@ export default function PendingCharts({ pendingOrders, pendingRestaurantOwners, 
     { name: 'Pending Riders', value: parseInt(pendingRiders) || 0 }
   ];
 
-  // Colors for the charts (Pending Riders is blue for distinction)
-  const COLORS = ['#fc5e03', '#f59e0b', '#3b82f6']; // Orders: orange, Owners: amber, Riders: blue
+  // Colors for the charts using our theme colors
+  const COLORS = ['#FF6B35', '#F59E0B', '#3B82F6']; // Orders: coral orange, Owners: amber, Riders: blue
 
   // Custom tooltip
   const CustomTooltip = ({ active, payload }) => {
     if (active && payload && payload.length) {
       return (
-        <div className="bg-[#1a1a22] border border-[#fc5e03]/40 rounded-lg p-3 shadow-xl">
+        <div className="bg-secondary border border-accent/40 rounded-lg p-3 shadow-xl">
           <p className="text-gray-300 font-semibold">{payload[0].name}</p>
-          <p className="font-bold text-lg" style={{ color: '#fc5e03' }}>{payload[0].value}</p>
+          <p className="font-bold text-lg text-accent">{payload[0].value}</p>
         </div>
       );
     }
@@ -35,7 +35,7 @@ export default function PendingCharts({ pendingOrders, pendingRestaurantOwners, 
   return (
     <div className="space-y-6">
       {/* Bar Chart
-      <div className="relative border border-white/10 rounded-xl p-6 bg-gradient-to-br from-[#16161d] to-[#1a1a22] hover:border-orange-500/40 hover:shadow-2xl hover:shadow-orange-500/10 transition-all duration-300">
+      <div className="relative border border-white/10 rounded-xl p-6 bg-gradient-to-br from-custom_black to-secondary hover:border-orange-500/40 hover:shadow-2xl hover:shadow-orange-500/10 transition-all duration-300">
         <h3 className="text-xl font-semibold mb-6 pb-3 border-b border-white/10 text-gray-50">
           Pending Items Overview (Bar Chart)
         </h3>
@@ -66,7 +66,7 @@ export default function PendingCharts({ pendingOrders, pendingRestaurantOwners, 
       </div> */}
 
       {/* Pie Chart */}
-      <div className="relative border border-white/10 rounded-xl p-6 bg-gradient-to-br from-[#16161d] to-[#1a1a22] hover:border-orange-500/40 hover:shadow-2xl hover:shadow-orange-500/10 transition-all duration-300">
+      <div className="relative border border-white/10 rounded-xl p-6 bg-gradient-to-br from-custom_black to-secondary hover:border-orange-500/40 hover:shadow-2xl hover:shadow-orange-500/10 transition-all duration-300">
         <h3 className="text-xl font-semibold mb-6 pb-3 border-b border-white/10 text-gray-50">
           Pending Items Distribution
         </h3>
@@ -96,7 +96,7 @@ export default function PendingCharts({ pendingOrders, pendingRestaurantOwners, 
       </div>
 
       {/* Statistics Summary
-      <div className="relative border border-white/10 rounded-xl p-6 bg-gradient-to-br from-[#16161d] to-[#1a1a22] hover:border-orange-500/40 hover:shadow-2xl hover:shadow-orange-500/10 transition-all duration-300">
+      <div className="relative border border-white/10 rounded-xl p-6 bg-gradient-to-br from-custom_black to-secondary hover:border-orange-500/40 hover:shadow-2xl hover:shadow-orange-500/10 transition-all duration-300">
         <h3 className="text-xl font-semibold mb-6 pb-3 border-b border-white/10 text-gray-50">
           Detailed Breakdown
         </h3>
@@ -107,7 +107,7 @@ export default function PendingCharts({ pendingOrders, pendingRestaurantOwners, 
               className="text-center p-4 rounded-lg bg-gradient-to-br from-orange-500/10 to-amber-500/5 border border-orange-500/20"
             >
               <p className="text-gray-400 text-sm mb-2">{item.name}</p>
-              <p className="text-3xl font-bold" style={{ color: '#fc5e03' }}>
+              <p className="text-3xl font-bold text-accent">
                 {item.value}
               </p>
               <div className="mt-2 h-2 bg-white/10 rounded-full overflow-hidden">

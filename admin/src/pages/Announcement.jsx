@@ -161,7 +161,7 @@ export default function Announcement() {
   };
 
   return (
-    <div className="flex min-h-screen bg-[#0d0d12]">
+    <div className="flex min-h-screen bg-custom_black">
       <Sidebar />
       
       <div className="flex-1 overflow-auto">
@@ -186,7 +186,7 @@ export default function Announcement() {
               className={`px-6 py-2.5 rounded-lg font-medium transition-all ${
                 activeTab === 'send'
                   ? 'bg-orange-500 text-white shadow-lg shadow-orange-500/20'
-                  : 'bg-[#1a1a22] text-gray-400 hover:bg-white/5'
+                  : 'bg-secondary text-gray-400 hover:bg-white/5'
               }`}
             >
               <div className="flex items-center gap-2">
@@ -199,7 +199,7 @@ export default function Announcement() {
               className={`px-6 py-2.5 rounded-lg font-medium transition-all ${
                 activeTab === 'history'
                   ? 'bg-orange-500 text-white shadow-lg shadow-orange-500/20'
-                  : 'bg-[#1a1a22] text-gray-400 hover:bg-white/5'
+                  : 'bg-secondary text-gray-400 hover:bg-white/5'
               }`}
             >
               <div className="flex items-center gap-2">
@@ -231,7 +231,7 @@ export default function Announcement() {
               )}
 
               {/* Announcement Form */}
-              <div className="bg-[#1a1a22] border border-white/10 rounded-xl p-6">
+              <div className="bg-secondary border border-white/10 rounded-xl p-6">
                 <form onSubmit={handleSubmit}>
                   {/* Title */}
                   <div className="mb-6">
@@ -244,7 +244,7 @@ export default function Announcement() {
                       value={formData.title}
                       onChange={handleInputChange}
                       placeholder="Enter announcement title"
-                      className="w-full px-4 py-3 bg-[#0d0d12] border border-white/10 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-orange-500/50 focus:bg-[#111116] transition-all"
+                      className="w-full px-4 py-3 bg-custom_black border border-white/10 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-orange-500/50 focus:bg-custom_black transition-all"
                       required
                     />
                   </div>
@@ -260,7 +260,7 @@ export default function Announcement() {
                       onChange={handleInputChange}
                       placeholder="Enter your announcement message"
                       rows="6"
-                      className="w-full px-4 py-3 bg-[#0d0d12] border border-white/10 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-orange-500/50 focus:bg-[#111116] transition-all resize-none"
+                      className="w-full px-4 py-3 bg-custom_black border border-white/10 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-orange-500/50 focus:bg-custom_black transition-all resize-none"
                       required
                     />
                   </div>
@@ -276,7 +276,7 @@ export default function Announcement() {
                       value={formData.reason}
                       onChange={handleInputChange}
                       placeholder="Enter reason for announcement"
-                      className="w-full px-4 py-3 bg-[#0d0d12] border border-white/10 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-orange-500/50 focus:bg-[#111116] transition-all"
+                      className="w-full px-4 py-3 bg-custom_black border border-white/10 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-orange-500/50 focus:bg-custom_black transition-all"
                       required
                     />
                   </div>
@@ -297,7 +297,7 @@ export default function Announcement() {
                             className={`p-4 rounded-lg border text-left transition-all ${
                               formData.recipientType === type.value
                                 ? 'bg-orange-500/10 border-orange-500 shadow-lg shadow-orange-500/10'
-                                : 'bg-[#0d0d12] border-white/10 hover:border-white/20'
+                                : 'bg-custom_black border-white/10 hover:border-white/20'
                             }`}
                           >
                             <div className="flex items-start gap-3">
@@ -337,7 +337,7 @@ export default function Announcement() {
                         value={formData.specificRecipientId}
                         onChange={handleInputChange}
                         placeholder={`Enter ${formData.recipientType.replace('Specific ', '').toLowerCase()} ID`}
-                        className="w-full px-4 py-3 bg-[#0d0d12] border border-white/10 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-orange-500/50 focus:bg-[#111116] transition-all"
+                        className="w-full px-4 py-3 bg-custom_black border border-white/10 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-orange-500/50 focus:bg-custom_black transition-all"
                         required
                       />
                       <p className="text-xs text-gray-500 mt-2">
@@ -384,7 +384,7 @@ export default function Announcement() {
                     className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
                       historyFilter === 'All'
                         ? 'bg-orange-500 text-white shadow-lg shadow-orange-500/20'
-                        : 'bg-[#1a1a22] text-gray-400 hover:bg-white/5 border border-white/10'
+                        : 'bg-secondary text-gray-400 hover:bg-white/5 border border-white/10'
                     }`}
                   >
                     All
@@ -396,7 +396,7 @@ export default function Announcement() {
                       className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
                         historyFilter === type.value
                           ? 'bg-orange-500 text-white shadow-lg shadow-orange-500/20'
-                          : 'bg-[#1a1a22] text-gray-400 hover:bg-white/5 border border-white/10'
+                          : 'bg-secondary text-gray-400 hover:bg-white/5 border border-white/10'
                       }`}
                     >
                       {type.label}
@@ -406,7 +406,7 @@ export default function Announcement() {
               </div>
 
               {/* History List */}
-              <div className="bg-[#1a1a22] border border-white/10 rounded-xl p-6">
+              <div className="bg-secondary border border-white/10 rounded-xl p-6">
                 {filteredHistory.length > 0 ? (
                   <div className="space-y-4">
                     {filteredHistory.map((item, index) => {
@@ -419,7 +419,7 @@ export default function Announcement() {
                         <div
                           key={itemId}
                           onClick={() => toggleExpand(itemId)}
-                          className="bg-[#0d0d12] border border-white/10 rounded-lg p-4 hover:border-orange-500/30 transition-all cursor-pointer"
+                          className="bg-custom_black border border-white/10 rounded-lg p-4 hover:border-orange-500/30 transition-all cursor-pointer"
                         >
                           <div className="flex items-start gap-4">
                             <div className="w-12 h-12 rounded-lg bg-orange-500/10 flex items-center justify-center flex-shrink-0">

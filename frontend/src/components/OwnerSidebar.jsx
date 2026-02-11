@@ -40,7 +40,7 @@ const OwnerSidebar = ({ sidebarOpen, setSidebarOpen }) => {
 
       {/* Sidebar */}
       <aside className={`
-        fixed top-0 left-0 h-full bg-[#8DBC96] w-64 z-50 transform transition-transform duration-300 ease-in-out
+        fixed top-0 left-0 h-full bg-secondary w-64 z-50 transform transition-transform duration-300 ease-in-out
         ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}
         lg:translate-x-0 lg:static
       `}>
@@ -49,7 +49,7 @@ const OwnerSidebar = ({ sidebarOpen, setSidebarOpen }) => {
           <div className="p-6 border-b border-white/20">
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-3">
-                <div className="w-10 h-10 bg-[#67A177] rounded-full flex items-center justify-center">
+                <div className="w-10 h-10 bg-primary rounded-full flex items-center justify-center">
                   <Store className="w-6 h-6 text-white" />
                 </div>
                 <span className="text-xl font-bold text-white">BiteNow</span>
@@ -77,8 +77,8 @@ const OwnerSidebar = ({ sidebarOpen, setSidebarOpen }) => {
                       onClick={() => handleNavigation(item.path)}
                       className={`w-full flex items-center space-x-3 px-4 py-3 rounded-xl transition-all ${
                         isActive
-                          ? 'bg-[#67A177] text-white shadow-lg'
-                          : 'text-white hover:bg-[#67A177]/50'
+                          ? 'bg-primary text-white shadow-lg'
+                          : 'text-white hover:bg-primary/50'
                       }`}
                     >
                       <Icon className="w-5 h-5" />

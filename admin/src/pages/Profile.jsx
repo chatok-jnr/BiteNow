@@ -213,7 +213,7 @@ export default function Profile() {
   };
 
   return (
-    <div className="flex min-h-screen bg-[#0d0d11] text-gray-100">
+    <div className="flex min-h-screen bg-custom_black text-gray-100">
       <Sidebar />
       
       <main className="flex-1 p-8">
@@ -248,7 +248,7 @@ export default function Profile() {
             className={`px-6 py-3 rounded-xl font-medium transition-all flex items-center gap-2 ${
               activeTab === 'profile'
                 ? 'bg-gradient-to-r from-orange-500 to-amber-500 text-white shadow-lg shadow-orange-500/20'
-                : 'bg-[#1a1a22] border border-white/10 text-gray-400 hover:text-white hover:border-white/20'
+                : 'bg-secondary border border-white/10 text-gray-400 hover:text-white hover:border-white/20'
             }`}
           >
             <User className="w-4 h-4" />
@@ -259,7 +259,7 @@ export default function Profile() {
             className={`px-6 py-3 rounded-xl font-medium transition-all flex items-center gap-2 ${
               activeTab === 'password'
                 ? 'bg-gradient-to-r from-orange-500 to-amber-500 text-white shadow-lg shadow-orange-500/20'
-                : 'bg-[#1a1a22] border border-white/10 text-gray-400 hover:text-white hover:border-white/20'
+                : 'bg-secondary border border-white/10 text-gray-400 hover:text-white hover:border-white/20'
             }`}
           >
             <Lock className="w-4 h-4" />
@@ -270,7 +270,7 @@ export default function Profile() {
             className={`px-6 py-3 rounded-xl font-medium transition-all flex items-center gap-2 ${
               activeTab === 'delete'
                 ? 'bg-gradient-to-r from-red-500 to-rose-500 text-white shadow-lg shadow-red-500/20'
-                : 'bg-[#1a1a22] border border-white/10 text-gray-400 hover:text-white hover:border-white/20'
+                : 'bg-secondary border border-white/10 text-gray-400 hover:text-white hover:border-white/20'
             }`}
           >
             <Trash2 className="w-4 h-4" />
@@ -286,12 +286,12 @@ export default function Profile() {
           <>
             {/* Profile Info Tab */}
             {activeTab === 'profile' && (
-              <div className="bg-[#1a1a22] border border-white/10 rounded-2xl p-8">
+              <div className="bg-secondary border border-white/10 rounded-2xl p-8">
                 {/* Profile Header with Image */}
                 <div className="flex flex-col md:flex-row items-center gap-6 mb-8 pb-8 border-b border-white/10">
                   {/* Profile Image */}
                   <div className="relative">
-                    <div className="w-32 h-32 rounded-full overflow-hidden border-4 border-orange-500/30 bg-[#0d0d11] flex items-center justify-center">
+                    <div className="w-32 h-32 rounded-full overflow-hidden border-4 border-orange-500/30 bg-custom_black flex items-center justify-center">
                       {photoPreview ? (
                         <img 
                           src={photoPreview} 
@@ -370,7 +370,7 @@ export default function Profile() {
                       <button
                         type="button"
                         onClick={handleCancelEdit}
-                        className="px-6 py-3 bg-[#0d0d11] border border-white/10 text-gray-300 font-medium rounded-xl hover:bg-white/5 transition-all flex items-center gap-2"
+                        className="px-6 py-3 bg-custom_black border border-white/10 text-gray-300 font-medium rounded-xl hover:bg-white/5 transition-all flex items-center gap-2"
                       >
                         <X className="w-5 h-5" />
                         Cancel
@@ -396,7 +396,7 @@ export default function Profile() {
                         type="text"
                         value={profileData.admin_name}
                         disabled
-                        className="w-full pl-12 pr-4 py-3 bg-[#0d0d11] border border-white/10 rounded-xl text-gray-400 cursor-not-allowed"
+                        className="w-full pl-12 pr-4 py-3 bg-custom_black border border-white/10 rounded-xl text-gray-400 cursor-not-allowed"
                       />
                     </div>
                     <p className="text-xs text-gray-500 mt-1">Name cannot be changed</p>
@@ -412,7 +412,7 @@ export default function Profile() {
                         value={profileData.admin_email}
                         onChange={(e) => setProfileData({ ...profileData, admin_email: e.target.value })}
                         disabled={!isEditMode}
-                        className={`w-full pl-12 pr-4 py-3 bg-[#0d0d11] border border-white/10 rounded-xl transition-all ${
+                        className={`w-full pl-12 pr-4 py-3 bg-custom_black border border-white/10 rounded-xl transition-all ${
                           isEditMode 
                             ? 'text-gray-100 focus:outline-none focus:border-orange-500/50' 
                             : 'text-gray-400 cursor-not-allowed'
@@ -432,7 +432,7 @@ export default function Profile() {
                         value={profileData.admin_phone}
                         onChange={(e) => setProfileData({ ...profileData, admin_phone: e.target.value })}
                         disabled={!isEditMode}
-                        className={`w-full pl-12 pr-4 py-3 bg-[#0d0d11] border border-white/10 rounded-xl transition-all ${
+                        className={`w-full pl-12 pr-4 py-3 bg-custom_black border border-white/10 rounded-xl transition-all ${
                           isEditMode 
                             ? 'text-gray-100 focus:outline-none focus:border-orange-500/50' 
                             : 'text-gray-400 cursor-not-allowed'
@@ -452,7 +452,7 @@ export default function Profile() {
                         value={profileData.admin_dob}
                         onChange={(e) => setProfileData({ ...profileData, admin_dob: e.target.value })}
                         disabled={!isEditMode}
-                        className={`w-full pl-12 pr-4 py-3 bg-[#0d0d11] border border-white/10 rounded-xl transition-all ${
+                        className={`w-full pl-12 pr-4 py-3 bg-custom_black border border-white/10 rounded-xl transition-all ${
                           isEditMode 
                             ? 'text-gray-100 focus:outline-none focus:border-orange-500/50' 
                             : 'text-gray-400 cursor-not-allowed'
@@ -471,7 +471,7 @@ export default function Profile() {
                         onChange={(e) => setProfileData({ ...profileData, admin_address: e.target.value })}
                         disabled={!isEditMode}
                         rows={3}
-                        className={`w-full pl-12 pr-4 py-3 bg-[#0d0d11] border border-white/10 rounded-xl transition-all resize-none ${
+                        className={`w-full pl-12 pr-4 py-3 bg-custom_black border border-white/10 rounded-xl transition-all resize-none ${
                           isEditMode 
                             ? 'text-gray-100 focus:outline-none focus:border-orange-500/50' 
                             : 'text-gray-400 cursor-not-allowed'
@@ -507,7 +507,7 @@ export default function Profile() {
 
             {/* Change Password Tab */}
             {activeTab === 'password' && (
-              <div className="bg-[#1a1a22] border border-white/10 rounded-2xl p-8">
+              <div className="bg-secondary border border-white/10 rounded-2xl p-8">
                 <h2 className="text-xl font-semibold mb-6 flex items-center gap-3">
                   <div className="w-10 h-10 rounded-xl bg-gradient-to-r from-orange-500 to-amber-500 flex items-center justify-center">
                     <Lock className="w-5 h-5 text-white" />
@@ -525,7 +525,7 @@ export default function Profile() {
                         type={showCurrentPassword ? 'text' : 'password'}
                         value={passwordData.currentPassword}
                         onChange={(e) => setPasswordData({ ...passwordData, currentPassword: e.target.value })}
-                        className="w-full pl-12 pr-12 py-3 bg-[#0d0d11] border border-white/10 rounded-xl text-gray-100 focus:outline-none focus:border-orange-500/50 transition-all"
+                        className="w-full pl-12 pr-12 py-3 bg-custom_black border border-white/10 rounded-xl text-gray-100 focus:outline-none focus:border-orange-500/50 transition-all"
                         placeholder="Enter current password"
                         required
                       />
@@ -548,7 +548,7 @@ export default function Profile() {
                         type={showNewPassword ? 'text' : 'password'}
                         value={passwordData.newPassword}
                         onChange={(e) => setPasswordData({ ...passwordData, newPassword: e.target.value })}
-                        className="w-full pl-12 pr-12 py-3 bg-[#0d0d11] border border-white/10 rounded-xl text-gray-100 focus:outline-none focus:border-orange-500/50 transition-all"
+                        className="w-full pl-12 pr-12 py-3 bg-custom_black border border-white/10 rounded-xl text-gray-100 focus:outline-none focus:border-orange-500/50 transition-all"
                         placeholder="Enter new password"
                         required
                         minLength={6}
@@ -573,7 +573,7 @@ export default function Profile() {
                         type={showConfirmPassword ? 'text' : 'password'}
                         value={passwordData.confirmPassword}
                         onChange={(e) => setPasswordData({ ...passwordData, confirmPassword: e.target.value })}
-                        className="w-full pl-12 pr-12 py-3 bg-[#0d0d11] border border-white/10 rounded-xl text-gray-100 focus:outline-none focus:border-orange-500/50 transition-all"
+                        className="w-full pl-12 pr-12 py-3 bg-custom_black border border-white/10 rounded-xl text-gray-100 focus:outline-none focus:border-orange-500/50 transition-all"
                         placeholder="Confirm new password"
                         required
                       />
@@ -611,7 +611,7 @@ export default function Profile() {
 
             {/* Delete Account Tab */}
             {activeTab === 'delete' && (
-              <div className="bg-[#1a1a22] border border-red-500/20 rounded-2xl p-8">
+              <div className="bg-secondary border border-red-500/20 rounded-2xl p-8">
                 <h2 className="text-xl font-semibold mb-6 flex items-center gap-3 text-red-400">
                   <div className="w-10 h-10 rounded-xl bg-gradient-to-r from-red-500 to-rose-500 flex items-center justify-center">
                     <Trash2 className="w-5 h-5 text-white" />
@@ -640,7 +640,7 @@ export default function Profile() {
                       value={deleteData.reason}
                       onChange={(e) => setDeleteData({ ...deleteData, reason: e.target.value })}
                       rows={3}
-                      className="w-full px-4 py-3 bg-[#0d0d11] border border-white/10 rounded-xl text-gray-100 focus:outline-none focus:border-red-500/50 transition-all resize-none"
+                      className="w-full px-4 py-3 bg-custom_black border border-white/10 rounded-xl text-gray-100 focus:outline-none focus:border-red-500/50 transition-all resize-none"
                       placeholder="Please tell us why you want to delete your account"
                       required
                     />
@@ -655,7 +655,7 @@ export default function Profile() {
                         type={showDeletePassword ? 'text' : 'password'}
                         value={deleteData.password}
                         onChange={(e) => setDeleteData({ ...deleteData, password: e.target.value })}
-                        className="w-full pl-12 pr-12 py-3 bg-[#0d0d11] border border-white/10 rounded-xl text-gray-100 focus:outline-none focus:border-red-500/50 transition-all"
+                        className="w-full pl-12 pr-12 py-3 bg-custom_black border border-white/10 rounded-xl text-gray-100 focus:outline-none focus:border-red-500/50 transition-all"
                         placeholder="Enter your password to confirm"
                         required
                       />
@@ -686,7 +686,7 @@ export default function Profile() {
         {/* Delete Confirmation Modal */}
         {showDeleteModal && (
           <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
-            <div className="bg-[#1a1a22] border border-white/10 rounded-2xl p-8 max-w-md w-full mx-4">
+            <div className="bg-secondary border border-white/10 rounded-2xl p-8 max-w-md w-full mx-4">
               <div className="text-center">
                 <div className="w-16 h-16 rounded-full bg-red-500/20 flex items-center justify-center mx-auto mb-4">
                   <AlertTriangle className="w-8 h-8 text-red-400" />
@@ -699,7 +699,7 @@ export default function Profile() {
                 <div className="flex gap-4">
                   <button
                     onClick={() => setShowDeleteModal(false)}
-                    className="flex-1 py-3 bg-[#0d0d11] border border-white/10 text-gray-300 font-medium rounded-xl hover:bg-white/5 transition-all"
+                    className="flex-1 py-3 bg-custom_black border border-white/10 text-gray-300 font-medium rounded-xl hover:bg-white/5 transition-all"
                   >
                     Cancel
                   </button>

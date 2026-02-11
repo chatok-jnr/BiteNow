@@ -91,7 +91,7 @@ export default function AuditLogs() {
   };
 
   return (
-    <div className="flex min-h-screen bg-[#0a0a0f]">
+    <div className="flex min-h-screen bg-custom_black">
       <Sidebar />
       
       <main className="flex-1 p-8">
@@ -113,14 +113,14 @@ export default function AuditLogs() {
               placeholder="Search by action, user type, or reason..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-12 pr-4 py-3 bg-[#1a1a22] border border-white/10 rounded-2xl text-gray-300 placeholder-gray-600 focus:outline-none focus:border-orange-500/50 transition-all"
+              className="w-full pl-12 pr-4 py-3 bg-secondary border border-white/10 rounded-2xl text-gray-300 placeholder-gray-600 focus:outline-none focus:border-orange-500/50 transition-all"
             />
           </div>
         </div>
 
         {/* Stats */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-          <div className="bg-[#1a1a22] border border-white/10 rounded-2xl p-4">
+          <div className="bg-secondary border border-white/10 rounded-2xl p-4">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-gray-400 text-sm">Total Logs</p>
@@ -129,7 +129,7 @@ export default function AuditLogs() {
               <FileText className="w-10 h-10 text-orange-500/50" />
             </div>
           </div>
-          <div className="bg-[#1a1a22] border border-white/10 rounded-2xl p-4">
+          <div className="bg-secondary border border-white/10 rounded-2xl p-4">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-gray-400 text-sm">Approvals</p>
@@ -140,7 +140,7 @@ export default function AuditLogs() {
               <Shield className="w-10 h-10 text-green-500/50" />
             </div>
           </div>
-          <div className="bg-[#1a1a22] border border-white/10 rounded-2xl p-4">
+          <div className="bg-secondary border border-white/10 rounded-2xl p-4">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-gray-400 text-sm">Rejections</p>
@@ -151,7 +151,7 @@ export default function AuditLogs() {
               <AlertCircle className="w-10 h-10 text-red-500/50" />
             </div>
           </div>
-          <div className="bg-[#1a1a22] border border-white/10 rounded-2xl p-4">
+          <div className="bg-secondary border border-white/10 rounded-2xl p-4">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-gray-400 text-sm">Bans/Unbans</p>
@@ -165,7 +165,7 @@ export default function AuditLogs() {
         </div>
 
         {/* Audit Logs List */}
-        <div className="bg-[#1a1a22] border border-white/10 rounded-2xl overflow-hidden">
+        <div className="bg-secondary border border-white/10 rounded-2xl overflow-hidden">
           {loading ? (
             <div className="p-12 text-center">
               <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500"></div>
@@ -243,11 +243,11 @@ export default function AuditLogs() {
             }}
           >
             <div 
-              className="bg-[#1a1a22] border border-white/10 rounded-3xl max-w-2xl w-full max-h-[90vh] overflow-y-auto"
+              className="bg-secondary border border-white/10 rounded-3xl max-w-2xl w-full max-h-[90vh] overflow-y-auto"
               onClick={(e) => e.stopPropagation()}
             >
               {/* Header */}
-              <div className="sticky top-0 bg-[#1a1a22] border-b border-white/10 px-6 py-4 flex items-center justify-between">
+              <div className="sticky top-0 bg-secondary border-b border-white/10 px-6 py-4 flex items-center justify-between">
                 <h2 className="text-xl font-bold text-white">Audit Log Details</h2>
                 <button
                   onClick={() => setShowDetailModal(false)}
@@ -277,7 +277,7 @@ export default function AuditLogs() {
                 </div>
 
                 {/* Admin Information */}
-                <div className="bg-[#111116] border border-white/5 rounded-2xl p-4">
+                <div className="bg-custom_black border border-white/5 rounded-2xl p-4">
                   <h3 className="text-sm font-semibold text-gray-400 uppercase tracking-wide mb-3 flex items-center gap-2">
                     <Shield className="w-4 h-4" />
                     Admin Information
@@ -300,7 +300,7 @@ export default function AuditLogs() {
 
                 {/* Target User Information */}
                 {selectedLog.target?.id ? (
-                  <div className="bg-[#111116] border border-white/5 rounded-2xl p-4">
+                  <div className="bg-custom_black border border-white/5 rounded-2xl p-4">
                     <h3 className="text-sm font-semibold text-gray-400 uppercase tracking-wide mb-3 flex items-center gap-2">
                       <User className="w-4 h-4" />
                       Target User Information
@@ -319,7 +319,7 @@ export default function AuditLogs() {
                     </div>
                   </div>
                 ) : (
-                  <div className="bg-[#111116] border border-white/5 rounded-2xl p-4">
+                  <div className="bg-custom_black border border-white/5 rounded-2xl p-4">
                     <h3 className="text-sm font-semibold text-gray-400 uppercase tracking-wide mb-3 flex items-center gap-2">
                       <User className="w-4 h-4" />
                       Target User Information
@@ -331,14 +331,14 @@ export default function AuditLogs() {
                 {/* Reason */}
                 <div>
                   <label className="text-xs text-gray-500 uppercase tracking-wide mb-2 block">Reason for Action</label>
-                  <div className="bg-[#111116] border border-white/5 rounded-2xl p-4">
+                  <div className="bg-custom_black border border-white/5 rounded-2xl p-4">
                     <p className="text-gray-300 leading-relaxed">{selectedLog.reasson}</p>
                   </div>
                 </div>
               </div>
 
               {/* Footer */}
-              <div className="sticky bottom-0 bg-[#1a1a22] border-t border-white/10 px-6 py-4">
+              <div className="sticky bottom-0 bg-secondary border-t border-white/10 px-6 py-4">
                 <button
                   onClick={() => setShowDetailModal(false)}
                   className="w-full px-4 py-3 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-medium rounded-2xl transition-all shadow-lg shadow-orange-500/20"

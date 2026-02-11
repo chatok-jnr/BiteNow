@@ -263,29 +263,29 @@ const Home = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background flex flex-col">
       <div
-        className={`transition-all duration-300 ${
+        className={`flex flex-col flex-1 transition-all duration-300 ${
           isCartOpen && cartItems.length > 0 ? "sm:mr-96" : "mr-0"
         }`}
       >
         {/* Navbar */}
-        <nav className="sticky top-0 z-50 bg-[#67A177] shadow-md">
+        <nav className="sticky top-0 z-50 bg-primary shadow-md">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex justify-between items-center h-16">
               <div
                 onClick={() => navigate("/")}
                 className="flex items-center space-x-3 cursor-pointer"
               >
-                <div className="w-10 h-10 bg-[#ACD4B1] rounded-full flex items-center justify-center">
-                  <ShoppingCart className="w-6 h-6 text-[#67A177]" />
+                <div className="w-10 h-10 bg-tertiary rounded-full flex items-center justify-center">
+                  <ShoppingCart className="w-6 h-6 text-primary" />
                 </div>
                 <span className="text-2xl font-bold text-white">BiteNow</span>
               </div>
               <div className="flex items-center space-x-4">
                 <button
                   onClick={() => setIsCartOpen(true)}
-                  className="relative p-2 text-white hover:text-[#ACD4B1] transition-colors"
+                  className="relative p-2 text-white hover:text-accent-light transition-colors"
                 >
                   <ShoppingCart className="w-6 h-6" />
                   {cartItems.length > 0 && (
@@ -297,7 +297,7 @@ const Home = () => {
                 {!isLoggedIn ? (
                   <button
                     onClick={() => navigate("/login")}
-                    className="bg-[#ACD4B1] text-[#67A177] px-6 py-2 rounded-full hover:bg-[#DDEEDB] transition-all hover:shadow-lg transform hover:-translate-y-0.5 font-semibold"
+                    className="bg-tertiary text-primary px-6 py-2 rounded-full hover:bg-accent-light transition-all hover:shadow-lg transform hover:-translate-y-0.5 font-semibold"
                   >
                     Login / Sign Up
                   </button>
@@ -305,21 +305,21 @@ const Home = () => {
                   <>
                     <button
                       onClick={() => navigate("/")}
-                      className="bg-[#ACD4B1] text-[#67A177] px-6 py-2 rounded-full font-semibold flex items-center gap-2"
+                      className="bg-tertiary text-primary px-6 py-2 rounded-full font-semibold flex items-center gap-2"
                     >
                       <HomeIcon className="w-5 h-5" />
                       Home
                     </button>
                     <button
                       onClick={() => navigate("/orderStatus")}
-                      className="text-white hover:text-[#ACD4B1] transition-colors font-medium px-4 py-2 flex items-center gap-2"
+                      className="text-white hover:text-accent-light transition-colors font-medium px-4 py-2 flex items-center gap-2"
                     >
                       <Package className="w-5 h-5" />
                       Orders
                     </button>
                     <button
                       onClick={() => navigate("/profile")}
-                      className="text-white hover:text-[#ACD4B1] transition-colors font-medium px-4 py-2 flex items-center gap-2"
+                      className="text-white hover:text-accent-light transition-colors font-medium px-4 py-2 flex items-center gap-2"
                     >
                       <User className="w-5 h-5" />
                       Profile
@@ -532,7 +532,7 @@ const Home = () => {
           )}
         </section>
         {/* Footer */}
-        <footer className="bg-secondary text-white py-8">
+        <footer className="bg-secondary text-white py-8 mt-auto">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex flex-col md:flex-row justify-between items-center">
               <div className="flex items-center space-x-3 mb-4 md:mb-0">
@@ -560,11 +560,9 @@ const Home = () => {
               </p>
             </div>
           </div>
-          \n{" "}
         </footer>
-        \n{" "}
       </div>
-      \n\n {/* Clear Cart Confirmation Modal */}
+      {/* Clear Cart Confirmation Modal */}
       {showClearCartModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl">

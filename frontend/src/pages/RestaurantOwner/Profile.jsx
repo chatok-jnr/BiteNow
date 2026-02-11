@@ -17,17 +17,13 @@ import {
   MapPin,
   Camera,
   Save,
-  Menu,
   Lock,
   Trash2,
-  Store,
-  ChevronRight,
 } from "lucide-react";
-import OwnerSidebar from "../../components/OwnerSidebar";
+import OwnerNavbar from "../../components/OwnerNavbar";
 import { useNotification } from "../../contexts/NotificationContext";
 
 const Profile = () => {
-  const [sidebarOpen, setSidebarOpen] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [showChangePassword, setShowChangePassword] = useState(false);
   const [showDeleteAccount, setShowDeleteAccount] = useState(false);
@@ -209,28 +205,26 @@ const Profile = () => {
   }
 
   return (
-    <div className="min-h-screen bg-[#C4E2C4] flex">
-      <OwnerSidebar sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
-      <div className="flex-1 flex flex-col">
-        {/* ...existing code... */}
-        <main className="flex-1 p-4 md:p-8">
-          <div className="max-w-4xl mx-auto space-y-6">
-            {/* Page Header */}
-            <div className="flex items-center justify-between">
-              <h1 className="text-3xl font-bold text-[#67A177]">My Profile</h1>
-              {!isEditing && (
-                <button
-                  onClick={() => setIsEditing(true)}
-                  className="px-6 py-2 bg-[#8DBC96] text-white rounded-xl hover:bg-[#67A177] transition-all shadow-lg"
-                >
-                  Edit Profile
-                </button>
-              )}
-            </div>
+    <div className="min-h-screen bg-bgPrimary flex flex-col">
+      <OwnerNavbar />
+      <main className="flex-1 p-4 md:p-8">
+        <div className="max-w-4xl mx-auto space-y-6">
+          {/* Page Header */}
+          <div className="flex items-center justify-between">
+            <h1 className="text-3xl font-bold text-primary">My Profile</h1>
+            {!isEditing && (
+              <button
+                onClick={() => setIsEditing(true)}
+                className="px-6 py-2 bg-secondary text-white rounded-xl hover:bg-primary transition-all shadow-lg"
+              >
+                Edit Profile
+              </button>
+            )}
+          </div>
             {/* Profile Card */}
             <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
               {/* Header with Image */}
-              <div className="bg-gradient-to-r from-[#8DBC96] to-[#67A177] p-8 text-center">
+              <div className="bg-gradient-to-r from-secondary to-primary p-8 text-center">
                 <div className="relative inline-block">
                   <img
                     src={
@@ -245,7 +239,7 @@ const Profile = () => {
                   />
                   {isEditing && (
                     <label className="absolute bottom-0 right-0 bg-white rounded-full p-2 shadow-lg cursor-pointer hover:bg-gray-100 transition-all">
-                      <Camera className="w-5 h-5 text-[#67A177]" />
+                      <Camera className="w-5 h-5 text-primary" />
                       <input
                         type="file"
                         accept="image/*"
@@ -285,7 +279,7 @@ const Profile = () => {
                       />
                     ) : (
                       <div className="flex items-center space-x-3 px-4 py-3 bg-gray-50 rounded-xl">
-                        <User className="w-5 h-5 text-[#67A177]" />
+                        <User className="w-5 h-5 text-primary" />
                         <span className="text-gray-800">
                           {profileData.restaurant_owner_name}
                         </span>
@@ -306,7 +300,7 @@ const Profile = () => {
                       />
                     ) : (
                       <div className="flex items-center space-x-3 px-4 py-3 bg-gray-50 rounded-xl">
-                        <Mail className="w-5 h-5 text-[#67A177]" />
+                        <Mail className="w-5 h-5 text-primary" />
                         <span className="text-gray-800">
                           {profileData.restaurant_owner_email}
                         </span>
@@ -327,7 +321,7 @@ const Profile = () => {
                       />
                     ) : (
                       <div className="flex items-center space-x-3 px-4 py-3 bg-gray-50 rounded-xl">
-                        <Phone className="w-5 h-5 text-[#67A177]" />
+                        <Phone className="w-5 h-5 text-primary" />
                         <span className="text-gray-800">
                           {profileData.restaurant_owner_phone}
                         </span>
@@ -348,7 +342,7 @@ const Profile = () => {
                       />
                     ) : (
                       <div className="flex items-center space-x-3 px-4 py-3 bg-gray-50 rounded-xl">
-                        <MapPin className="w-5 h-5 text-[#67A177]" />
+                        <MapPin className="w-5 h-5 text-primary" />
                         <span className="text-gray-800">
                           {profileData.restaurant_owner_address}
                         </span>
@@ -360,7 +354,7 @@ const Profile = () => {
                 {/* Document Management Section */}
                 <div className="mt-8">
                   <div className="flex items-center justify-between mb-2">
-                    <h3 className="text-lg font-bold text-[#67A177]">
+                    <h3 className="text-lg font-bold text-primary">
                       Documents
                     </h3>
                     <label className="inline-block">
@@ -374,7 +368,7 @@ const Profile = () => {
                       />
                       <button
                         type="button"
-                        className="px-4 py-2 bg-[#8DBC96] text-white rounded-lg hover:bg-[#67A177] transition-all text-sm"
+                        className="px-4 py-2 bg-secondary text-white rounded-lg hover:bg-primary transition-all text-sm"
                         disabled={uploadingDoc}
                         onClick={() =>
                           fileInputRef.current && fileInputRef.current.click()
@@ -396,7 +390,7 @@ const Profile = () => {
                           className="flex items-center justify-between bg-gray-50 rounded-lg px-4 py-2"
                         >
                           <div className="flex items-center gap-2">
-                            <span className="text-[#67A177] font-semibold">
+                            <span className="text-primary font-semibold">
                               Document {idx + 1}
                             </span>
                             {doc.url && (
@@ -437,7 +431,7 @@ const Profile = () => {
                     </button>
                     <button
                       onClick={handleSaveProfile}
-                      className="px-6 py-2 bg-[#8DBC96] text-white rounded-xl hover:bg-[#67A177] transition-all shadow-lg flex items-center space-x-2"
+                      className="px-6 py-2 bg-secondary text-white rounded-xl hover:bg-primary transition-all shadow-lg flex items-center space-x-2"
                     >
                       <Save className="w-4 h-4" />
                       <span>Save Changes</span>
@@ -450,7 +444,6 @@ const Profile = () => {
           </div>
         </main>
         {/* ...existing code for modals... */}
-      </div>
     </div>
   );
 };

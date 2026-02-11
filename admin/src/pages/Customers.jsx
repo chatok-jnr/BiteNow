@@ -154,10 +154,10 @@ export default function Customers() {
   const tabs = ['All', 'Active', 'Suspended'];
 
   return (
-    <div className="flex h-screen bg-[#0a0a0f] text-gray-100">
+    <div className="flex h-screen bg-custom_black text-gray-100">
       <Sidebar />
 
-      <main className="flex-1 overflow-auto bg-[#0a0a0f]">
+      <main className="flex-1 overflow-auto bg-custom_black">
         <div className="p-8 max-w-7xl mx-auto">
           {/* Header */}
           <div className="mb-8">
@@ -168,14 +168,14 @@ export default function Customers() {
           {/* Tabs and Search */}
           <div className="mb-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
             {/* Tabs */}
-            <div className="flex gap-2 bg-[#1a1a22] p-1.5 rounded-2xl border border-white/10">
+            <div className="flex gap-2 bg-secondary p-1.5 rounded-2xl border border-white/10">
               {tabs.map((tab) => (
                 <button
                   key={tab}
                   onClick={() => setActiveTab(tab)}
                   className={`px-6 py-2 rounded-xl text-sm font-medium transition-all ${
                     activeTab === tab
-                      ? 'bg-gradient-to-r from-[#fc5e03] to-[#fc5e03] text-white shadow-lg shadow-[#fc5e03]/20'
+                      ? 'bg-gradient-to-r from-accent to-accent text-white shadow-lg shadow-accent/20'
                       : 'text-gray-400 hover:text-gray-200 hover:bg-white/5'
                   }`}
                 >
@@ -192,7 +192,7 @@ export default function Customers() {
                 placeholder="Search customers..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-10 pr-4 py-2.5 bg-[#1a1a22] border border-white/10 rounded-xl text-sm text-gray-300 placeholder-gray-600 focus:outline-none focus:border-orange-500/50 focus:bg-[#1f1f2a] transition-all"
+                className="w-full pl-10 pr-4 py-2.5 bg-secondary border border-white/10 rounded-xl text-sm text-gray-300 placeholder-gray-600 focus:outline-none focus:border-orange-500/50 focus:bg-secondary transition-all"
               />
             </div>
           </div>
@@ -231,7 +231,7 @@ export default function Customers() {
               <div
                 key={customer.id}
                 onClick={() => handleCardClick(customer)}
-                className="group relative bg-[#1a1a22] border border-white/10 rounded-2xl p-6 cursor-pointer transition-all duration-300 hover:border-orange-500/50 hover:shadow-xl hover:shadow-orange-500/10 hover:-translate-y-1"
+                className="group relative bg-secondary border border-white/10 rounded-2xl p-6 cursor-pointer transition-all duration-300 hover:border-orange-500/50 hover:shadow-xl hover:shadow-orange-500/10 hover:-translate-y-1"
               >
                 {/* Three Dots Menu */}
                 <div className="absolute top-4 right-4 z-10">
@@ -244,7 +244,7 @@ export default function Customers() {
 
                   {/* Action Dropdown */}
                   {showActionMenu === customer.id && (
-                    <div className="absolute right-0 mt-2 w-40 bg-[#1f1f2a] border border-white/10 rounded-xl shadow-2xl overflow-hidden z-20">
+                    <div className="absolute right-0 mt-2 w-40 bg-secondary border border-white/10 rounded-xl shadow-2xl overflow-hidden z-20">
                       {customer.status === 'Suspended' && (
                         <button
                           onClick={(e) => {
@@ -290,11 +290,11 @@ export default function Customers() {
                         className="w-24 h-24 rounded-full border-4 border-white/10 group-hover:border-orange-500/50 transition-colors object-cover"
                       />
                     ) : (
-                      <div className="w-24 h-24 rounded-full border-4 border-white/10 group-hover:border-orange-500/50 transition-colors flex items-center justify-center text-5xl bg-[#111116]">
+                      <div className="w-24 h-24 rounded-full border-4 border-white/10 group-hover:border-orange-500/50 transition-colors flex items-center justify-center text-5xl bg-custom_black">
                         {customer.photo}
                       </div>
                     )}
-                    <div className={`absolute bottom-0 right-0 w-5 h-5 rounded-full border-2 border-[#1a1a22] ${
+                    <div className={`absolute bottom-0 right-0 w-5 h-5 rounded-full border-2 border-secondary ${
                       customer.status === 'Active' ? 'bg-green-500' : 'bg-red-500'
                     }`}></div>
                   </div>
@@ -359,11 +359,11 @@ export default function Customers() {
           }}
         >
           <div 
-            className="bg-[#1a1a22] border border-white/10 rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-auto"
+            className="bg-secondary border border-white/10 rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-auto"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Modal Header */}
-            <div className="sticky top-0 bg-[#1a1a22] border-b border-white/10 p-6 flex justify-between items-center">
+            <div className="sticky top-0 bg-secondary border-b border-white/10 p-6 flex justify-between items-center">
               <h3 className="text-2xl font-bold text-gray-100">Customer Details</h3>
               <button
                 onClick={() => setShowDetailModal(false)}
@@ -384,7 +384,7 @@ export default function Customers() {
                     className="w-24 h-24 rounded-full border-4 border-white/10 object-cover"
                   />
                 ) : (
-                  <div className="w-24 h-24 rounded-full border-4 border-white/10 flex items-center justify-center text-6xl bg-[#111116]">
+                  <div className="w-24 h-24 rounded-full border-4 border-white/10 flex items-center justify-center text-6xl bg-custom_black">
                     {selectedCustomer.photo}
                   </div>
                 )}
@@ -416,7 +416,7 @@ export default function Customers() {
               {/* Address */}
               <div className="mb-6">
                 <label className="text-sm font-medium text-gray-400 mb-2 block">Address</label>
-                <p className="text-gray-200 bg-[#111116] p-4 rounded-xl border border-white/10">
+                <p className="text-gray-200 bg-custom_black p-4 rounded-xl border border-white/10">
                   {selectedCustomer.address}
                 </p>
               </div>
@@ -454,7 +454,7 @@ export default function Customers() {
       {/* Confirmation Dialog */}
       {showConfirmDialog && pendingAction && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-[60] p-4">
-          <div className="bg-[#1a1a22] border border-white/10 rounded-2xl max-w-md w-full p-6">
+          <div className="bg-secondary border border-white/10 rounded-2xl max-w-md w-full p-6">
             <h3 className="text-xl font-bold text-gray-100 mb-2">Confirm Action</h3>
             <p className="text-gray-400 mb-4">
               Are you sure you want to <span className="font-semibold text-orange-400">{pendingAction.action.toLowerCase()}</span> customer{' '}
@@ -469,7 +469,7 @@ export default function Customers() {
                 onChange={(e) => setActionReason(e.target.value)}
                 placeholder="Please provide a reason for this action..."
                 rows="4"
-                className="w-full px-4 py-3 bg-[#111116] border border-white/10 rounded-xl text-sm text-gray-300 placeholder-gray-600 focus:outline-none focus:border-orange-500/50 resize-none"
+                className="w-full px-4 py-3 bg-custom_black border border-white/10 rounded-xl text-sm text-gray-300 placeholder-gray-600 focus:outline-none focus:border-orange-500/50 resize-none"
               />
             </div>
             

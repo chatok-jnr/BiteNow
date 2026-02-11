@@ -137,9 +137,9 @@ const AddressList = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#C4E2C4] flex items-center justify-center">
+      <div className="min-h-screen bg-bgPrimary flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-[#67A177] mx-auto mb-4"></div>
+          <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-primary mx-auto mb-4"></div>
           <p className="text-gray-600 text-xl">Loading addresses...</p>
         </div>
       </div>
@@ -147,38 +147,38 @@ const AddressList = () => {
   }
 
   return (
-    <div className="min-h-screen bg-[#C4E2C4] flex flex-col">
+    <div className="min-h-screen bg-bgPrimary flex flex-col">
       {/* Navbar */}
-      <nav className="sticky top-0 z-50 bg-[#67A177] shadow-md">
+      <nav className="sticky top-0 z-50 bg-primary shadow-md">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div
               onClick={() => navigate("/")}
               className="flex items-center space-x-3 cursor-pointer"
             >
-              <div className="w-10 h-10 bg-[#ACD4B1] rounded-full flex items-center justify-center">
-                <ShoppingCart className="w-6 h-6 text-[#67A177]" />
+              <div className="w-10 h-10 bg-tertiary rounded-full flex items-center justify-center">
+                <ShoppingCart className="w-6 h-6 text-primary" />
               </div>
               <span className="text-2xl font-bold text-white">BiteNow</span>
             </div>
             <div className="flex items-center space-x-4">
               <button
                 onClick={() => navigate("/")}
-                className="text-white hover:text-[#ACD4B1] transition-colors font-medium px-4 py-2 flex items-center gap-2"
+                className="text-white hover:text-tertiary transition-colors font-medium px-4 py-2 flex items-center gap-2"
               >
                 <HomeIcon className="w-5 h-5" />
                 Home
               </button>
               <button
                 onClick={() => navigate("/orderStatus")}
-                className="text-white hover:text-[#ACD4B1] transition-colors font-medium px-4 py-2 flex items-center gap-2"
+                className="text-white hover:text-tertiary transition-colors font-medium px-4 py-2 flex items-center gap-2"
               >
                 <Package className="w-5 h-5" />
                 Orders
               </button>
               <button
                 onClick={() => navigate("/profile")}
-                className="text-white hover:text-[#ACD4B1] transition-colors font-medium px-4 py-2 flex items-center gap-2"
+                className="text-white hover:text-tertiary transition-colors font-medium px-4 py-2 flex items-center gap-2"
               >
                 <UserIcon className="w-5 h-5" />
                 Profile
@@ -210,7 +210,7 @@ const AddressList = () => {
                 onClick={() => navigate("/profile")}
                 className="p-2 bg-white rounded-full hover:bg-gray-100 transition-colors"
               >
-                <ArrowLeft className="w-6 h-6 text-[#67A177]" />
+                <ArrowLeft className="w-6 h-6 text-primary" />
               </button>
               <div>
                 <h1 className="text-3xl font-bold text-gray-800">
@@ -223,7 +223,7 @@ const AddressList = () => {
             </div>
             <button
               onClick={() => navigate("/address/add")}
-              className="bg-[#67A177] text-white px-6 py-3 rounded-full font-semibold flex items-center gap-2 hover:bg-[#5a8f68] transition-all shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+              className="bg-primary text-white px-6 py-3 rounded-full font-semibold flex items-center gap-2 hover:bg-accent-dark transition-all shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
             >
               <Plus className="w-5 h-5" />
               Add Address
@@ -249,7 +249,7 @@ const AddressList = () => {
               </p>
               <button
                 onClick={() => navigate("/address/add")}
-                className="bg-[#67A177] text-white px-8 py-3 rounded-full font-semibold inline-flex items-center gap-2 hover:bg-[#5a8f68] transition-all"
+                className="bg-primary text-white px-8 py-3 rounded-full font-semibold inline-flex items-center gap-2 hover:bg-accent-dark transition-all"
               >
                 <Plus className="w-5 h-5" />
                 Add Address

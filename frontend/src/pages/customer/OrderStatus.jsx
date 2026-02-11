@@ -85,7 +85,7 @@ const OrderStatus = () => {
         return "bg-purple-500";
       case "out_for_delivery":
       case "out for delivery":
-        return "bg-[#67A177]";
+        return "bg-primary";
       case "delivered":
         return "bg-green-600";
       default:
@@ -184,7 +184,7 @@ const OrderStatus = () => {
 
   const OrderCard = ({ order, isActive }) => (
     <div
-      className="bg-[#ACD4B1] rounded-2xl overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300 cursor-pointer"
+      className="bg-tertiary rounded-2xl overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300 cursor-pointer"
       onClick={() => setSelectedOrder(order)}
     >
       <div className="p-6">
@@ -214,9 +214,9 @@ const OrderStatus = () => {
         {/* Progress Bar */}
         {isActive && (
           <div className="mb-6">
-            <div className="w-full bg-[#DDEEDB] rounded-full h-2 overflow-hidden">
+            <div className="w-full bg-surface rounded-full h-2 overflow-hidden">
               <div
-                className="bg-[#67A177] h-full rounded-full transition-all duration-500"
+                className="bg-primary h-full rounded-full transition-all duration-500"
                 style={{ width: `${getStatusProgress(order.status)}%` }}
               />
             </div>
@@ -230,7 +230,7 @@ const OrderStatus = () => {
             {order.items.map((item, index) => (
               <span
                 key={index}
-                className="bg-[#DDEEDB] text-gray-700 px-3 py-1 rounded-full text-sm flex items-center gap-2"
+                className="bg-surface text-gray-700 px-3 py-1 rounded-full text-sm flex items-center gap-2"
               >
                 <img
                   src={item.image}
@@ -238,7 +238,7 @@ const OrderStatus = () => {
                   className="w-6 h-6 rounded object-cover"
                 />
                 {item.name}
-                <span className="text-[#67A177] font-semibold">
+                <span className="text-primary font-semibold">
                   ৳{item.price.toFixed(2)}
                 </span>
               </span>
@@ -250,7 +250,7 @@ const OrderStatus = () => {
         {isActive &&
           order.confirmationPin &&
           order.status?.toLowerCase() === "out_for_delivery" && (
-            <div className="mb-4 bg-[#67A177] p-4 rounded-xl">
+            <div className="mb-4 bg-primary p-4 rounded-xl">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-white text-sm font-medium mb-1">
@@ -261,7 +261,7 @@ const OrderStatus = () => {
                   </p>
                 </div>
                 <div className="bg-white px-6 py-3 rounded-lg">
-                  <p className="text-3xl font-bold text-[#67A177] tracking-wider">
+                  <p className="text-3xl font-bold text-primary tracking-wider">
                     {order.confirmationPin}
                   </p>
                 </div>
@@ -273,13 +273,13 @@ const OrderStatus = () => {
         {isActive &&
           order.rider &&
           order.status?.toLowerCase() === "out_for_delivery" && (
-            <div className="mb-4 bg-[#DDEEDB] p-4 rounded-xl">
+            <div className="mb-4 bg-surface p-4 rounded-xl">
               <p className="text-sm font-semibold text-gray-700 mb-3">
                 Your Delivery Rider
               </p>
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-3">
-                  <div className="w-12 h-12 bg-[#67A177] rounded-full flex items-center justify-center">
+                  <div className="w-12 h-12 bg-primary rounded-full flex items-center justify-center">
                     <User className="w-6 h-6 text-white" />
                   </div>
                   <div>
@@ -296,7 +296,7 @@ const OrderStatus = () => {
                 </div>
                 <a
                   href={`tel:${order.rider.phone}`}
-                  className="bg-[#67A177] text-white p-3 rounded-full hover:bg-[#5a8f68] transition-all"
+                  className="bg-primary text-white p-3 rounded-full hover:bg-accent-dark transition-all"
                 >
                   <Phone className="w-5 h-5" />
                 </a>
@@ -306,19 +306,19 @@ const OrderStatus = () => {
 
         {/* Order Details */}
         <div className="grid grid-cols-2 gap-4 mb-4">
-          <div className="bg-[#DDEEDB] p-3 rounded-lg">
+          <div className="bg-surface p-3 rounded-lg">
             <p className="text-xs text-gray-600 mb-1">Order Time</p>
             <p className="font-semibold text-gray-800">{order.orderTime}</p>
           </div>
           {isActive ? (
-            <div className="bg-[#DDEEDB] p-3 rounded-lg">
+            <div className="bg-surface p-3 rounded-lg">
               <p className="text-xs text-gray-600 mb-1">Estimated Delivery</p>
               <p className="font-semibold text-gray-800">
                 {order.estimatedTime}
               </p>
             </div>
           ) : (
-            <div className="bg-[#DDEEDB] p-3 rounded-lg">
+            <div className="bg-surface p-3 rounded-lg">
               <p className="text-xs text-gray-600 mb-1">Delivered At</p>
               <p className="font-semibold text-gray-800">
                 {order.deliveredTime}
@@ -329,7 +329,7 @@ const OrderStatus = () => {
 
         {/* Address */}
         <div className="flex items-start space-x-2 mb-4">
-          <MapPin className="w-5 h-5 text-[#67A177] mt-0.5" />
+          <MapPin className="w-5 h-5 text-primary mt-0.5" />
           <div>
             <p className="text-xs text-gray-600">Delivery Address</p>
             <p className="text-sm font-medium text-gray-800">{order.address}</p>
@@ -337,19 +337,19 @@ const OrderStatus = () => {
         </div>
 
         {/* Footer */}
-        <div className="flex items-center justify-between pt-4 border-t border-[#8DBC96]/30">
+        <div className="flex items-center justify-between pt-4 border-t border-secondary/30">
           <div>
             <p className="text-sm text-gray-600">Total Amount</p>
-            <p className="text-2xl font-bold text-[#67A177]">
+            <p className="text-2xl font-bold text-primary">
               ৳{order.total.toFixed(2)}
             </p>
           </div>
           {isActive ? (
-            <button className="bg-[#67A177] text-white px-6 py-2 rounded-full hover:bg-[#5a8f68] transition-all font-semibold text-sm">
+            <button className="bg-primary text-white px-6 py-2 rounded-full hover:bg-accent-dark transition-all font-semibold text-sm">
               Track Order
             </button>
           ) : (
-            <button className="bg-[#67A177] text-white px-6 py-2 rounded-full hover:bg-[#5a8f68] transition-all font-semibold text-sm">
+            <button className="bg-primary text-white px-6 py-2 rounded-full hover:bg-accent-dark transition-all font-semibold text-sm">
               Reorder
             </button>
           )}
@@ -359,38 +359,38 @@ const OrderStatus = () => {
   );
 
   return (
-    <div className="min-h-screen bg-[#C4E2C4]">
+    <div className="min-h-screen bg-bgPrimary">
       {/* Navbar */}
-      <nav className="sticky top-0 z-50 bg-[#67A177] shadow-md">
+      <nav className="sticky top-0 z-50 bg-primary shadow-md">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div
               onClick={() => navigate("/")}
               className="flex items-center space-x-3 cursor-pointer"
             >
-              <div className="w-10 h-10 bg-[#ACD4B1] rounded-full flex items-center justify-center">
-                <ShoppingCart className="w-6 h-6 text-[#67A177]" />
+              <div className="w-10 h-10 bg-tertiary rounded-full flex items-center justify-center">
+                <ShoppingCart className="w-6 h-6 text-primary" />
               </div>
               <span className="text-2xl font-bold text-white">BiteNow</span>
             </div>
             <div className="flex items-center space-x-4">
               <button
                 onClick={() => navigate("/")}
-                className="text-white hover:text-[#ACD4B1] transition-colors font-medium px-4 py-2 flex items-center gap-2"
+                className="text-white hover:text-tertiary transition-colors font-medium px-4 py-2 flex items-center gap-2"
               >
                 <HomeIcon className="w-5 h-5" />
                 Home
               </button>
               <button
                 onClick={() => navigate("/orderStatus")}
-                className="bg-[#ACD4B1] text-[#67A177] px-6 py-2 rounded-full font-semibold flex items-center gap-2"
+                className="bg-tertiary text-primary px-6 py-2 rounded-full font-semibold flex items-center gap-2"
               >
                 <Package className="w-5 h-5" />
                 Orders
               </button>
               <button
                 onClick={() => navigate("/profile")}
-                className="text-white hover:text-[#ACD4B1] transition-colors font-medium px-4 py-2 flex items-center gap-2"
+                className="text-white hover:text-tertiary transition-colors font-medium px-4 py-2 flex items-center gap-2"
               >
                 <User className="w-5 h-5" />
                 Profile
@@ -423,7 +423,7 @@ const OrderStatus = () => {
             >
               <X className="w-6 h-6" />
             </button>
-            <h2 className="text-2xl font-bold mb-2 text-[#67A177]">
+            <h2 className="text-2xl font-bold mb-2 text-primary">
               Order #{selectedOrder.id}
             </h2>
             <h3 className="text-lg font-semibold mb-4 text-gray-800">
@@ -445,7 +445,7 @@ const OrderStatus = () => {
                 {selectedOrder.items.map((item, idx) => (
                   <li
                     key={idx}
-                    className="flex items-center space-x-3 bg-[#DDEEDB] px-4 py-2 rounded-lg"
+                    className="flex items-center space-x-3 bg-surface px-4 py-2 rounded-lg"
                   >
                     <img
                       src={item.image}
@@ -455,7 +455,7 @@ const OrderStatus = () => {
                     <span className="text-gray-800 font-medium flex-1">
                       {item.name}
                     </span>
-                    <span className="text-[#67A177] font-semibold">
+                    <span className="text-primary font-semibold">
                       ৳{item.price.toFixed(2)}
                     </span>
                   </li>
@@ -465,7 +465,7 @@ const OrderStatus = () => {
             <div className="mt-6">
               <div className="flex justify-between items-center mb-2">
                 <span className="text-gray-600">Delivery Charge</span>
-                <span className="text-[#67A177] font-semibold">
+                <span className="text-primary font-semibold">
                   ৳
                   {selectedOrder.deliveryCharge
                     ? selectedOrder.deliveryCharge.toFixed(2)
@@ -474,17 +474,17 @@ const OrderStatus = () => {
               </div>
               <div className="flex justify-between items-center mb-2">
                 <span className="text-gray-600">Total Amount</span>
-                <span className="text-[#67A177] font-bold">
+                <span className="text-primary font-bold">
                   ৳{selectedOrder.total.toFixed(2)}
                 </span>
               </div>
               {selectedOrder.confirmationPin &&
                 selectedOrder.status?.toLowerCase() === "out_for_delivery" && (
-                  <div className="flex justify-between items-center mt-4 bg-[#67A177] px-4 py-2 rounded-lg">
+                  <div className="flex justify-between items-center mt-4 bg-primary px-4 py-2 rounded-lg">
                     <span className="text-white font-medium">
                       Confirmation PIN
                     </span>
-                    <span className="bg-white text-[#67A177] font-bold px-4 py-2 rounded-lg text-xl tracking-wider">
+                    <span className="bg-white text-primary font-bold px-4 py-2 rounded-lg text-xl tracking-wider">
                       {selectedOrder.confirmationPin}
                     </span>
                   </div>
@@ -495,7 +495,7 @@ const OrderStatus = () => {
       )}
 
       {/* Page Header */}
-      <div className="bg-[#8DBC96] py-12">
+      <div className="bg-secondary py-12">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <h1 className="text-4xl md:text-5xl font-bold text-white mb-3">
             My Orders
@@ -513,14 +513,14 @@ const OrderStatus = () => {
             onClick={() => setActiveTab("active")}
             className={`flex-1 py-4 px-6 rounded-t-2xl font-semibold transition-all ${
               activeTab === "active"
-                ? "bg-[#DDEEDB] text-[#67A177] shadow-lg"
-                : "bg-[#ACD4B1] text-gray-600 hover:bg-[#DDEEDB]/50"
+                ? "bg-surface text-primary shadow-lg"
+                : "bg-tertiary text-gray-600 hover:bg-surface/50"
             }`}
           >
             <div className="flex items-center justify-center space-x-2">
               <Truck className="w-5 h-5" />
               <span>Active Deliveries</span>
-              <span className="bg-[#67A177] text-white px-2 py-1 rounded-full text-xs">
+              <span className="bg-primary text-white px-2 py-1 rounded-full text-xs">
                 {activeOrders.length}
               </span>
             </div>
@@ -529,14 +529,14 @@ const OrderStatus = () => {
             onClick={() => setActiveTab("completed")}
             className={`flex-1 py-4 px-6 rounded-t-2xl font-semibold transition-all ${
               activeTab === "completed"
-                ? "bg-[#DDEEDB] text-[#67A177] shadow-lg"
-                : "bg-[#ACD4B1] text-gray-600 hover:bg-[#DDEEDB]/50"
+                ? "bg-surface text-primary shadow-lg"
+                : "bg-tertiary text-gray-600 hover:bg-surface/50"
             }`}
           >
             <div className="flex items-center justify-center space-x-2">
               <CheckCircle className="w-5 h-5" />
               <span>Completed Orders</span>
-              <span className="bg-[#67A177] text-white px-2 py-1 rounded-full text-xs">
+              <span className="bg-primary text-white px-2 py-1 rounded-full text-xs">
                 {completedOrders.length}
               </span>
             </div>
@@ -545,12 +545,12 @@ const OrderStatus = () => {
       </div>
 
       {/* Orders Content */}
-      <div className="bg-[#DDEEDB] min-h-screen">
+      <div className="bg-surface min-h-screen">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           {/* Loading State */}
           {loading && (
             <div className="text-center py-16">
-              <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-[#67A177] mx-auto mb-4"></div>
+              <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-primary mx-auto mb-4"></div>
               <p className="text-gray-600 text-lg">Loading your orders...</p>
             </div>
           )}

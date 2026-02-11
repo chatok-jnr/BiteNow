@@ -119,7 +119,7 @@ const Login = () => {
   return (
     <div className="min-h-screen flex">
       {/* Left Side - Illustration */}
-      <div className="hidden lg:flex lg:w-1/2 bg-[#8dc9a3] items-center justify-center p-12 relative overflow-hidden">
+      <div className="hidden lg:flex lg:w-1/2 bg-accent-light items-center justify-center p-12 relative overflow-hidden">
         {/* Main illustration area */}
         <div className="relative z-10 max-w-lg">
           <div className="text-center animate-fade-in">
@@ -148,7 +148,7 @@ const Login = () => {
           className="absolute bottom-8 left-8 flex items-center space-x-3 text-white hover:opacity-90 transition-all group"
         >
           <div className="bg-white rounded-full p-3 shadow-xl group-hover:shadow-2xl transition-all group-hover:scale-110">
-            <ArrowLeft className="w-6 h-6 text-[#6eb88a]" />
+            <ArrowLeft className="w-6 h-6 text-primary" />
           </div>
           <span className="text-lg font-semibold drop-shadow-md">
             Return to Role Selection Page
@@ -157,7 +157,7 @@ const Login = () => {
       </div>
 
       {/* Right Side - Login Form */}
-      <div className="w-full lg:w-1/2 bg-[#1a4d3f] flex items-center justify-center p-8">
+      <div className="w-full lg:w-1/2 bg-secondary flex items-center justify-center p-8">
         <div className="w-full max-w-md">
           {/* Logo for mobile */}
           <div className="lg:hidden text-center mb-6">
@@ -169,12 +169,12 @@ const Login = () => {
           </div>
 
           {/* Toggle Tabs */}
-          <div className="flex rounded-full overflow-hidden mb-6 bg-[#2d6b57]/40 p-1 shadow-inner">
+          <div className="flex rounded-full overflow-hidden mb-6 bg-secondary/80/40 p-1 shadow-inner">
             <button
               onClick={() => setIsLogin(true)}
               className={`flex-1 py-3 px-4 text-base font-bold transition-all rounded-full ${
                 isLogin
-                  ? "bg-gradient-to-r from-[#67A177] to-[#5a8f68] text-white shadow-lg"
+                  ? "bg-gradient-to-r from-primary to-accent text-white shadow-lg"
                   : "text-white/60 hover:text-white/90"
               }`}
             >
@@ -184,7 +184,7 @@ const Login = () => {
               onClick={() => setIsLogin(false)}
               className={`flex-1 py-3 px-4 text-base font-bold transition-all rounded-full ${
                 !isLogin
-                  ? "bg-gradient-to-r from-[#67A177] to-[#5a8f68] text-white shadow-lg"
+                  ? "bg-gradient-to-r from-primary to-accent text-white shadow-lg"
                   : "text-white/60 hover:text-white/90"
               }`}
             >
@@ -232,7 +232,7 @@ const Login = () => {
                         value={loginForm.emailOrPhone}
                         onChange={handleLoginChange}
                         placeholder="Enter your email or phone"
-                        className="w-full pl-12 pr-4 py-3.5 bg-[#2d6b57] text-white placeholder-white/40 rounded-lg border-2 border-transparent focus:border-[#67A177] focus:bg-[#356b55] focus:outline-none transition-all"
+                        className="w-full pl-12 pr-4 py-3.5 bg-secondary/80 text-white placeholder-white/40 rounded-lg border-2 border-transparent focus:border-primary focus:bg-secondary/60 focus:outline-none transition-all"
                         disabled={loading}
                         required
                       />
@@ -254,7 +254,7 @@ const Login = () => {
                         value={loginForm.password}
                         onChange={handleLoginChange}
                         placeholder="Enter your password"
-                        className="w-full pl-12 pr-12 py-3.5 bg-[#2d6b57] text-white placeholder-white/40 rounded-lg border-2 border-transparent focus:border-[#67A177] focus:bg-[#356b55] focus:outline-none transition-all"
+                        className="w-full pl-12 pr-12 py-3.5 bg-secondary/80 text-white placeholder-white/40 rounded-lg border-2 border-transparent focus:border-primary focus:bg-secondary/60 focus:outline-none transition-all"
                         disabled={loading}
                         required
                       />
@@ -276,7 +276,7 @@ const Login = () => {
                   <button
                     type="submit"
                     disabled={loading}
-                    className="w-full bg-gradient-to-r from-[#67A177] to-[#5a8f68] text-white py-3.5 rounded-lg font-bold text-base hover:from-[#5a8f68] hover:to-[#4d7a59] transition-all hover:shadow-lg transform hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none flex items-center justify-center gap-2 mt-4"
+                    className="w-full bg-gradient-to-r from-primary to-accent text-white py-3.5 rounded-lg font-bold text-base hover:from-accent hover:to-accent-dark transition-all hover:shadow-lg transform hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none flex items-center justify-center gap-2 mt-4"
                   >
                     {loading ? (
                       <>
@@ -295,7 +295,7 @@ const Login = () => {
                     <div className="w-full border-t border-white/30"></div>
                   </div>
                   <div className="relative flex justify-center text-sm">
-                    <span className="px-4 bg-[#1a4d3f] text-white/60 font-medium">
+                    <span className="px-4 bg-secondary text-white/60 font-medium">
                       OR
                     </span>
                   </div>
@@ -339,7 +339,7 @@ const Login = () => {
                 </div>
 
                 {/* Welcome Message */}
-                <div className="bg-gradient-to-br from-[#2d6b57] to-[#255544] rounded-xl p-6 text-center shadow-lg mb-5">
+                <div className="bg-gradient-to-br from-secondary/80 to-secondary rounded-xl p-6 text-center shadow-lg mb-5">
                   <h3 className="text-xl font-bold text-white mb-2">
                     Join BiteNow Riders!
                   </h3>

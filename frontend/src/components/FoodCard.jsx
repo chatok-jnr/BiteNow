@@ -5,7 +5,7 @@ const FoodCard = ({ food, showDiscount = false, onAddToCart }) => {
   const hasDiscount = showDiscount && food.discount > 0;
 
   return (
-    <div className="bg-[#ACD4B1] rounded-xl overflow-hidden shadow-lg hover:shadow-xl transition-shadow relative">
+    <div className="bg-tertiary rounded-xl overflow-hidden shadow-lg hover:shadow-xl transition-shadow relative">
       {/* Rating Badge - Top Right */}
       <div className="absolute top-2 right-2 z-10 bg-white rounded-full px-2 py-1 shadow-md flex items-center space-x-1">
         <Star className="w-3 h-3 fill-yellow-400 text-yellow-400" />
@@ -40,7 +40,7 @@ const FoodCard = ({ food, showDiscount = false, onAddToCart }) => {
         <div className="mb-2">
           {hasDiscount ? (
             <div className="flex items-center space-x-1">
-              <span className="text-lg font-bold text-[#67A177]">
+              <span className="text-lg font-bold text-primary">
                 ৳{food.price.toFixed(2)}
               </span>
               <span className="text-xs text-gray-500 line-through">
@@ -51,7 +51,7 @@ const FoodCard = ({ food, showDiscount = false, onAddToCart }) => {
               </span>
             </div>
           ) : (
-            <span className="text-lg font-bold text-[#67A177]">
+            <span className="text-lg font-bold text-primary">
               ৳{food.price.toFixed(2)}
             </span>
           )}
@@ -59,7 +59,7 @@ const FoodCard = ({ food, showDiscount = false, onAddToCart }) => {
 
         <button
           onClick={() => onAddToCart && onAddToCart(food)}
-          className="w-full bg-[#67A177] text-white py-2 px-3 rounded-lg hover:bg-[#5a8f68] font-semibold text-xs flex items-center justify-center space-x-1"
+          className="w-full bg-primary text-white py-2 px-3 rounded-lg hover:bg-accent-dark font-semibold text-xs flex items-center justify-center space-x-1"
         >
           <span>Add to Cart</span>
         </button>

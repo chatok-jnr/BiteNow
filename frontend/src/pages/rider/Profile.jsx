@@ -370,10 +370,10 @@ const Profile = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#C4E2C4] flex items-center justify-center">
+      <div className="min-h-screen bg-bgPrimary flex items-center justify-center">
         <div className="text-center">
-          <div className="w-16 h-16 border-4 border-[#67A177] border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-[#67A177] font-semibold">Loading profile...</p>
+          <div className="w-16 h-16 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-primary font-semibold">Loading profile...</p>
         </div>
       </div>
     );
@@ -381,12 +381,12 @@ const Profile = () => {
 
   if (!profileData) {
     return (
-      <div className="min-h-screen bg-[#C4E2C4] flex items-center justify-center">
+      <div className="min-h-screen bg-bgPrimary flex items-center justify-center">
         <div className="text-center">
           <p className="text-red-600 font-semibold">Failed to load profile</p>
           <button
             onClick={() => navigate("/rider/home")}
-            className="mt-4 bg-[#67A177] text-white px-6 py-2 rounded-full hover:bg-[#5a8f68]"
+            className="mt-4 bg-primary text-white px-6 py-2 rounded-full hover:bg-accent-dark"
           >
             Go Back
           </button>
@@ -396,9 +396,9 @@ const Profile = () => {
   }
 
   return (
-    <div className="min-h-screen bg-[#C4E2C4]">
+    <div className="min-h-screen bg-bgPrimary">
       {/* Navbar */}
-      <nav className="sticky top-0 z-50 bg-[#8DBC96] shadow-md">
+      <nav className="sticky top-0 z-50 bg-primary shadow-md">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center space-x-3">
@@ -418,9 +418,9 @@ const Profile = () => {
                 style={{ display: navbarProfile.image ? "none" : "flex" }}
               >
                 {navbarProfile.gender?.toLowerCase() === "female" ? (
-                  <UserCircle className="w-6 h-6 text-[#67A177]" />
+                  <UserCircle className="w-6 h-6 text-primary" />
                 ) : (
-                  <User className="w-6 h-6 text-[#67A177]" />
+                  <User className="w-6 h-6 text-primary" />
                 )}
               </div>
               <span className="text-2xl font-bold text-white">
@@ -430,7 +430,7 @@ const Profile = () => {
             <div className="flex items-center space-x-4">
               <button
                 onClick={() => navigate("/rider/home")}
-                className="text-white hover:text-[#DDEEDB] transition-colors font-medium flex items-center space-x-2"
+                className="text-white hover:text-surface transition-colors font-medium flex items-center space-x-2"
               >
                 <ArrowLeft className="w-5 h-5" />
                 <span>Back to Dashboard</span>
@@ -441,7 +441,7 @@ const Profile = () => {
       </nav>
 
       {/* Page Header */}
-      <div className="bg-[#8DBC96] py-12">
+      <div className="bg-secondary py-12">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <h1 className="text-4xl md:text-5xl font-bold text-white mb-3">
             My Profile
@@ -457,52 +457,52 @@ const Profile = () => {
         {/* Stats Row - Horizontal Layout */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
           {/* Rating Card */}
-          <div className="bg-[#ACD4B1] rounded-2xl p-6 shadow-lg">
+          <div className="bg-tertiary rounded-2xl p-6 shadow-lg">
             <div className="text-center">
-              <div className="w-16 h-16 mx-auto mb-3 bg-[#67A177] rounded-full flex items-center justify-center">
+              <div className="w-16 h-16 mx-auto mb-3 bg-primary rounded-full flex items-center justify-center">
                 <Star className="w-8 h-8 fill-yellow-400 text-yellow-400" />
               </div>
               <p className="text-xs text-gray-600 mb-1">Rating</p>
-              <p className="text-3xl font-bold text-[#67A177]">
+              <p className="text-3xl font-bold text-primary">
                 {profileData.stats?.average_rating?.toFixed(1) || "0.0"}
               </p>
             </div>
           </div>
 
           {/* Total Deliveries Card */}
-          <div className="bg-[#ACD4B1] rounded-2xl p-6 shadow-lg">
+          <div className="bg-tertiary rounded-2xl p-6 shadow-lg">
             <div className="text-center">
-              <div className="w-16 h-16 mx-auto mb-3 bg-[#67A177] rounded-full flex items-center justify-center">
+              <div className="w-16 h-16 mx-auto mb-3 bg-primary rounded-full flex items-center justify-center">
                 <Package className="w-8 h-8 text-white" />
               </div>
               <p className="text-xs text-gray-600 mb-1">Total Deliveries</p>
-              <p className="text-3xl font-bold text-[#67A177]">
+              <p className="text-3xl font-bold text-primary">
                 {profileData.stats?.total_deliveries || 0}
               </p>
             </div>
           </div>
 
           {/* Completed Orders Card */}
-          <div className="bg-[#ACD4B1] rounded-2xl p-6 shadow-lg">
+          <div className="bg-tertiary rounded-2xl p-6 shadow-lg">
             <div className="text-center">
-              <div className="w-16 h-16 mx-auto mb-3 bg-[#67A177] rounded-full flex items-center justify-center">
+              <div className="w-16 h-16 mx-auto mb-3 bg-primary rounded-full flex items-center justify-center">
                 <CheckCircle className="w-8 h-8 text-white" />
               </div>
               <p className="text-xs text-gray-600 mb-1">Completed</p>
-              <p className="text-3xl font-bold text-[#67A177]">
+              <p className="text-3xl font-bold text-primary">
                 {completedOrders.length}
               </p>
             </div>
           </div>
 
           {/* Account Status Card */}
-          <div className="bg-[#ACD4B1] rounded-2xl p-6 shadow-lg">
+          <div className="bg-tertiary rounded-2xl p-6 shadow-lg">
             <div className="text-center">
-              <div className="w-16 h-16 mx-auto mb-3 bg-[#67A177] rounded-full flex items-center justify-center">
+              <div className="w-16 h-16 mx-auto mb-3 bg-primary rounded-full flex items-center justify-center">
                 <Bike className="w-8 h-8 text-white" />
               </div>
               <p className="text-xs text-gray-600 mb-1">Status</p>
-              <p className="text-lg font-bold text-[#67A177] capitalize">
+              <p className="text-lg font-bold text-primary capitalize">
                 {profileData.account_status || "N/A"}
               </p>
             </div>
@@ -513,9 +513,9 @@ const Profile = () => {
         <div className="space-y-6">
           {/* Profile Information Card */}
           <div>
-            <div className="bg-[#ACD4B1] rounded-2xl shadow-lg overflow-hidden">
+            <div className="bg-tertiary rounded-2xl shadow-lg overflow-hidden">
               {/* Header */}
-              <div className="bg-[#8DBC96] p-6 flex flex-col sm:flex-row justify-between items-center gap-4">
+              <div className="bg-secondary p-6 flex flex-col sm:flex-row justify-between items-center gap-4">
                 <h2 className="text-2xl font-bold text-white flex items-center space-x-2">
                   <User className="w-6 h-6" />
                   <span>Profile Information</span>
@@ -523,7 +523,7 @@ const Profile = () => {
                 {!isEditing ? (
                   <button
                     onClick={handleEditToggle}
-                    className="bg-[#67A177] text-white px-4 py-2 rounded-full hover:bg-[#5a8f68] transition-all font-semibold flex items-center space-x-2"
+                    className="bg-primary text-white px-4 py-2 rounded-full hover:bg-accent-dark transition-all font-semibold flex items-center space-x-2"
                   >
                     <Edit2 className="w-4 h-4" />
                     <span>Edit Profile</span>
@@ -543,7 +543,7 @@ const Profile = () => {
                 {/* Profile Photo */}
                 <div className="flex justify-center mb-8">
                   <div className="relative">
-                    <div className="w-32 h-32 rounded-full border-4 border-[#67A177] shadow-lg overflow-hidden bg-gray-200 flex items-center justify-center">
+                    <div className="w-32 h-32 rounded-full border-4 border-primary shadow-lg overflow-hidden bg-gray-200 flex items-center justify-center">
                       {editForm.imageFile || profileData?.image?.url ? (
                         <img
                           src={
@@ -559,7 +559,7 @@ const Profile = () => {
                       )}
                     </div>
                     {isEditing && (
-                      <label className="absolute bottom-0 right-0 bg-[#67A177] text-white p-2 rounded-full cursor-pointer hover:bg-[#5a8f68] transition-all">
+                      <label className="absolute bottom-0 right-0 bg-primary text-white p-2 rounded-full cursor-pointer hover:bg-accent-dark transition-all">
                         <Camera className="w-5 h-5" />
                         <input
                           type="file"
@@ -575,9 +575,9 @@ const Profile = () => {
                 {/* Form Fields - Grid Layout */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {/* Name */}
-                  <div className="bg-[#DDEEDB] p-4 rounded-xl md:col-span-2">
+                  <div className="bg-surface p-4 rounded-xl md:col-span-2">
                     <label className="flex items-center space-x-2 text-sm text-gray-600 mb-2">
-                      <User className="w-4 h-4 text-[#67A177]" />
+                      <User className="w-4 h-4 text-primary" />
                       <span>Full Name</span>
                     </label>
                     {isEditing ? (
@@ -586,7 +586,7 @@ const Profile = () => {
                         name="rider_name"
                         value={editForm.rider_name}
                         onChange={handleInputChange}
-                        className="w-full px-4 py-2 rounded-lg border-2 border-[#8DBC96] focus:border-[#67A177] focus:outline-none bg-white"
+                        className="w-full px-4 py-2 rounded-lg border-2 border-secondary focus:border-primary focus:outline-none bg-white"
                       />
                     ) : (
                       <p className="text-lg font-semibold text-gray-800">
@@ -596,9 +596,9 @@ const Profile = () => {
                   </div>
 
                   {/* Email (Read Only) */}
-                  <div className="bg-[#DDEEDB] p-4 rounded-xl md:col-span-2">
+                  <div className="bg-surface p-4 rounded-xl md:col-span-2">
                     <label className="flex items-center space-x-2 text-sm text-gray-600 mb-2">
-                      <Mail className="w-4 h-4 text-[#67A177]" />
+                      <Mail className="w-4 h-4 text-primary" />
                       <span>Email Address</span>
                     </label>
                     <p className="text-lg font-semibold text-gray-800">
@@ -612,9 +612,9 @@ const Profile = () => {
                   </div>
 
                   {/* Phone */}
-                  <div className="bg-[#DDEEDB] p-4 rounded-xl">
+                  <div className="bg-surface p-4 rounded-xl">
                     <label className="flex items-center space-x-2 text-sm text-gray-600 mb-2">
-                      <Phone className="w-4 h-4 text-[#67A177]" />
+                      <Phone className="w-4 h-4 text-primary" />
                       <span>Emergency Contact</span>
                     </label>
                     {isEditing ? (
@@ -623,7 +623,7 @@ const Profile = () => {
                         name="rider_contact_info.emergency_contact"
                         value={editForm["rider_contact_info.emergency_contact"]}
                         onChange={handleInputChange}
-                        className="w-full px-4 py-2 rounded-lg border-2 border-[#8DBC96] focus:border-[#67A177] focus:outline-none bg-white"
+                        className="w-full px-4 py-2 rounded-lg border-2 border-secondary focus:border-primary focus:outline-none bg-white"
                       />
                     ) : (
                       <p className="text-lg font-semibold text-gray-800">
@@ -634,9 +634,9 @@ const Profile = () => {
                   </div>
 
                   {/* Alternative Phone */}
-                  <div className="bg-[#DDEEDB] p-4 rounded-xl">
+                  <div className="bg-surface p-4 rounded-xl">
                     <label className="flex items-center space-x-2 text-sm text-gray-600 mb-2">
-                      <Phone className="w-4 h-4 text-[#67A177]" />
+                      <Phone className="w-4 h-4 text-primary" />
                       <span>Alternative Phone</span>
                     </label>
                     {isEditing ? (
@@ -645,7 +645,7 @@ const Profile = () => {
                         name="rider_contact_info.alternative_phone"
                         value={editForm["rider_contact_info.alternative_phone"]}
                         onChange={handleInputChange}
-                        className="w-full px-4 py-2 rounded-lg border-2 border-[#8DBC96] focus:border-[#67A177] focus:outline-none bg-white"
+                        className="w-full px-4 py-2 rounded-lg border-2 border-secondary focus:border-primary focus:outline-none bg-white"
                       />
                     ) : (
                       <p className="text-lg font-semibold text-gray-800">
@@ -656,9 +656,9 @@ const Profile = () => {
                   </div>
 
                   {/* Gender */}
-                  <div className="bg-[#DDEEDB] p-4 rounded-xl">
+                  <div className="bg-surface p-4 rounded-xl">
                     <label className="flex items-center space-x-2 text-sm text-gray-600 mb-2">
-                      <User className="w-4 h-4 text-[#67A177]" />
+                      <User className="w-4 h-4 text-primary" />
                       <span>Gender</span>
                     </label>
                     {isEditing ? (
@@ -666,7 +666,7 @@ const Profile = () => {
                         name="rider_gender"
                         value={editForm.rider_gender}
                         onChange={handleInputChange}
-                        className="w-full px-4 py-2 rounded-lg border-2 border-[#8DBC96] focus:border-[#67A177] focus:outline-none bg-white"
+                        className="w-full px-4 py-2 rounded-lg border-2 border-secondary focus:border-primary focus:outline-none bg-white"
                       >
                         <option value="">Select Gender</option>
                         <option value="Male">Male</option>
@@ -681,9 +681,9 @@ const Profile = () => {
                   </div>
 
                   {/* Address */}
-                  <div className="bg-[#DDEEDB] p-4 rounded-xl">
+                  <div className="bg-surface p-4 rounded-xl">
                     <label className="flex items-center space-x-2 text-sm text-gray-600 mb-2">
-                      <MapPin className="w-4 h-4 text-[#67A177]" />
+                      <MapPin className="w-4 h-4 text-primary" />
                       <span>Address</span>
                     </label>
                     {isEditing ? (
@@ -693,7 +693,7 @@ const Profile = () => {
                         value={editForm.rider_address}
                         onChange={handleInputChange}
                         maxLength={50}
-                        className="w-full px-4 py-2 rounded-lg border-2 border-[#8DBC96] focus:border-[#67A177] focus:outline-none bg-white"
+                        className="w-full px-4 py-2 rounded-lg border-2 border-secondary focus:border-primary focus:outline-none bg-white"
                       />
                     ) : (
                       <p className="text-lg font-semibold text-gray-800">
@@ -703,9 +703,9 @@ const Profile = () => {
                   </div>
 
                   {/* Date of Birth */}
-                  <div className="bg-[#DDEEDB] p-4 rounded-xl md:col-span-2">
+                  <div className="bg-surface p-4 rounded-xl md:col-span-2">
                     <label className="flex items-center space-x-2 text-sm text-gray-600 mb-2">
-                      <Calendar className="w-4 h-4 text-[#67A177]" />
+                      <Calendar className="w-4 h-4 text-primary" />
                       <span>Date of Birth</span>
                     </label>
                     {isEditing ? (
@@ -714,7 +714,7 @@ const Profile = () => {
                         name="rider_date_of_birth"
                         value={editForm.rider_date_of_birth}
                         onChange={handleInputChange}
-                        className="w-full px-4 py-2 rounded-lg border-2 border-[#8DBC96] focus:border-[#67A177] focus:outline-none bg-white"
+                        className="w-full px-4 py-2 rounded-lg border-2 border-secondary focus:border-primary focus:outline-none bg-white"
                       />
                     ) : (
                       <p className="text-lg font-semibold text-gray-800">
@@ -734,7 +734,7 @@ const Profile = () => {
                   {/* Password Fields (Only in Edit Mode) */}
                   {isEditing && (
                     <>
-                      <div className="bg-[#DDEEDB] p-4 rounded-xl md:col-span-2">
+                      <div className="bg-surface p-4 rounded-xl md:col-span-2">
                         <label className="flex items-center space-x-2 text-sm text-gray-600 mb-2">
                           <span>
                             New Password (Leave blank to keep current)
@@ -747,12 +747,12 @@ const Profile = () => {
                             value={editForm.rider_password}
                             onChange={handleInputChange}
                             placeholder="Enter new password"
-                            className="w-full px-4 py-2 rounded-lg border-2 border-[#8DBC96] focus:border-[#67A177] focus:outline-none bg-white pr-12"
+                            className="w-full px-4 py-2 rounded-lg border-2 border-secondary focus:border-primary focus:outline-none bg-white pr-12"
                           />
                           <button
                             type="button"
                             onClick={() => setShowPassword(!showPassword)}
-                            className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-[#67A177]"
+                            className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-primary"
                           >
                             {showPassword ? (
                               <EyeOff className="w-5 h-5" />
@@ -763,7 +763,7 @@ const Profile = () => {
                         </div>
                       </div>
 
-                      <div className="bg-[#DDEEDB] p-4 rounded-xl md:col-span-2">
+                      <div className="bg-surface p-4 rounded-xl md:col-span-2">
                         <label className="flex items-center space-x-2 text-sm text-gray-600 mb-2">
                           <span>Confirm New Password</span>
                         </label>
@@ -773,7 +773,7 @@ const Profile = () => {
                           value={editForm.confirmPassword}
                           onChange={handleInputChange}
                           placeholder="Confirm new password"
-                          className="w-full px-4 py-2 rounded-lg border-2 border-[#8DBC96] focus:border-[#67A177] focus:outline-none bg-white"
+                          className="w-full px-4 py-2 rounded-lg border-2 border-secondary focus:border-primary focus:outline-none bg-white"
                         />
                       </div>
                     </>
@@ -785,7 +785,7 @@ const Profile = () => {
                   <div className="mt-6 space-y-3">
                     <button
                       onClick={handleSaveProfile}
-                      className="w-full bg-[#67A177] text-white py-3 rounded-full hover:bg-[#5a8f68] transition-all font-semibold text-lg hover:shadow-lg"
+                      className="w-full bg-primary text-white py-3 rounded-full hover:bg-accent-dark transition-all font-semibold text-lg hover:shadow-lg"
                     >
                       Save Changes
                     </button>
@@ -794,7 +794,7 @@ const Profile = () => {
 
                 {/* Delete Account Button */}
                 {!isEditing && (
-                  <div className="mt-6 pt-6 border-t border-[#8DBC96]/30">
+                  <div className="mt-6 pt-6 border-t border-secondary/30">
                     <button
                       onClick={() => setShowDeleteModal(true)}
                       className="w-full bg-red-500 text-white py-3 rounded-full hover:bg-red-600 transition-all font-semibold text-lg hover:shadow-lg flex items-center justify-center space-x-2"
@@ -811,8 +811,8 @@ const Profile = () => {
             </div>
 
             {/* Documents Section */}
-            <div className="bg-[#ACD4B1] rounded-2xl shadow-lg overflow-hidden">
-              <div className="bg-[#8DBC96] p-6">
+            <div className="bg-tertiary rounded-2xl shadow-lg overflow-hidden">
+              <div className="bg-secondary p-6">
                 <h2 className="text-2xl font-bold text-white flex items-center space-x-2">
                   <FileText className="w-6 h-6" />
                   <span>Required Documents</span>
@@ -822,19 +822,19 @@ const Profile = () => {
                 </p>
               </div>
               <div className="p-6">
-                <div className="bg-[#DDEEDB] p-4 rounded-xl">
+                <div className="bg-surface p-4 rounded-xl">
                   <label className="flex items-center space-x-2 text-sm text-gray-600 mb-3">
-                    <FileText className="w-4 h-4 text-[#67A177]" />
+                    <FileText className="w-4 h-4 text-primary" />
                     <span>Rider Documents</span>
                   </label>
 
                   {/* Upload Documents Section */}
-                  <div className="mb-4 p-4 bg-white rounded-lg border-2 border-dashed border-[#8DBC96]">
+                  <div className="mb-4 p-4 bg-white rounded-lg border-2 border-dashed border-secondary">
                     <div className="flex flex-col space-y-3">
                       <div className="flex items-center justify-between">
                         <label
                           htmlFor="document-upload"
-                          className="cursor-pointer bg-[#67A177] text-white px-4 py-2 rounded-full hover:bg-[#5a8f68] transition-all font-semibold text-sm flex items-center space-x-2"
+                          className="cursor-pointer bg-primary text-white px-4 py-2 rounded-full hover:bg-accent-dark transition-all font-semibold text-sm flex items-center space-x-2"
                         >
                           <Upload className="w-4 h-4" />
                           <span>Choose Documents</span>
@@ -872,7 +872,7 @@ const Profile = () => {
                               key={index}
                               className="text-xs text-gray-700 flex items-center space-x-2"
                             >
-                              <FileText className="w-3 h-3 text-[#67A177]" />
+                              <FileText className="w-3 h-3 text-primary" />
                               <span>
                                 {file.name} ({(file.size / 1024).toFixed(2)} KB)
                               </span>
@@ -902,7 +902,7 @@ const Profile = () => {
                             href={doc.url}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="flex items-center space-x-2 text-[#67A177] hover:text-[#5a8f68] transition-colors font-medium text-sm flex-1"
+                            className="flex items-center space-x-2 text-primary hover:text-accent-dark transition-colors font-medium text-sm flex-1"
                           >
                             <FileText className="w-4 h-4" />
                             <span>Document {index + 1}</span>
@@ -1035,10 +1035,10 @@ const Profile = () => {
       )}
 
       {/* Footer */}
-      <footer className="bg-[#8DBC96] text-white py-8 mt-12">
+      <footer className="bg-secondary text-white py-8 mt-12">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <div className="flex items-center justify-center space-x-3 mb-4">
-            <div className="w-10 h-10 bg-[#67A177] rounded-full flex items-center justify-center">
+            <div className="w-10 h-10 bg-primary rounded-full flex items-center justify-center">
               <Bike className="w-6 h-6 text-white" />
             </div>
             <span className="text-2xl font-bold">BiteNow Rider</span>

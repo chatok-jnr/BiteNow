@@ -36,7 +36,7 @@ const RoleSelection = () => {
   return (
     <div className="min-h-screen flex">
       {/* Left Side - Welcome Section */}
-      <div className="hidden lg:flex lg:w-1/2 bg-[#8dc9a3] items-center justify-center p-12 relative overflow-hidden">
+      <div className="hidden lg:flex lg:w-1/2 bg-accent-light items-center justify-center p-12 relative overflow-hidden">
         {/* Main content area */}
         <div className="relative z-10 max-w-lg">
           <div className="text-center animate-fade-in">
@@ -65,7 +65,7 @@ const RoleSelection = () => {
           className="absolute bottom-8 left-8 flex items-center space-x-3 text-white hover:opacity-90 transition-all group"
         >
           <div className="bg-white rounded-full p-3 shadow-xl group-hover:shadow-2xl transition-all group-hover:scale-110">
-            <ArrowLeft className="w-6 h-6 text-[#6eb88a]" />
+            <ArrowLeft className="w-6 h-6 text-primary" />
           </div>
           <span className="text-lg font-semibold drop-shadow-md">
             Back to Home
@@ -74,7 +74,7 @@ const RoleSelection = () => {
       </div>
 
       {/* Right Side - Role Selection Buttons */}
-      <div className="w-full lg:w-1/2 bg-[#1a4d3f] flex items-center justify-center p-8">
+      <div className="w-full lg:w-1/2 bg-secondary flex items-center justify-center p-8">
         <div className="w-full max-w-md">
           {/* Logo for mobile */}
           <div className="lg:hidden text-center mb-8">
@@ -103,10 +103,10 @@ const RoleSelection = () => {
                 <button
                   key={role.id}
                   onClick={() => handleRoleSelect(role.path)}
-                  className="w-full bg-[#2d6b57] hover:bg-[#356b55] text-white p-6 rounded-lg transition-all transform hover:scale-[1.02] hover:shadow-xl border-2 border-transparent hover:border-[#67A177] group"
+                  className="w-full bg-secondary/80 hover:bg-secondary/60 text-white p-6 rounded-lg transition-all transform hover:scale-[1.02] hover:shadow-xl border-2 border-transparent hover:border-primary group"
                 >
                   <div className="flex items-center space-x-4">
-                    <div className="bg-gradient-to-r from-[#67A177] to-[#5a8f68] p-4 rounded-lg group-hover:from-[#5a8f68] group-hover:to-[#4d7a59] transition-all">
+                    <div className="bg-gradient-to-r from-primary to-accent p-4 rounded-lg group-hover:from-accent group-hover:to-accent-dark transition-all">
                       <Icon className="w-8 h-8 text-white" strokeWidth={2} />
                     </div>
                     <div className="flex-1 text-left">

@@ -554,7 +554,7 @@ const Manage_Restaurant = () => {
 
     return (
       <div
-        className="bg-[#ACD4B1] rounded-2xl p-6 shadow-lg cursor-pointer hover:shadow-xl transition-shadow"
+        className="bg-tertiary rounded-2xl p-6 shadow-lg cursor-pointer hover:shadow-xl transition-shadow"
         onClick={() => {
           setSelectedOrder(order);
           setShowOrderDetailsModal(true);
@@ -569,11 +569,11 @@ const Manage_Restaurant = () => {
           </div>
         </div>
 
-        <div className="bg-[#DDEEDB] p-4 rounded-xl mb-4">
+        <div className="bg-surface p-4 rounded-xl mb-4">
           <p className="text-xs font-semibold text-gray-700 mb-2">Customer</p>
           <div className="space-y-1">
             <div className="flex items-center space-x-2">
-              <User className="w-4 h-4 text-[#67A177]" />
+              <User className="w-4 h-4 text-primary" />
               <span className="text-sm">
                 {order.customer_id?.customer_name || "N/A"}
               </span>
@@ -581,7 +581,7 @@ const Manage_Restaurant = () => {
           </div>
         </div>
 
-        <div className="bg-[#DDEEDB] p-4 rounded-xl mb-4">
+        <div className="bg-surface p-4 rounded-xl mb-4">
           <div className="flex justify-between text-sm mb-1">
             <span>Subtotal</span>
             <span className="font-semibold">৳{subtotal.toFixed(2)}</span>
@@ -590,9 +590,9 @@ const Manage_Restaurant = () => {
             <span>Delivery</span>
             <span className="font-semibold">৳{deliveryCharge.toFixed(2)}</span>
           </div>
-          <div className="flex justify-between text-lg pt-2 border-t border-[#8DBC96]/30">
+          <div className="flex justify-between text-lg pt-2 border-t border-secondary/30">
             <span className="font-bold">Total</span>
-            <span className="font-bold text-[#67A177]">
+            <span className="font-bold text-primary">
               ৳{total.toFixed(2)}
             </span>
           </div>
@@ -614,7 +614,7 @@ const Manage_Restaurant = () => {
                 e.stopPropagation();
                 handleUpdateOrderStatus(order._id, "look_rider");
               }}
-              className="bg-[#67A177] text-white py-2 rounded-full hover:bg-[#5a8f68] font-semibold"
+              className="bg-primary text-white py-2 rounded-full hover:bg-accent-dark font-semibold"
             >
               Accept
             </button>
@@ -627,7 +627,7 @@ const Manage_Restaurant = () => {
               e.stopPropagation();
               handleUpdateOrderStatus(order._id, "preparing");
             }}
-            className="w-full bg-[#67A177] text-white py-3 rounded-full hover:bg-[#5a8f68] font-semibold flex items-center justify-center space-x-2"
+            className="w-full bg-primary text-white py-3 rounded-full hover:bg-accent-dark font-semibold flex items-center justify-center space-x-2"
           >
             <ChefHat className="w-5 h-5" />
             <span>Start Preparing</span>
@@ -640,7 +640,7 @@ const Manage_Restaurant = () => {
               e.stopPropagation();
               handleUpdateOrderStatus(order._id, "ready_for_pickup");
             }}
-            className="w-full bg-[#67A177] text-white py-3 rounded-full hover:bg-[#5a8f68] font-semibold flex items-center justify-center space-x-2"
+            className="w-full bg-primary text-white py-3 rounded-full hover:bg-accent-dark font-semibold flex items-center justify-center space-x-2"
           >
             <Package className="w-5 h-5" />
             <span>Mark Ready for Pickup</span>
@@ -654,7 +654,7 @@ const Manage_Restaurant = () => {
               setSelectedOrder(order);
               setShowPinModal(true);
             }}
-            className="w-full bg-[#67A177] text-white py-3 rounded-full hover:bg-[#5a8f68] font-semibold flex items-center justify-center space-x-2"
+            className="w-full bg-primary text-white py-3 rounded-full hover:bg-accent-dark font-semibold flex items-center justify-center space-x-2"
           >
             <Bike className="w-5 h-5" />
             <span>Hand to Rider</span>
@@ -666,7 +666,7 @@ const Manage_Restaurant = () => {
 
   if (!restaurantId) {
     return (
-      <div className="min-h-screen bg-[#C4E2C4] flex items-center justify-center">
+      <div className="min-h-screen bg-bgPrimary flex items-center justify-center">
         <div className="bg-white rounded-2xl p-8 shadow-xl text-center max-w-md">
           <AlertCircle className="w-16 h-16 text-red-500 mx-auto mb-4" />
           <h2 className="text-2xl font-bold text-gray-800 mb-2">
@@ -681,9 +681,9 @@ const Manage_Restaurant = () => {
   }
 
   return (
-    <div className="min-h-screen bg-[#C4E2C4]">
+    <div className="min-h-screen bg-bgPrimary">
       {/* Header */}
-      <div className="bg-[#8DBC96] py-8 shadow-md">
+      <div className="bg-secondary py-8 shadow-md">
         <div className="max-w-7xl mx-auto px-4">
           <div className="flex items-center space-x-6">
             <button
@@ -731,14 +731,14 @@ const Manage_Restaurant = () => {
         <div className="flex space-x-4 mb-6">
           <button
             onClick={() => setActiveMode("food")}
-            className={`flex-1 py-3 px-6 rounded-full font-semibold transition-all ${activeMode === "food" ? "bg-[#67A177] text-white shadow-lg" : "bg-[#ACD4B1] text-gray-700"}`}
+            className={`flex-1 py-3 px-6 rounded-full font-semibold transition-all ${activeMode === "food" ? "bg-primary text-white shadow-lg" : "bg-tertiary text-gray-700"}`}
           >
             <ShoppingCart className="w-5 h-5 inline mr-2" />
             Manage Food
           </button>
           <button
             onClick={() => setActiveMode("order")}
-            className={`flex-1 py-3 px-6 rounded-full font-semibold transition-all ${activeMode === "order" ? "bg-[#67A177] text-white shadow-lg" : "bg-[#ACD4B1] text-gray-700"}`}
+            className={`flex-1 py-3 px-6 rounded-full font-semibold transition-all ${activeMode === "order" ? "bg-primary text-white shadow-lg" : "bg-tertiary text-gray-700"}`}
           >
             <Package className="w-5 h-5 inline mr-2" />
             Manage Orders
@@ -756,7 +756,7 @@ const Manage_Restaurant = () => {
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   placeholder="Search foods..."
-                  className="w-full pl-10 pr-4 py-3 rounded-full border-2 border-[#8DBC96] focus:border-[#67A177] focus:outline-none bg-white"
+                  className="w-full pl-10 pr-4 py-3 rounded-full border-2 border-secondary focus:border-primary focus:outline-none bg-white"
                 />
               </div>
               <button
@@ -778,7 +778,7 @@ const Manage_Restaurant = () => {
                 disabled={
                   ownerStatus !== "Approved" || restaurantStatus !== "Accepted"
                 }
-                className="bg-[#67A177] text-white px-6 py-3 rounded-full hover:bg-[#5a8f68] font-semibold flex items-center space-x-2 shadow-lg ml-4 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="bg-primary text-white px-6 py-3 rounded-full hover:bg-accent-dark font-semibold flex items-center space-x-2 shadow-lg ml-4 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <Plus className="w-5 h-5" />
                 <span>Add Food</span>
@@ -787,7 +787,7 @@ const Manage_Restaurant = () => {
 
             {loading && (
               <div className="flex justify-center items-center py-16">
-                <Loader className="w-12 h-12 text-[#67A177] animate-spin" />
+                <Loader className="w-12 h-12 text-primary animate-spin" />
               </div>
             )}
 
@@ -807,7 +807,7 @@ const Manage_Restaurant = () => {
               {filteredFoods.map((food) => (
                 <div
                   key={food._id}
-                  className="bg-[#ACD4B1] rounded-xl overflow-hidden shadow-lg hover:shadow-xl transition-shadow"
+                  className="bg-tertiary rounded-xl overflow-hidden shadow-lg hover:shadow-xl transition-shadow"
                 >
                   <div className="aspect-video overflow-hidden bg-gray-200 flex items-center justify-center">
                     {food.food_image?.url ? (
@@ -830,7 +830,7 @@ const Manage_Restaurant = () => {
                     <div className="mb-2">
                       {food.discount_percentage > 0 ? (
                         <div className="flex items-center space-x-1 flex-wrap">
-                          <span className="text-lg font-bold text-[#67A177]">
+                          <span className="text-lg font-bold text-primary">
                             ৳
                             {(
                               food.food_price *
@@ -845,12 +845,12 @@ const Manage_Restaurant = () => {
                           </span>
                         </div>
                       ) : (
-                        <span className="text-lg font-bold text-[#67A177]">
+                        <span className="text-lg font-bold text-primary">
                           ৳{food.food_price.toFixed(2)}
                         </span>
                       )}
                     </div>
-                    <div className="bg-[#DDEEDB] px-2 py-1 rounded-lg mb-3">
+                    <div className="bg-surface px-2 py-1 rounded-lg mb-3">
                       <p className="text-xs text-gray-600">
                         Stock:{" "}
                         <span
@@ -863,7 +863,7 @@ const Manage_Restaurant = () => {
                     <div className="grid grid-cols-2 gap-2">
                       <button
                         onClick={() => openEditModal(food)}
-                        className="bg-[#67A177] text-white py-2 px-3 rounded-lg hover:bg-[#5a8f68] font-semibold text-xs flex items-center justify-center space-x-1"
+                        className="bg-primary text-white py-2 px-3 rounded-lg hover:bg-accent-dark font-semibold text-xs flex items-center justify-center space-x-1"
                       >
                         <Edit2 className="w-3 h-3" />
                         <span>Update</span>
@@ -897,7 +897,7 @@ const Manage_Restaurant = () => {
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   placeholder="Search orders..."
-                  className="w-full pl-10 pr-4 py-3 rounded-full border-2 border-[#8DBC96] focus:border-[#67A177] focus:outline-none bg-white"
+                  className="w-full pl-10 pr-4 py-3 rounded-full border-2 border-secondary focus:border-primary focus:outline-none bg-white"
                 />
               </div>
 
@@ -914,7 +914,7 @@ const Manage_Restaurant = () => {
                   <button
                     key={status}
                     onClick={() => setOrderStatus(status)}
-                    className={`px-4 py-2 rounded-full font-semibold transition-all ${orderStatus === status ? "bg-[#67A177] text-white" : "bg-[#ACD4B1] text-gray-700"}`}
+                    className={`px-4 py-2 rounded-full font-semibold transition-all ${orderStatus === status ? "bg-primary text-white" : "bg-tertiary text-gray-700"}`}
                   >
                     {status
                       .split("_")
@@ -922,7 +922,7 @@ const Manage_Restaurant = () => {
                         (word) => word.charAt(0).toUpperCase() + word.slice(1),
                       )
                       .join(" ")}
-                    <span className="ml-2 bg-white text-[#67A177] px-2 py-0.5 rounded-full text-xs">
+                    <span className="ml-2 bg-white text-primary px-2 py-0.5 rounded-full text-xs">
                       {categorizedOrders[status]?.length || 0}
                     </span>
                   </button>
@@ -932,7 +932,7 @@ const Manage_Restaurant = () => {
 
             {loading && (
               <div className="flex justify-center items-center py-16">
-                <Loader className="w-12 h-12 text-[#67A177] animate-spin" />
+                <Loader className="w-12 h-12 text-primary animate-spin" />
               </div>
             )}
 
@@ -968,7 +968,7 @@ const Manage_Restaurant = () => {
             }
           }}
         >
-          <div className="bg-[#DDEEDB] rounded-2xl max-w-2xl w-full p-6 max-h-[90vh] overflow-y-auto">
+          <div className="bg-surface rounded-2xl max-w-2xl w-full p-6 max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-2xl font-bold">Add New Food</h2>
               <button
@@ -1000,7 +1000,7 @@ const Manage_Restaurant = () => {
                   onChange={(e) =>
                     setFoodForm({ ...foodForm, food_name: e.target.value })
                   }
-                  className="w-full px-4 py-3 rounded-lg border-2 border-[#8DBC96] focus:border-[#67A177] focus:outline-none bg-white"
+                  className="w-full px-4 py-3 rounded-lg border-2 border-secondary focus:border-primary focus:outline-none bg-white"
                 />
               </div>
 
@@ -1013,13 +1013,13 @@ const Manage_Restaurant = () => {
                     type="file"
                     accept="image/*"
                     onChange={handleFoodImageUpload}
-                    className="w-full px-4 py-3 rounded-lg border-2 border-[#8DBC96] focus:border-[#67A177] focus:outline-none bg-white"
+                    className="w-full px-4 py-3 rounded-lg border-2 border-secondary focus:border-primary focus:outline-none bg-white"
                   />
                   {imagePreview && (
                     <img
                       src={imagePreview}
                       alt="Preview"
-                      className="w-20 h-20 object-cover rounded-lg border-2 border-[#8DBC96]"
+                      className="w-20 h-20 object-cover rounded-lg border-2 border-secondary"
                     />
                   )}
                 </div>
@@ -1038,7 +1038,7 @@ const Manage_Restaurant = () => {
                     onChange={(e) =>
                       setFoodForm({ ...foodForm, food_price: e.target.value })
                     }
-                    className="w-full px-4 py-3 rounded-lg border-2 border-[#8DBC96] focus:border-[#67A177] focus:outline-none bg-white"
+                    className="w-full px-4 py-3 rounded-lg border-2 border-secondary focus:border-primary focus:outline-none bg-white"
                   />
                 </div>
                 <div>
@@ -1054,7 +1054,7 @@ const Manage_Restaurant = () => {
                         food_quantity: e.target.value,
                       })
                     }
-                    className="w-full px-4 py-3 rounded-lg border-2 border-[#8DBC96] focus:border-[#67A177] focus:outline-none bg-white"
+                    className="w-full px-4 py-3 rounded-lg border-2 border-secondary focus:border-primary focus:outline-none bg-white"
                   />
                 </div>
               </div>
@@ -1073,7 +1073,7 @@ const Manage_Restaurant = () => {
                       discount_percentage: e.target.value,
                     })
                   }
-                  className="w-full px-4 py-3 rounded-lg border-2 border-[#8DBC96] focus:border-[#67A177] focus:outline-none bg-white"
+                  className="w-full px-4 py-3 rounded-lg border-2 border-secondary focus:border-primary focus:outline-none bg-white"
                 />
               </div>
               <div>
@@ -1087,7 +1087,7 @@ const Manage_Restaurant = () => {
                     setFoodForm({ ...foodForm, tags: e.target.value })
                   }
                   placeholder="vegetarian, spicy, popular"
-                  className="w-full px-4 py-3 rounded-lg border-2 border-[#8DBC96] focus:border-[#67A177] focus:outline-none bg-white"
+                  className="w-full px-4 py-3 rounded-lg border-2 border-secondary focus:border-primary focus:outline-none bg-white"
                 />
               </div>
               <div>
@@ -1104,7 +1104,7 @@ const Manage_Restaurant = () => {
                   }
                   rows="3"
                   minLength="10"
-                  className="w-full px-4 py-3 rounded-lg border-2 border-[#8DBC96] focus:border-[#67A177] focus:outline-none bg-white resize-none"
+                  className="w-full px-4 py-3 rounded-lg border-2 border-secondary focus:border-primary focus:outline-none bg-white resize-none"
                 />
               </div>
               <div className="flex space-x-4">
@@ -1120,7 +1120,7 @@ const Manage_Restaurant = () => {
                 </button>
                 <button
                   onClick={handleAddFood}
-                  className="flex-1 bg-[#67A177] text-white py-3 rounded-full hover:bg-[#5a8f68] font-semibold"
+                  className="flex-1 bg-primary text-white py-3 rounded-full hover:bg-accent-dark font-semibold"
                 >
                   Add Food
                 </button>
@@ -1140,7 +1140,7 @@ const Manage_Restaurant = () => {
             }
           }}
         >
-          <div className="bg-[#DDEEDB] rounded-2xl max-w-2xl w-full p-6 max-h-[90vh] overflow-y-auto">
+          <div className="bg-surface rounded-2xl max-w-2xl w-full p-6 max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-2xl font-bold">Edit Food</h2>
               <button
@@ -1171,7 +1171,7 @@ const Manage_Restaurant = () => {
                   onChange={(e) =>
                     setFoodForm({ ...foodForm, food_name: e.target.value })
                   }
-                  className="w-full px-4 py-3 rounded-lg border-2 border-[#8DBC96] focus:border-[#67A177] focus:outline-none bg-white"
+                  className="w-full px-4 py-3 rounded-lg border-2 border-secondary focus:border-primary focus:outline-none bg-white"
                 />
               </div>
 
@@ -1188,7 +1188,7 @@ const Manage_Restaurant = () => {
                     onChange={(e) =>
                       setFoodForm({ ...foodForm, food_price: e.target.value })
                     }
-                    className="w-full px-4 py-3 rounded-lg border-2 border-[#8DBC96] focus:border-[#67A177] focus:outline-none bg-white"
+                    className="w-full px-4 py-3 rounded-lg border-2 border-secondary focus:border-primary focus:outline-none bg-white"
                   />
                 </div>
                 <div>
@@ -1204,7 +1204,7 @@ const Manage_Restaurant = () => {
                         food_quantity: e.target.value,
                       })
                     }
-                    className="w-full px-4 py-3 rounded-lg border-2 border-[#8DBC96] focus:border-[#67A177] focus:outline-none bg-white"
+                    className="w-full px-4 py-3 rounded-lg border-2 border-secondary focus:border-primary focus:outline-none bg-white"
                   />
                 </div>
               </div>
@@ -1223,7 +1223,7 @@ const Manage_Restaurant = () => {
                       discount_percentage: e.target.value,
                     })
                   }
-                  className="w-full px-4 py-3 rounded-lg border-2 border-[#8DBC96] focus:border-[#67A177] focus:outline-none bg-white"
+                  className="w-full px-4 py-3 rounded-lg border-2 border-secondary focus:border-primary focus:outline-none bg-white"
                 />
               </div>
               <div>
@@ -1237,7 +1237,7 @@ const Manage_Restaurant = () => {
                     setFoodForm({ ...foodForm, tags: e.target.value })
                   }
                   placeholder="vegetarian, spicy, popular"
-                  className="w-full px-4 py-3 rounded-lg border-2 border-[#8DBC96] focus:border-[#67A177] focus:outline-none bg-white"
+                  className="w-full px-4 py-3 rounded-lg border-2 border-secondary focus:border-primary focus:outline-none bg-white"
                 />
               </div>
               <div>
@@ -1254,7 +1254,7 @@ const Manage_Restaurant = () => {
                   }
                   rows="3"
                   minLength="10"
-                  className="w-full px-4 py-3 rounded-lg border-2 border-[#8DBC96] focus:border-[#67A177] focus:outline-none bg-white resize-none"
+                  className="w-full px-4 py-3 rounded-lg border-2 border-secondary focus:border-primary focus:outline-none bg-white resize-none"
                 />
               </div>
               <div className="flex space-x-4">
@@ -1269,7 +1269,7 @@ const Manage_Restaurant = () => {
                 </button>
                 <button
                   onClick={handleUpdateFood}
-                  className="flex-1 bg-[#67A177] text-white py-3 rounded-full hover:bg-[#5a8f68] font-semibold"
+                  className="flex-1 bg-primary text-white py-3 rounded-full hover:bg-accent-dark font-semibold"
                 >
                   Update Food
                 </button>
@@ -1289,7 +1289,7 @@ const Manage_Restaurant = () => {
             }
           }}
         >
-          <div className="bg-[#DDEEDB] rounded-2xl max-w-md w-full p-6">
+          <div className="bg-surface rounded-2xl max-w-md w-full p-6">
             <div className="text-center mb-6">
               <div className="mx-auto w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mb-4">
                 <AlertCircle className="w-10 h-10 text-red-500" />
@@ -1333,7 +1333,7 @@ const Manage_Restaurant = () => {
             }
           }}
         >
-          <div className="bg-[#DDEEDB] rounded-2xl max-w-2xl w-full p-6">
+          <div className="bg-surface rounded-2xl max-w-2xl w-full p-6">
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-2xl font-bold">{selectedFood.name}</h2>
               <button
@@ -1351,27 +1351,27 @@ const Manage_Restaurant = () => {
               className="w-full h-64 object-cover rounded-xl mb-4"
             />
             <div className="space-y-3">
-              <div className="bg-[#ACD4B1] p-4 rounded-xl">
+              <div className="bg-tertiary p-4 rounded-xl">
                 <p className="text-sm text-gray-600">Price</p>
-                <p className="text-2xl font-bold text-[#67A177]">
+                <p className="text-2xl font-bold text-primary">
                   ৳{selectedFood.price.toFixed(2)}
                 </p>
               </div>
-              <div className="bg-[#ACD4B1] p-4 rounded-xl">
+              <div className="bg-tertiary p-4 rounded-xl">
                 <p className="text-sm text-gray-600">Stock</p>
                 <p className="text-xl font-bold">
                   {selectedFood.quantity} units
                 </p>
               </div>
               {selectedFood.discount > 0 && (
-                <div className="bg-[#ACD4B1] p-4 rounded-xl">
+                <div className="bg-tertiary p-4 rounded-xl">
                   <p className="text-sm text-gray-600">Discount</p>
                   <p className="text-xl font-bold text-red-600">
                     {selectedFood.discount}%
                   </p>
                 </div>
               )}
-              <div className="bg-[#ACD4B1] p-4 rounded-xl">
+              <div className="bg-tertiary p-4 rounded-xl">
                 <p className="text-sm text-gray-600 mb-2">Description</p>
                 <p className="text-gray-800">
                   {selectedFood.description || "No description"}
@@ -1392,7 +1392,7 @@ const Manage_Restaurant = () => {
             }
           }}
         >
-          <div className="bg-[#DDEEDB] rounded-2xl max-w-md w-full p-6">
+          <div className="bg-surface rounded-2xl max-w-md w-full p-6">
             <h2 className="text-2xl font-bold mb-4">Verify Rider PIN</h2>
             <p className="text-gray-600 mb-4">
               Enter the PIN from the rider to confirm pickup
@@ -1402,7 +1402,7 @@ const Manage_Restaurant = () => {
               value={riderPin}
               onChange={(e) => setRiderPin(e.target.value)}
               placeholder="Enter 4-digit PIN"
-              className="w-full px-4 py-3 rounded-lg border-2 border-[#8DBC96] focus:border-[#67A177] focus:outline-none bg-white mb-4 text-center text-2xl font-bold tracking-widest"
+              className="w-full px-4 py-3 rounded-lg border-2 border-secondary focus:border-primary focus:outline-none bg-white mb-4 text-center text-2xl font-bold tracking-widest"
               maxLength="4"
             />
             <div className="flex space-x-4">
@@ -1417,7 +1417,7 @@ const Manage_Restaurant = () => {
               </button>
               <button
                 onClick={handleVerifyPin}
-                className="flex-1 bg-[#67A177] text-white py-3 rounded-full hover:bg-[#5a8f68] font-semibold"
+                className="flex-1 bg-primary text-white py-3 rounded-full hover:bg-accent-dark font-semibold"
               >
                 Verify
               </button>
@@ -1436,7 +1436,7 @@ const Manage_Restaurant = () => {
             }
           }}
         >
-          <div className="bg-[#DDEEDB] rounded-2xl max-w-2xl w-full p-6 max-h-[90vh] overflow-y-auto">
+          <div className="bg-surface rounded-2xl max-w-2xl w-full p-6 max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-2xl font-bold">
                 Order Details - #{selectedOrder.id}
@@ -1451,7 +1451,7 @@ const Manage_Restaurant = () => {
               </button>
             </div>
             <div className="space-y-4">
-              <div className="bg-[#ACD4B1] p-4 rounded-xl">
+              <div className="bg-tertiary p-4 rounded-xl">
                 <div className="flex items-center justify-between mb-3">
                   <p className="text-sm font-semibold text-gray-700">Status</p>
                   <div
@@ -1468,7 +1468,7 @@ const Manage_Restaurant = () => {
                                   "out_for_delivery"
                                 ? "bg-green-500"
                                 : selectedOrder.order_status === "delivered"
-                                  ? "bg-[#67A177]"
+                                  ? "bg-primary"
                                   : "bg-gray-500"
                     }`}
                   >
@@ -1485,32 +1485,32 @@ const Manage_Restaurant = () => {
                   </div>
                 </div>
               </div>
-              <div className="bg-[#ACD4B1] p-4 rounded-xl">
+              <div className="bg-tertiary p-4 rounded-xl">
                 <p className="text-sm font-semibold text-gray-700 mb-3">
                   Customer Information
                 </p>
                 <div className="space-y-2">
                   <div className="flex items-center space-x-2">
-                    <User className="w-5 h-5 text-[#67A177]" />
+                    <User className="w-5 h-5 text-primary" />
                     <span className="font-semibold">
                       {selectedOrder.customer.name}
                     </span>
                   </div>
                   <div className="flex items-center space-x-2">
-                    <Phone className="w-5 h-5 text-[#67A177]" />
+                    <Phone className="w-5 h-5 text-primary" />
                     <span>{selectedOrder.customer.phone}</span>
                   </div>
                   <div className="flex items-center space-x-2">
-                    <Mail className="w-5 h-5 text-[#67A177]" />
+                    <Mail className="w-5 h-5 text-primary" />
                     <span>{selectedOrder.customer.email}</span>
                   </div>
                   <div className="flex items-start space-x-2">
-                    <MapPin className="w-5 h-5 text-[#67A177] mt-0.5" />
+                    <MapPin className="w-5 h-5 text-primary mt-0.5" />
                     <span>{selectedOrder.customer.address}</span>
                   </div>
                   {selectedOrder.customer.message && (
                     <div className="flex items-start space-x-2">
-                      <MessageSquare className="w-5 h-5 text-[#67A177] mt-0.5" />
+                      <MessageSquare className="w-5 h-5 text-primary mt-0.5" />
                       <span className="italic">
                         {selectedOrder.customer.message}
                       </span>
@@ -1518,7 +1518,7 @@ const Manage_Restaurant = () => {
                   )}
                 </div>
               </div>
-              <div className="bg-[#ACD4B1] p-4 rounded-xl">
+              <div className="bg-tertiary p-4 rounded-xl">
                 <p className="text-sm font-semibold text-gray-700 mb-3">
                   Order Items
                 </p>
@@ -1526,7 +1526,7 @@ const Manage_Restaurant = () => {
                   {selectedOrder.items.map((item, idx) => (
                     <div
                       key={idx}
-                      className="flex justify-between items-center py-2 border-b border-[#8DBC96]/30 last:border-0"
+                      className="flex justify-between items-center py-2 border-b border-secondary/30 last:border-0"
                     >
                       <div>
                         <p className="font-semibold">{item.food}</p>
@@ -1534,7 +1534,7 @@ const Manage_Restaurant = () => {
                           Quantity: {item.quantity}
                         </p>
                       </div>
-                      <p className="font-bold text-[#67A177]">
+                      <p className="font-bold text-primary">
                         ৳{(item.price * item.quantity).toFixed(2)}
                       </p>
                     </div>
@@ -1542,7 +1542,7 @@ const Manage_Restaurant = () => {
                 </div>
               </div>
               {selectedOrder.rider && (
-                <div className="bg-[#67A177] p-4 rounded-xl text-white">
+                <div className="bg-primary p-4 rounded-xl text-white">
                   <p className="text-sm font-semibold mb-3">
                     Rider Information
                   </p>
@@ -1565,7 +1565,7 @@ const Manage_Restaurant = () => {
                   )}
                 </div>
               )}
-              <div className="bg-[#ACD4B1] p-4 rounded-xl">
+              <div className="bg-tertiary p-4 rounded-xl">
                 <p className="text-sm font-semibold text-gray-700 mb-3">
                   Payment Summary
                 </p>
@@ -1582,9 +1582,9 @@ const Manage_Restaurant = () => {
                       ৳{selectedOrder.deliveryCost.toFixed(2)}
                     </span>
                   </div>
-                  <div className="flex justify-between text-xl pt-2 border-t border-[#8DBC96]/30">
+                  <div className="flex justify-between text-xl pt-2 border-t border-secondary/30">
                     <span className="font-bold">Total</span>
-                    <span className="font-bold text-[#67A177]">
+                    <span className="font-bold text-primary">
                       ৳
                       {(
                         calculateTotal(selectedOrder.items) +

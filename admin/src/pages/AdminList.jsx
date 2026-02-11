@@ -206,7 +206,7 @@ export default function AdminList() {
   };
 
   return (
-    <div className="flex h-screen bg-gradient-to-br from-[#0a0a0f] via-[#111116] to-[#0a0a0f]">
+    <div className="flex h-screen bg-gradient-to-br from-custom_black via-custom_black to-custom_black">
       <Sidebar />
       
       <main className="flex-1 overflow-y-auto">
@@ -240,14 +240,14 @@ export default function AdminList() {
                 placeholder="Search by name, email, or ID..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-12 pr-4 py-3 bg-[#1a1a22] border border-white/10 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-orange-500/50 transition-all"
+                className="w-full pl-12 pr-4 py-3 bg-secondary border border-white/10 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-orange-500/50 transition-all"
               />
             </div>
           </div>
 
           {/* Stats Cards */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-            <div className="bg-gradient-to-br from-[#1a1a22] to-[#1f1f2a] border border-white/10 rounded-2xl p-6">
+            <div className="bg-gradient-to-br from-secondary to-secondary border border-white/10 rounded-2xl p-6">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-gray-400 text-sm mb-1">Total Admins</p>
@@ -256,7 +256,7 @@ export default function AdminList() {
                 <Shield className="w-12 h-12 text-orange-500/30" />
               </div>
             </div>
-            <div className="bg-gradient-to-br from-[#1a1a22] to-[#1f1f2a] border border-white/10 rounded-2xl p-6">
+            <div className="bg-gradient-to-br from-secondary to-secondary border border-white/10 rounded-2xl p-6">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-gray-400 text-sm mb-1">Total Actions</p>
@@ -267,7 +267,7 @@ export default function AdminList() {
                 <Activity className="w-12 h-12 text-blue-500/30" />
               </div>
             </div>
-            <div className="bg-gradient-to-br from-[#1a1a22] to-[#1f1f2a] border border-white/10 rounded-2xl p-6">
+            <div className="bg-gradient-to-br from-secondary to-secondary border border-white/10 rounded-2xl p-6">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-gray-400 text-sm mb-1">Avg Actions per Admin</p>
@@ -289,16 +289,16 @@ export default function AdminList() {
               </div>
             </div>
           ) : filteredAdmins.length === 0 ? (
-            <div className="text-center py-12 bg-[#1a1a22] border border-white/10 rounded-2xl">
+            <div className="text-center py-12 bg-secondary border border-white/10 rounded-2xl">
               <Shield className="w-16 h-16 text-gray-600 mx-auto mb-4" />
               <p className="text-gray-400 text-lg">No admins found</p>
             </div>
           ) : (
-            <div className="bg-[#1a1a22] border border-white/10 rounded-2xl overflow-hidden">
+            <div className="bg-secondary border border-white/10 rounded-2xl overflow-hidden">
               <div className="overflow-x-auto">
                 <table className="w-full">
                   <thead>
-                    <tr className="border-b border-white/10 bg-[#1f1f2a]">
+                    <tr className="border-b border-white/10 bg-secondary">
                       <th className="text-left p-4 text-gray-400 font-medium text-sm">ID</th>
                       <th className="text-left p-4 text-gray-400 font-medium text-sm">Name</th>
                       <th className="text-left p-4 text-gray-400 font-medium text-sm">Email</th>
@@ -373,7 +373,7 @@ export default function AdminList() {
                           </td>
                         </tr>
                         {expandedRows[admin.id] && (
-                          <tr className="bg-[#15151a] border-b border-white/5">
+                          <tr className="bg-custom_black border-b border-white/5">
                             <td colSpan="5" className="p-6">
                               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                                 {['Customer', 'Restaurant Owner', 'Rider'].map(category => {
@@ -383,7 +383,7 @@ export default function AdminList() {
                                   const categoryTotal = categoryActions.reduce((sum, [, count]) => sum + count, 0);
 
                                   return (
-                                    <div key={category} className="bg-[#1a1a22] border border-white/10 rounded-xl p-4">
+                                    <div key={category} className="bg-secondary border border-white/10 rounded-xl p-4">
                                       <h4 className="text-white font-semibold mb-3 flex items-center justify-between">
                                         <span>{category} Actions</span>
                                         <span className="text-orange-500 text-sm">{categoryTotal}</span>
@@ -405,7 +405,7 @@ export default function AdminList() {
                                 })}
                               </div>
                               {admin.actionCounts.ANNOUNCEMENT > 0 && (
-                                <div className="mt-4 bg-[#1a1a22] border border-white/10 rounded-xl p-4">
+                                <div className="mt-4 bg-secondary border border-white/10 rounded-xl p-4">
                                   <h4 className="text-white font-semibold mb-2">General Actions</h4>
                                   <div className="flex items-center justify-between text-sm">
                                     <span className="text-gray-400">Announcements</span>
@@ -438,10 +438,10 @@ export default function AdminList() {
           }}
         >
           <div 
-            className="bg-[#1a1a22] border border-white/10 rounded-2xl max-w-3xl w-full max-h-[90vh] overflow-auto"
+            className="bg-secondary border border-white/10 rounded-2xl max-w-3xl w-full max-h-[90vh] overflow-auto"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="sticky top-0 bg-[#1a1a22] border-b border-white/10 p-6 flex items-center justify-between">
+            <div className="sticky top-0 bg-secondary border-b border-white/10 p-6 flex items-center justify-between">
               <h2 className="text-2xl font-bold text-white">Admin Details</h2>
               <button
                 onClick={() => setShowDetailModal(false)}
@@ -453,7 +453,7 @@ export default function AdminList() {
             
             <div className="p-6">
               {/* Admin Info */}
-              <div className="bg-gradient-to-br from-[#1f1f2a] to-[#15151a] border border-white/10 rounded-xl p-6 mb-6">
+              <div className="bg-gradient-to-br from-secondary to-custom_black border border-white/10 rounded-xl p-6 mb-6">
                 <div className="flex items-center gap-4 mb-6">
                   <div className="w-20 h-20 rounded-full bg-gradient-to-br from-orange-500 to-amber-500 flex items-center justify-center text-white text-3xl font-bold">
                     {selectedAdmin.name.charAt(0)}
@@ -465,11 +465,11 @@ export default function AdminList() {
                 </div>
                 
                 <div className="grid grid-cols-2 gap-4">
-                  <div className="bg-[#1a1a22] border border-white/10 rounded-lg p-4">
+                  <div className="bg-secondary border border-white/10 rounded-lg p-4">
                     <p className="text-gray-400 text-sm mb-1">Admin ID</p>
                     <p className="text-white font-mono text-sm">{selectedAdmin.id}</p>
                   </div>
-                  <div className="bg-[#1a1a22] border border-white/10 rounded-lg p-4">
+                  <div className="bg-secondary border border-white/10 rounded-lg p-4">
                     <p className="text-gray-400 text-sm mb-1">Total Actions</p>
                     <p className="text-white text-2xl font-bold">{selectedAdmin.totalActions}</p>
                   </div>
@@ -489,7 +489,7 @@ export default function AdminList() {
                   {Object.entries(selectedAdmin.actionCounts)
                     .filter(([key]) => key.startsWith('CUSTOMER'))
                     .map(([key, value]) => (
-                      <div key={key} className="bg-[#1f1f2a] border border-white/10 rounded-lg p-3 flex items-center justify-between">
+                      <div key={key} className="bg-secondary border border-white/10 rounded-lg p-3 flex items-center justify-between">
                         <span className="text-gray-400 text-sm">{getActionLabel(key)}</span>
                         <span className="text-white font-semibold bg-blue-500/10 px-3 py-1 rounded-full">{value}</span>
                       </div>
@@ -507,7 +507,7 @@ export default function AdminList() {
                   {Object.entries(selectedAdmin.actionCounts)
                     .filter(([key]) => key.startsWith('OWNER'))
                     .map(([key, value]) => (
-                      <div key={key} className="bg-[#1f1f2a] border border-white/10 rounded-lg p-3 flex items-center justify-between">
+                      <div key={key} className="bg-secondary border border-white/10 rounded-lg p-3 flex items-center justify-between">
                         <span className="text-gray-400 text-sm">{getActionLabel(key)}</span>
                         <span className="text-white font-semibold bg-green-500/10 px-3 py-1 rounded-full">{value}</span>
                       </div>
@@ -525,7 +525,7 @@ export default function AdminList() {
                   {Object.entries(selectedAdmin.actionCounts)
                     .filter(([key]) => key.startsWith('RIDER'))
                     .map(([key, value]) => (
-                      <div key={key} className="bg-[#1f1f2a] border border-white/10 rounded-lg p-3 flex items-center justify-between">
+                      <div key={key} className="bg-secondary border border-white/10 rounded-lg p-3 flex items-center justify-between">
                         <span className="text-gray-400 text-sm">{getActionLabel(key)}</span>
                         <span className="text-white font-semibold bg-purple-500/10 px-3 py-1 rounded-full">{value}</span>
                       </div>
@@ -540,7 +540,7 @@ export default function AdminList() {
                     <div className="w-2 h-2 rounded-full bg-orange-500"></div>
                     General Actions
                   </h4>
-                  <div className="bg-[#1f1f2a] border border-white/10 rounded-lg p-3 flex items-center justify-between">
+                  <div className="bg-secondary border border-white/10 rounded-lg p-3 flex items-center justify-between">
                     <span className="text-gray-400 text-sm">Announcements</span>
                     <span className="text-white font-semibold bg-orange-500/10 px-3 py-1 rounded-full">
                       {selectedAdmin.actionCounts.ANNOUNCEMENT}
@@ -560,10 +560,10 @@ export default function AdminList() {
           onClick={() => setShowAddAdminModal(false)}
         >
           <div 
-            className="bg-[#1a1a22] border border-white/10 rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-auto"
+            className="bg-secondary border border-white/10 rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-auto"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="sticky top-0 bg-[#1a1a22] border-b border-white/10 p-6 flex items-center justify-between">
+            <div className="sticky top-0 bg-secondary border-b border-white/10 p-6 flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <UserPlus className="w-6 h-6 text-orange-500" />
                 <h2 className="text-2xl font-bold text-white">Add New Admin</h2>
@@ -590,7 +590,7 @@ export default function AdminList() {
                       required
                       value={newAdminData.admin_name}
                       onChange={(e) => setNewAdminData({...newAdminData, admin_name: e.target.value})}
-                      className="w-full pl-11 pr-4 py-3 bg-[#15151a] border border-white/10 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-orange-500/50 transition-all"
+                      className="w-full pl-11 pr-4 py-3 bg-custom_black border border-white/10 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-orange-500/50 transition-all"
                       placeholder="Enter admin name"
                     />
                   </div>
@@ -608,7 +608,7 @@ export default function AdminList() {
                       required
                       value={newAdminData.admin_email}
                       onChange={(e) => setNewAdminData({...newAdminData, admin_email: e.target.value})}
-                      className="w-full pl-11 pr-4 py-3 bg-[#15151a] border border-white/10 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-orange-500/50 transition-all"
+                      className="w-full pl-11 pr-4 py-3 bg-custom_black border border-white/10 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-orange-500/50 transition-all"
                       placeholder="admin@example.com"
                     />
                   </div>
@@ -626,7 +626,7 @@ export default function AdminList() {
                       required
                       value={newAdminData.admin_phone}
                       onChange={(e) => setNewAdminData({...newAdminData, admin_phone: e.target.value})}
-                      className="w-full pl-11 pr-4 py-3 bg-[#15151a] border border-white/10 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-orange-500/50 transition-all"
+                      className="w-full pl-11 pr-4 py-3 bg-custom_black border border-white/10 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-orange-500/50 transition-all"
                       placeholder="01XXXXXXXXX"
                     />
                   </div>
@@ -644,7 +644,7 @@ export default function AdminList() {
                       required
                       value={newAdminData.admin_dob}
                       onChange={(e) => setNewAdminData({...newAdminData, admin_dob: e.target.value})}
-                      className="w-full pl-11 pr-4 py-3 bg-[#15151a] border border-white/10 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-orange-500/50 transition-all"
+                      className="w-full pl-11 pr-4 py-3 bg-custom_black border border-white/10 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-orange-500/50 transition-all"
                       placeholder="DD-Mon-YYYY (e.g., 10-Feb-2003)"
                     />
                   </div>
@@ -661,7 +661,7 @@ export default function AdminList() {
                     required
                     value={newAdminData.admin_password}
                     onChange={(e) => setNewAdminData({...newAdminData, admin_password: e.target.value})}
-                    className="w-full px-4 py-3 bg-[#15151a] border border-white/10 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-orange-500/50 transition-all"
+                    className="w-full px-4 py-3 bg-custom_black border border-white/10 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-orange-500/50 transition-all"
                     placeholder="Enter password"
                   />
                 </div>
@@ -674,7 +674,7 @@ export default function AdminList() {
                   <select
                     value={newAdminData.admin_gender}
                     onChange={(e) => setNewAdminData({...newAdminData, admin_gender: e.target.value})}
-                    className="w-full px-4 py-3 bg-[#15151a] border border-white/10 rounded-lg text-white focus:outline-none focus:border-orange-500/50 transition-all"
+                    className="w-full px-4 py-3 bg-custom_black border border-white/10 rounded-lg text-white focus:outline-none focus:border-orange-500/50 transition-all"
                   >
                     <option value="Male">Male</option>
                     <option value="Female">Female</option>
@@ -689,7 +689,7 @@ export default function AdminList() {
                     id="is_super"
                     checked={newAdminData.is_super}
                     onChange={(e) => setNewAdminData({...newAdminData, is_super: e.target.checked})}
-                    className="w-5 h-5 rounded border-purple-500/50 bg-[#15151a] text-purple-500 focus:ring-purple-500 focus:ring-offset-0"
+                    className="w-5 h-5 rounded border-purple-500/50 bg-custom_black text-purple-500 focus:ring-purple-500 focus:ring-offset-0"
                   />
                   <label htmlFor="is_super" className="flex items-center gap-2 text-white font-medium cursor-pointer">
                     <Shield className="w-5 h-5 text-purple-400" />

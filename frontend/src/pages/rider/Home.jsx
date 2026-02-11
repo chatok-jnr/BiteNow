@@ -299,7 +299,7 @@ const Home = () => {
       case "Ready to Pick Up":
         return "bg-purple-500";
       case "Out for delivery":
-        return "bg-[#67A177]";
+        return "bg-primary";
       default:
         return "bg-gray-500";
     }
@@ -383,7 +383,7 @@ const Home = () => {
   };
 
   const OrderRequestCard = ({ order }) => (
-    <div className="bg-[#ACD4B1] rounded-xl overflow-hidden shadow-md hover:shadow-lg transition-all duration-300">
+    <div className="bg-tertiary rounded-xl overflow-hidden shadow-md hover:shadow-lg transition-all duration-300">
       <div className="p-4">
         {/* Header */}
         <div className="flex items-start justify-between mb-3">
@@ -407,16 +407,16 @@ const Home = () => {
 
         {/* Delivery Info */}
         <div className="grid grid-cols-2 gap-2 mb-3">
-          <div className="bg-[#DDEEDB] p-2 rounded-lg">
+          <div className="bg-surface p-2 rounded-lg">
             <div className="flex items-center space-x-1 mb-0.5">
-              <Navigation className="w-3 h-3 text-[#67A177]" />
+              <Navigation className="w-3 h-3 text-primary" />
               <p className="text-xs text-gray-600">Distance</p>
             </div>
             <p className="font-bold text-sm text-gray-800">{order.distance}</p>
           </div>
-          <div className="bg-[#DDEEDB] p-2 rounded-lg">
+          <div className="bg-surface p-2 rounded-lg">
             <div className="flex items-center space-x-1 mb-0.5">
-              <Clock className="w-3 h-3 text-[#67A177]" />
+              <Clock className="w-3 h-3 text-primary" />
               <p className="text-xs text-gray-600">Est. Time</p>
             </div>
             <p className="font-bold text-sm text-gray-800">
@@ -426,10 +426,10 @@ const Home = () => {
         </div>
 
         {/* Pickup Location */}
-        <div className="mb-2 bg-[#DDEEDB] p-2 rounded-lg">
+        <div className="mb-2 bg-surface p-2 rounded-lg">
           <p className="text-xs text-gray-600 mb-1 font-semibold">Pickup</p>
           <div className="flex items-start space-x-1">
-            <MapPin className="w-3 h-3 text-[#67A177] mt-0.5 flex-shrink-0" />
+            <MapPin className="w-3 h-3 text-primary mt-0.5 flex-shrink-0" />
             <p className="text-xs text-gray-700 line-clamp-1">
               {order.restaurant}
             </p>
@@ -437,10 +437,10 @@ const Home = () => {
         </div>
 
         {/* Delivery Location */}
-        <div className="mb-3 bg-[#DDEEDB] p-2 rounded-lg">
+        <div className="mb-3 bg-surface p-2 rounded-lg">
           <p className="text-xs text-gray-600 mb-1 font-semibold">Deliver To</p>
           <div className="flex items-start space-x-1">
-            <MapPin className="w-3 h-3 text-[#67A177] mt-0.5 flex-shrink-0" />
+            <MapPin className="w-3 h-3 text-primary mt-0.5 flex-shrink-0" />
             <p className="text-xs text-gray-700 line-clamp-1">
               {order.customerName}
             </p>
@@ -456,13 +456,13 @@ const Home = () => {
             {order.items.slice(0, 2).map((item, index) => (
               <span
                 key={index}
-                className="bg-[#DDEEDB] text-gray-700 px-2 py-0.5 rounded-full text-xs"
+                className="bg-surface text-gray-700 px-2 py-0.5 rounded-full text-xs"
               >
                 {item}
               </span>
             ))}
             {order.items.length > 2 && (
-              <span className="bg-[#DDEEDB] text-gray-700 px-2 py-0.5 rounded-full text-xs">
+              <span className="bg-surface text-gray-700 px-2 py-0.5 rounded-full text-xs">
                 +{order.items.length - 2}
               </span>
             )}
@@ -470,10 +470,10 @@ const Home = () => {
         </div>
 
         {/* Earnings */}
-        <div className="flex items-center justify-between pt-3 border-t border-[#8DBC96]/30 mb-3">
+        <div className="flex items-center justify-between pt-3 border-t border-secondary/30 mb-3">
           <div>
             <p className="text-xs text-gray-600">Earnings</p>
-            <p className="text-lg font-bold text-[#67A177]">
+            <p className="text-lg font-bold text-primary">
               ৳{order.deliveryFee.toFixed(2)}
             </p>
           </div>
@@ -498,7 +498,7 @@ const Home = () => {
             handleAcceptOrder(order.id);
           }}
           disabled={riderStatus !== "Approved"}
-          className="w-full bg-[#67A177] text-white py-2 rounded-full hover:bg-[#5a8f68] transition-all font-semibold text-sm hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-[#67A177]"
+          className="w-full bg-primary text-white py-2 rounded-full hover:bg-accent-dark transition-all font-semibold text-sm hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-primary"
         >
           {riderStatus !== "Approved" ? "Account Not Approved" : "Accept Order"}
         </button>
@@ -507,7 +507,7 @@ const Home = () => {
   );
 
   const ActiveOrderCard = ({ order }) => (
-    <div className="bg-[#ACD4B1] rounded-xl overflow-hidden shadow-md hover:shadow-lg transition-all duration-300">
+    <div className="bg-tertiary rounded-xl overflow-hidden shadow-md hover:shadow-lg transition-all duration-300">
       <div className="p-4">
         {/* Header */}
         <div className="flex items-start justify-between mb-3">
@@ -533,7 +533,7 @@ const Home = () => {
 
         {/* Rider PIN - Show to Restaurant only when ready_for_pickup */}
         {order.status === "ready_for_pickup" && (
-          <div className="mb-3 bg-[#67A177] p-3 rounded-lg">
+          <div className="mb-3 bg-primary p-3 rounded-lg">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-white text-xs font-semibold">
@@ -541,7 +541,7 @@ const Home = () => {
                 </p>
               </div>
               <div className="bg-white px-4 py-1.5 rounded-lg">
-                <p className="text-xl font-bold text-[#67A177] tracking-wider">
+                <p className="text-xl font-bold text-primary tracking-wider">
                   {order.riderPin || "N/A"}
                 </p>
               </div>
@@ -550,10 +550,10 @@ const Home = () => {
         )}
 
         {/* Customer Info */}
-        <div className="mb-3 bg-[#DDEEDB] p-2 rounded-lg">
+        <div className="mb-3 bg-surface p-2 rounded-lg">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-2">
-              <div className="w-8 h-8 bg-[#67A177] rounded-full flex items-center justify-center">
+              <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center">
                 <User className="w-4 h-4 text-white" />
               </div>
               <div>
@@ -565,7 +565,7 @@ const Home = () => {
             </div>
             <a
               href={`tel:${order.customerPhone}`}
-              className="bg-[#67A177] text-white p-2 rounded-full hover:bg-[#5a8f68] transition-all"
+              className="bg-primary text-white p-2 rounded-full hover:bg-accent-dark transition-all"
             >
               <Phone className="w-4 h-4" />
             </a>
@@ -573,10 +573,10 @@ const Home = () => {
         </div>
 
         {/* Pickup Location */}
-        <div className="mb-2 bg-[#DDEEDB] p-2 rounded-lg">
+        <div className="mb-2 bg-surface p-2 rounded-lg">
           <p className="text-xs text-gray-600 mb-1 font-semibold">Pickup</p>
           <div className="flex items-start space-x-1">
-            <MapPin className="w-3 h-3 text-[#67A177] mt-0.5 flex-shrink-0" />
+            <MapPin className="w-3 h-3 text-primary mt-0.5 flex-shrink-0" />
             <p className="text-xs text-gray-700 line-clamp-1">
               {order.restaurant}
             </p>
@@ -584,10 +584,10 @@ const Home = () => {
         </div>
 
         {/* Delivery Location */}
-        <div className="mb-3 bg-[#DDEEDB] p-2 rounded-lg">
+        <div className="mb-3 bg-surface p-2 rounded-lg">
           <p className="text-xs text-gray-600 mb-1 font-semibold">Deliver To</p>
           <div className="flex items-start space-x-1">
-            <MapPin className="w-3 h-3 text-[#67A177] mt-0.5 flex-shrink-0" />
+            <MapPin className="w-3 h-3 text-primary mt-0.5 flex-shrink-0" />
             <p className="text-xs text-gray-700 line-clamp-1">
               {order.customerAddress}
             </p>
@@ -603,13 +603,13 @@ const Home = () => {
             {order.items.slice(0, 2).map((item, index) => (
               <span
                 key={index}
-                className="bg-[#DDEEDB] text-gray-700 px-2 py-0.5 rounded-full text-xs"
+                className="bg-surface text-gray-700 px-2 py-0.5 rounded-full text-xs"
               >
                 {item}
               </span>
             ))}
             {order.items.length > 2 && (
-              <span className="bg-[#DDEEDB] text-gray-700 px-2 py-0.5 rounded-full text-xs">
+              <span className="bg-surface text-gray-700 px-2 py-0.5 rounded-full text-xs">
                 +{order.items.length - 2}
               </span>
             )}
@@ -617,10 +617,10 @@ const Home = () => {
         </div>
 
         {/* Earnings */}
-        <div className="flex items-center justify-between pt-3 border-t border-[#8DBC96]/30 mb-3">
+        <div className="flex items-center justify-between pt-3 border-t border-secondary/30 mb-3">
           <div>
             <p className="text-xs text-gray-600">Earnings</p>
-            <p className="text-lg font-bold text-[#67A177]">
+            <p className="text-lg font-bold text-primary">
               ৳{order.deliveryFee.toFixed(2)}
             </p>
           </div>
@@ -634,14 +634,14 @@ const Home = () => {
         <div className="grid grid-cols-2 gap-2">
           <button
             onClick={() => navigate(`/rider/map/${order.id}`)}
-            className="bg-[#DDEEDB] text-[#67A177] py-2 rounded-full hover:bg-[#C4E2C4] transition-all font-semibold text-sm flex items-center justify-center gap-1"
+            className="bg-surface text-primary py-2 rounded-full hover:bg-bgPrimary transition-all font-semibold text-sm flex items-center justify-center gap-1"
           >
             <Navigation className="w-4 h-4" />
             Navigate
           </button>
           <button
             onClick={() => handleCompleteDelivery(order.id)}
-            className="bg-[#67A177] text-white py-2 rounded-full hover:bg-[#5a8f68] transition-all font-semibold text-sm"
+            className="bg-primary text-white py-2 rounded-full hover:bg-accent-dark transition-all font-semibold text-sm"
           >
             Complete
           </button>
@@ -651,7 +651,7 @@ const Home = () => {
   );
 
   const CompletedOrderCard = ({ order }) => (
-    <div className="bg-[#ACD4B1] rounded-xl overflow-hidden shadow-md hover:shadow-lg transition-all duration-300">
+    <div className="bg-tertiary rounded-xl overflow-hidden shadow-md hover:shadow-lg transition-all duration-300">
       <div className="p-4">
         {/* Header */}
         <div className="flex items-start justify-between mb-3">
@@ -675,12 +675,12 @@ const Home = () => {
         </div>
 
         {/* Customer & Address */}
-        <div className="mb-3 bg-[#DDEEDB] p-2 rounded-lg">
+        <div className="mb-3 bg-surface p-2 rounded-lg">
           <p className="text-xs text-gray-600 mb-1 font-semibold">
             Delivered To
           </p>
           <div className="flex items-start space-x-1">
-            <MapPin className="w-3 h-3 text-[#67A177] mt-0.5 flex-shrink-0" />
+            <MapPin className="w-3 h-3 text-primary mt-0.5 flex-shrink-0" />
             <p className="text-xs text-gray-700 line-clamp-1">
               {order.customerName}
             </p>
@@ -696,13 +696,13 @@ const Home = () => {
             {order.items.slice(0, 2).map((item, index) => (
               <span
                 key={index}
-                className="bg-[#DDEEDB] text-gray-700 px-2 py-0.5 rounded-full text-xs"
+                className="bg-surface text-gray-700 px-2 py-0.5 rounded-full text-xs"
               >
                 {item}
               </span>
             ))}
             {order.items.length > 2 && (
-              <span className="bg-[#DDEEDB] text-gray-700 px-2 py-0.5 rounded-full text-xs">
+              <span className="bg-surface text-gray-700 px-2 py-0.5 rounded-full text-xs">
                 +{order.items.length - 2}
               </span>
             )}
@@ -711,13 +711,13 @@ const Home = () => {
 
         {/* Time Info */}
         <div className="grid grid-cols-2 gap-2 mb-3">
-          <div className="bg-[#DDEEDB] p-2 rounded-lg">
+          <div className="bg-surface p-2 rounded-lg">
             <p className="text-xs text-gray-600">Order</p>
             <p className="font-semibold text-gray-800 text-xs">
               {order.orderTime}
             </p>
           </div>
-          <div className="bg-[#DDEEDB] p-2 rounded-lg">
+          <div className="bg-surface p-2 rounded-lg">
             <p className="text-xs text-gray-600">Completed</p>
             <p className="font-semibold text-gray-800 text-xs">
               {order.completedTime}
@@ -726,10 +726,10 @@ const Home = () => {
         </div>
 
         {/* Earnings */}
-        <div className="flex items-center justify-between pt-3 border-t border-[#8DBC96]/30">
+        <div className="flex items-center justify-between pt-3 border-t border-secondary/30">
           <div>
             <p className="text-xs text-gray-600">Earned</p>
-            <p className="text-lg font-bold text-[#67A177]">
+            <p className="text-lg font-bold text-primary">
               ৳{order.deliveryFee.toFixed(2)}
             </p>
           </div>
@@ -743,9 +743,9 @@ const Home = () => {
   );
 
   return (
-    <div className="min-h-screen bg-[#C4E2C4]">
+    <div className="min-h-screen bg-bgPrimary">
       {/* Navbar */}
-      <nav className="sticky top-0 z-50 bg-[#8DBC96] shadow-md">
+      <nav className="sticky top-0 z-50 bg-primary shadow-md">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center space-x-3">
@@ -766,9 +766,9 @@ const Home = () => {
                 style={{ display: riderProfile.image ? "none" : "flex" }}
               >
                 {riderProfile.gender?.toLowerCase() === "female" ? (
-                  <UserCircle className="w-6 h-6 text-[#67A177]" />
+                  <UserCircle className="w-6 h-6 text-primary" />
                 ) : (
-                  <User className="w-6 h-6 text-[#67A177]" />
+                  <User className="w-6 h-6 text-primary" />
                 )}
               </div>
               <span className="text-2xl font-bold text-white">
@@ -778,7 +778,7 @@ const Home = () => {
             <div className="flex items-center space-x-4">
               <button
                 onClick={() => navigate("/rider/profile")}
-                className="bg-[#67A177] text-white px-6 py-2 rounded-full hover:bg-[#5a8f68] transition-all font-semibold flex items-center space-x-2"
+                className="bg-primary text-white px-6 py-2 rounded-full hover:bg-accent-dark transition-all font-semibold flex items-center space-x-2"
               >
                 <User className="w-5 h-5" />
                 <span>Profile</span>
@@ -796,7 +796,7 @@ const Home = () => {
       </nav>
 
       {/* Stats Header */}
-      <div className="bg-[#8DBC96] py-8">
+      <div className="bg-secondary py-8">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div className="bg-white/20 backdrop-blur-sm rounded-2xl p-6 border border-white/30">
@@ -828,14 +828,14 @@ const Home = () => {
             onClick={() => setActiveTab("requests")}
             className={`flex-1 py-4 px-6 rounded-t-2xl font-semibold transition-all ${
               activeTab === "requests"
-                ? "bg-[#DDEEDB] text-[#67A177] shadow-lg"
-                : "bg-[#ACD4B1] text-gray-600 hover:bg-[#DDEEDB]/50"
+                ? "bg-surface text-primary shadow-lg"
+                : "bg-tertiary text-gray-600 hover:bg-surface/50"
             }`}
           >
             <div className="flex items-center justify-center space-x-2">
               <Package className="w-5 h-5" />
               <span>Order Requests</span>
-              <span className="bg-[#67A177] text-white px-2 py-1 rounded-full text-xs">
+              <span className="bg-primary text-white px-2 py-1 rounded-full text-xs">
                 {orderRequests.length}
               </span>
             </div>
@@ -844,14 +844,14 @@ const Home = () => {
             onClick={() => setActiveTab("active")}
             className={`flex-1 py-4 px-6 rounded-t-2xl font-semibold transition-all ${
               activeTab === "active"
-                ? "bg-[#DDEEDB] text-[#67A177] shadow-lg"
-                : "bg-[#ACD4B1] text-gray-600 hover:bg-[#DDEEDB]/50"
+                ? "bg-surface text-primary shadow-lg"
+                : "bg-tertiary text-gray-600 hover:bg-surface/50"
             }`}
           >
             <div className="flex items-center justify-center space-x-2">
               <Bike className="w-5 h-5" />
               <span>Active Orders</span>
-              <span className="bg-[#67A177] text-white px-2 py-1 rounded-full text-xs">
+              <span className="bg-primary text-white px-2 py-1 rounded-full text-xs">
                 {activeOrders.length}
               </span>
             </div>
@@ -860,14 +860,14 @@ const Home = () => {
             onClick={() => setActiveTab("completed")}
             className={`flex-1 py-4 px-6 rounded-t-2xl font-semibold transition-all ${
               activeTab === "completed"
-                ? "bg-[#DDEEDB] text-[#67A177] shadow-lg"
-                : "bg-[#ACD4B1] text-gray-600 hover:bg-[#DDEEDB]/50"
+                ? "bg-surface text-primary shadow-lg"
+                : "bg-tertiary text-gray-600 hover:bg-surface/50"
             }`}
           >
             <div className="flex items-center justify-center space-x-2">
               <CheckCircle className="w-5 h-5" />
               <span>Completed</span>
-              <span className="bg-[#67A177] text-white px-2 py-1 rounded-full text-xs">
+              <span className="bg-primary text-white px-2 py-1 rounded-full text-xs">
                 {completedOrders.length}
               </span>
             </div>
@@ -876,7 +876,7 @@ const Home = () => {
       </div>
 
       {/* Content */}
-      <div className="bg-[#DDEEDB] min-h-screen">
+      <div className="bg-surface min-h-screen">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           {/* Show approval notice if not approved */}
           {riderStatus && riderStatus !== "Approved" && (
@@ -954,10 +954,10 @@ const Home = () => {
       </div>
 
       {/* Footer */}
-      <footer className="bg-[#8DBC96] text-white py-8">
+      <footer className="bg-secondary text-white py-8">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <div className="flex items-center justify-center space-x-3 mb-4">
-            <div className="w-10 h-10 bg-[#67A177] rounded-full flex items-center justify-center">
+            <div className="w-10 h-10 bg-primary rounded-full flex items-center justify-center">
               <Bike className="w-6 h-6 text-white" />
             </div>
             <span className="text-2xl font-bold">BiteNow Rider</span>
@@ -1022,13 +1022,13 @@ const Home = () => {
             </div>
 
             <div className="mb-6">
-              <div className="bg-[#ACD4B1] p-4 rounded-lg mb-4">
+              <div className="bg-tertiary p-4 rounded-lg mb-4">
                 <p className="text-sm text-gray-600 mb-1">Order ID</p>
                 <p className="font-semibold text-gray-800">
                   #{selectedOrder.id}
                 </p>
               </div>
-              <div className="bg-[#ACD4B1] p-4 rounded-lg">
+              <div className="bg-tertiary p-4 rounded-lg">
                 <p className="text-sm text-gray-600 mb-1">Customer</p>
                 <p className="font-semibold text-gray-800">
                   {selectedOrder.customerName}
@@ -1051,7 +1051,7 @@ const Home = () => {
                   setCustomerPin(value);
                   setPinError("");
                 }}
-                className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg text-center text-2xl font-bold tracking-widest focus:border-[#67A177] focus:outline-none"
+                className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg text-center text-2xl font-bold tracking-widest focus:border-primary focus:outline-none"
                 placeholder="••••"
                 autoFocus
               />
@@ -1075,7 +1075,7 @@ const Home = () => {
               </button>
               <button
                 onClick={handleVerifyPin}
-                className="px-4 py-3 bg-[#67A177] text-white rounded-lg hover:bg-[#5a8f68] transition-colors font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
+                className="px-4 py-3 bg-primary text-white rounded-lg hover:bg-accent-dark transition-colors font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
                 disabled={loading || customerPin.length !== 4}
               >
                 {loading ? "Verifying..." : "Verify"}

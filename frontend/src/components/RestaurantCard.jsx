@@ -12,7 +12,7 @@ const RestaurantCard = ({ restaurant }) => {
   return (
     <div
       onClick={handleCardClick}
-      className="bg-[#ACD4B1] rounded-xl overflow-hidden shadow-lg hover:shadow-xl transition-shadow cursor-pointer relative"
+      className="bg-tertiary rounded-xl overflow-hidden shadow-lg hover:shadow-xl transition-shadow cursor-pointer relative"
     >
       {/* Rating Badge - Top Right */}
       <div className="absolute top-2 right-2 z-10 bg-white rounded-full px-2 py-1 shadow-md flex items-center space-x-1">
@@ -54,7 +54,7 @@ const RestaurantCard = ({ restaurant }) => {
           <div className="h-8"></div>
         </div>
 
-        <button className="w-full bg-[#67A177] text-white py-2 px-3 rounded-lg hover:bg-[#5a8f68] font-semibold text-xs flex items-center justify-center space-x-1">
+        <button className="w-full bg-primary text-white py-2 px-3 rounded-lg hover:bg-accent-dark font-semibold text-xs flex items-center justify-center space-x-1">
           <span>Order Now</span>
         </button>
       </div>
