@@ -1,5 +1,5 @@
 import React from "react";
-import { X, Minus, Plus, Trash2, ShoppingCart } from "lucide-react";
+import { X, Minus, Plus, Trash2, ShoppingCart, ArrowRight } from "lucide-react";
 
 const CartSidebar = ({
   isOpen,
@@ -17,68 +17,91 @@ const CartSidebar = ({
 
   return (
     <>
-      {/* Sidebar */}
+      {/* Backdrop with blur */}
+      {isOpen && (
+        <div
+          className="fixed inset-0 bg-black/40 backdrop-blur-sm z-40 animate-fade-in"
+          onClick={onClose}
+        />
+      )}
+
+      {/* Premium Sidebar */}
       <div
-        className={`fixed top-0 right-0 h-full w-full sm:w-96 bg-white shadow-2xl z-50 transform transition-transform duration-300 ease-in-out ${
+        className={`fixed top-0 right-0 h-full w-full sm:w-96 bg-white shadow-glass z-50 transform transition-all duration-400 ease-smooth ${
           isOpen ? "translate-x-0" : "translate-x-full"
         }`}
       >
-        {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b border-gray-200 bg-secondary">
-          <div className="flex items-center space-x-2">
-            <ShoppingCart className="w-6 h-6 text-white" />
-            <h2 className="text-xl font-bold text-white">Your Cart</h2>
-          </div>
-          <div className="flex items-center gap-2">
-            {cartItems.length > 0 && onClearCart && (
+        {/* Premium Header with Gradient */}
+        <div className="relative overflow-hidden">
+          <div className="absolute inset-0 bg-gradient-secondary opacity-100" />
+          <div className="absolute inset-0 bg-mesh-gradient opacity-10" />
+          <div className="relative flex items-center justify-between p-5 border-b border-white/10">
+            <div className="flex items-center space-x-3">
+              <div className="w-10 h-10 bg-gradient-accent rounded-xl flex items-center justify-center shadow-glow-yellow">
+                <ShoppingCart className="w-5 h-5 text-textPrimary" />
+              </div>
+              <div>
+                <h2 className="text-xl font-bold text-white font-display">Your Cart</h2>
+                <p className="text-xs text-white/70">{cartItems.length} items</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              {cartItems.length > 0 && onClearCart && (
+                <button
+                  onClick={onClearCart}
+                  className="text-xs bg-red-500/90 hover:bg-red-600 text-white px-3 py-1.5 rounded-lg transition-all shadow-soft hover:shadow-medium font-medium"
+                  title="Clear entire cart"
+                >
+                  Clear All
+                </button>
+              )}
               <button
-                onClick={onClearCart}
-                className="text-xs bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded-full transition-colors"
-                title="Clear entire cart"
+                onClick={onClose}
+                className="p-2 hover:bg-white/10 rounded-xl transition-all duration-300"
               >
-                Clear All
+                <X className="w-6 h-6 text-white" />
               </button>
-            )}
-            <button
-              onClick={onClose}
-              className="p-2 hover:bg-white/10 rounded-full transition-colors"
-            >
-              <X className="w-6 h-6 text-white" />
-            </button>
+            </div>
           </div>
         </div>
 
-        {/* Cart Items */}
+        {/* Cart Items with Custom Scrollbar */}
         <div
-          className="flex-1 overflow-y-auto p-4"
-          style={{ height: "calc(100vh - 200px)" }}
+          className="flex-1 overflow-y-auto p-5 custom-scrollbar"
+          style={{ height: "calc(100vh - 220px)" }}
         >
           {cartItems.length === 0 ? (
-            <div className="flex flex-col items-center justify-center h-full text-gray-400">
-              <ShoppingCart className="w-16 h-16 mb-4" />
-              <p className="text-lg font-medium">Your cart is empty</p>
-              <p className="text-sm mt-2">Add some delicious items!</p>
+            <div className="flex flex-col items-center justify-center h-full text-gray-400 animate-fade-in-up">
+              <div className="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mb-4">
+                <ShoppingCart className="w-12 h-12 text-gray-300" />
+              </div>
+              <p className="text-lg font-semibold text-gray-600">Your cart is empty</p>
+              <p className="text-sm mt-2 text-gray-500">Add some delicious items!</p>
             </div>
           ) : (
             <div className="space-y-4">
-              {cartItems.map((item) => (
+              {cartItems.map((item, index) => (
                 <div
                   key={item.id}
-                  className="bg-gray-50 rounded-lg p-3 flex items-center space-x-3"
+                  className="group bg-gradient-to-br from-gray-50 to-white rounded-2xl p-4 flex items-center space-x-4 shadow-soft hover:shadow-medium transition-all duration-300 animate-slide-in-right border border-gray-100"
+                  style={{ animationDelay: `${index * 50}ms` }}
                 >
-                  <img
-                    src={item.image}
-                    alt={item.name}
-                    className="w-20 h-20 object-cover rounded-lg"
-                  />
-                  <div className="flex-1">
-                    <h3 className="font-semibold text-gray-800 text-sm line-clamp-1">
+                  <div className="relative overflow-hidden rounded-xl flex-shrink-0">
+                    <img
+                      src={item.image}
+                      alt={item.name}
+                      className="w-20 h-20 object-cover transform group-hover:scale-110 transition-transform duration-300"
+                    />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <h3 className="font-bold text-textPrimary text-sm line-clamp-1 mb-1">
                       {item.name}
                     </h3>
-                    <p className="text-primary font-bold mt-1">৳{item.price}</p>
+                    <p className="text-xs text-gray-500 mb-2">{item.restaurant}</p>
+                    <p className="gradient-text font-bold text-lg">৳{item.price}</p>
 
-                    {/* Quantity Controls */}
-                    <div className="flex items-center space-x-2 mt-2">
+                    {/* Premium Quantity Controls */}
+                    <div className="flex items-center space-x-2 mt-3">
                       <button
                         onClick={() =>
                           onUpdateQuantity(
@@ -86,26 +109,26 @@ const CartSidebar = ({
                             Math.max(1, item.quantity - 1),
                           )
                         }
-                        className="w-7 h-7 bg-gray-200 rounded-full flex items-center justify-center hover:bg-gray-300 transition-colors"
+                        className="w-8 h-8 bg-gray-200 rounded-xl flex items-center justify-center hover:bg-gray-300 hover:shadow-soft transition-all duration-300 active:scale-95"
                       >
-                        <Minus className="w-4 h-4" />
+                        <Minus className="w-4 h-4 text-gray-600" />
                       </button>
-                      <span className="w-8 text-center font-semibold">
+                      <span className="w-10 text-center font-bold text-textPrimary">
                         {item.quantity}
                       </span>
                       <button
                         onClick={() =>
                           onUpdateQuantity(item.id, item.quantity + 1)
                         }
-                        className="w-7 h-7 bg-primary text-white rounded-full flex items-center justify-center hover:bg-accent transition-colors"
+                        className="w-8 h-8 bg-gradient-primary text-white rounded-xl flex items-center justify-center hover:shadow-soft transition-all duration-300 active:scale-95"
                       >
                         <Plus className="w-4 h-4" />
                       </button>
                       <button
                         onClick={() => onRemoveItem(item.id)}
-                        className="ml-auto p-2 text-red-500 hover:bg-red-50 rounded-full transition-colors"
+                        className="ml-auto p-2 text-red-500 hover:bg-red-50 rounded-xl transition-all duration-300 active:scale-95"
                       >
-                        <Trash2 className="w-4 h-4" />
+                        <Trash2 className="w-5 h-5" />
                       </button>
                     </div>
                   </div>
@@ -115,22 +138,23 @@ const CartSidebar = ({
           )}
         </div>
 
-        {/* Footer - Checkout */}
+        {/* Premium Footer - Checkout */}
         {cartItems.length > 0 && (
-          <div className="border-t border-gray-200 p-4 bg-white">
-            <div className="flex justify-between items-center mb-4">
-              <span className="text-lg font-semibold text-gray-700">
+          <div className="border-t border-gray-100 p-5 bg-white shadow-large">
+            <div className="flex justify-between items-center mb-5">
+              <span className="text-lg font-semibold text-gray-600">
                 Total:
               </span>
-              <span className="text-2xl font-bold text-primary">
+              <span className="text-3xl font-bold gradient-text font-display">
                 ৳{totalPrice.toFixed(2)}
               </span>
             </div>
             <button
               onClick={onCheckout}
-              className="w-full bg-primary text-white py-3 rounded-full hover:bg-accent transition-colors font-semibold text-lg shadow-lg hover:shadow-xl"
+              className="w-full bg-gradient-accent text-textPrimary py-4 rounded-xl hover:shadow-xl-yellow transition-all duration-300 font-bold text-lg shadow-soft transform hover:-translate-y-1 flex items-center justify-center gap-2 group"
             >
-              Proceed to Checkout
+              <span>Proceed to Checkout</span>
+              <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
             </button>
           </div>
         )}

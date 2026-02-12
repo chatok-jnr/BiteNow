@@ -39,14 +39,14 @@ const OwnerNavbar = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 py-4">
           <div
-            className="flex items-center space-x-3 cursor-pointer"
+            className="flex items-center space-x-3 cursor-pointer group"
             onClick={() => navigate("/restaurant_owner/dashboard")}
           >
-            <div className="w-10 h-10 bg-tertiary rounded-full flex items-center justify-center">
-              <Store className="w-6 h-6 text-primary" />
+            <div className="w-12 h-12 bg-gradient-accent rounded-xl flex items-center justify-center shadow-glow-yellow transform group-hover:rotate-12 transition-all duration-300">
+              <span className="text-2xl">🍔</span>
             </div>
             <div>
-              <p className="text-2xl font-bold text-white">BiteNow</p>
+              <p className="text-2xl font-bold text-white font-display tracking-tight">BiteNow</p>
               <p className="text-xs text-white/80">Restaurant Owner</p>
             </div>
           </div>

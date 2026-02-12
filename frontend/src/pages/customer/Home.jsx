@@ -81,6 +81,15 @@ const Home = () => {
     fetchCartData();
   }, []);
 
+  // Auto-slide functionality
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentSlide((prev) => (prev + 1) % heroSlides.length);
+    }, 5000); // Change slide every 5 seconds
+
+    return () => clearInterval(interval); // Cleanup on unmount
+  }, [heroSlides.length]);
+
   const fetchAllData = async () => {
     try {
       setLoading(true);
@@ -263,33 +272,33 @@ const Home = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background flex flex-col">
+    <div className="min-h-screen bg-bgPrimary flex flex-col">
       <div
         className={`flex flex-col flex-1 transition-all duration-300 ${
           isCartOpen && cartItems.length > 0 ? "sm:mr-96" : "mr-0"
         }`}
       >
-        {/* Navbar */}
-        <nav className="sticky top-0 z-50 bg-primary shadow-md">
+        {/* Premium Navbar */}
+        <nav className="fixed top-0 left-0 right-0 z-50 bg-primary shadow-large transition-all duration-400">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="flex justify-between items-center h-16">
+            <div className="flex justify-between items-center h-18 py-3">
               <div
                 onClick={() => navigate("/")}
-                className="flex items-center space-x-3 cursor-pointer"
+                className="group flex items-center space-x-3 cursor-pointer"
               >
-                <div className="w-10 h-10 bg-tertiary rounded-full flex items-center justify-center">
-                  <ShoppingCart className="w-6 h-6 text-primary" />
+                <div className="w-12 h-12 bg-gradient-accent rounded-xl flex items-center justify-center shadow-glow-yellow transform group-hover:rotate-12 transition-all duration-300">
+                  <span className="text-2xl">🍔</span>
                 </div>
-                <span className="text-2xl font-bold text-white">BiteNow</span>
+                <span className="text-2xl font-bold text-white font-display tracking-tight">BiteNow</span>
               </div>
-              <div className="flex items-center space-x-4">
+              <div className="flex items-center space-x-3">
                 <button
                   onClick={() => setIsCartOpen(true)}
-                  className="relative p-2 text-white hover:text-accent-light transition-colors"
+                  className="relative p-2.5 text-white hover:text-accent-light transition-all duration-300 hover:scale-110"
                 >
                   <ShoppingCart className="w-6 h-6" />
                   {cartItems.length > 0 && (
-                    <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
+                    <span className="absolute -top-1 -right-1 bg-gradient-primary text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center shadow-glow-red animate-pulse-slow">
                       {cartItems.length}
                     </span>
                   )}
@@ -297,7 +306,7 @@ const Home = () => {
                 {!isLoggedIn ? (
                   <button
                     onClick={() => navigate("/login")}
-                    className="bg-tertiary text-primary px-6 py-2 rounded-full hover:bg-accent-light transition-all hover:shadow-lg transform hover:-translate-y-0.5 font-semibold"
+                    className="bg-gradient-accent text-textPrimary px-6 py-2.5 rounded-xl hover:shadow-xl-yellow transition-all transform hover:-translate-y-0.5 font-semibold text-sm"
                   >
                     Login / Sign Up
                   </button>
@@ -305,24 +314,24 @@ const Home = () => {
                   <>
                     <button
                       onClick={() => navigate("/")}
-                      className="bg-tertiary text-primary px-6 py-2 rounded-full font-semibold flex items-center gap-2"
+                      className="glass-card text-textPrimary px-4 py-2 rounded-xl font-semibold flex items-center gap-2 hover:shadow-soft transition-all text-sm"
                     >
-                      <HomeIcon className="w-5 h-5" />
-                      Home
+                      <HomeIcon className="w-4 h-4" />
+                      <span className="hidden md:inline">Home</span>
                     </button>
                     <button
                       onClick={() => navigate("/orderStatus")}
-                      className="text-white hover:text-accent-light transition-colors font-medium px-4 py-2 flex items-center gap-2"
+                      className="text-white hover:text-accent-light transition-all font-medium px-3 py-2 flex items-center gap-2 hover:scale-105 text-sm"
                     >
-                      <Package className="w-5 h-5" />
-                      Orders
+                      <Package className="w-4 h-4" />
+                      <span className="hidden md:inline">Orders</span>
                     </button>
                     <button
                       onClick={() => navigate("/profile")}
-                      className="text-white hover:text-accent-light transition-colors font-medium px-4 py-2 flex items-center gap-2"
+                      className="text-white hover:text-accent-light transition-all font-medium px-3 py-2 flex items-center gap-2 hover:scale-105 text-sm"
                     >
-                      <User className="w-5 h-5" />
-                      Profile
+                      <User className="w-4 h-4" />
+                      <span className="hidden md:inline">Profile</span>
                     </button>
                     <button
                       onClick={() => {
@@ -332,10 +341,10 @@ const Home = () => {
                         setIsLoggedIn(false);
                         navigate("/login");
                       }}
-                      className="text-white hover:text-red-300 transition-colors font-medium px-4 py-2 flex items-center gap-2"
+                      className="text-white hover:text-red-300 transition-all font-medium px-3 py-2 flex items-center gap-2 hover:scale-105 text-sm"
                     >
-                      <LogOut className="w-5 h-5" />
-                      Logout
+                      <LogOut className="w-4 h-4" />
+                      <span className="hidden md:inline">Logout</span>
                     </button>
                   </>
                 )}
@@ -343,29 +352,40 @@ const Home = () => {
             </div>
           </div>
         </nav>
-        {/* Hero Slider */}
-        <div className="relative h-[calc(100vh-4rem)] overflow-hidden">
+        {/* Premium Hero Slider */}
+        <div className="relative h-screen overflow-hidden mt-18">
           {heroSlides.map((slide, index) => (
             <div
               key={index}
-              className={`absolute inset-0 transition-opacity duration-1000 ${
-                index === currentSlide ? "opacity-100" : "opacity-0"
+              className={`absolute inset-0 transition-all duration-1000 ${
+                index === currentSlide ? "opacity-100 scale-100" : "opacity-0 scale-105"
               }`}
             >
               <img
                 src={slide.image}
                 alt={slide.title}
                 className="w-full h-full object-cover"
+                loading={index === 0 ? "eager" : "lazy"}
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
-              <div className="absolute bottom-0 left-0 right-0 p-8 md:p-16">
-                <div className="max-w-4xl mx-auto backdrop-blur-sm bg-white/10 rounded-3xl p-8 md:p-12 border border-white/20">
-                  <h2 className="text-4xl md:text-6xl font-bold text-white mb-4">
-                    {slide.title}
-                  </h2>
-                  <p className="text-xl text-white/90 leading-relaxed">
-                    {slide.description}
-                  </p>
+              <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-black/10" />
+              <div className="absolute inset-0 bg-mesh-gradient opacity-20" />
+              
+              <div className="absolute bottom-0 left-0 right-0 p-6 md:p-20">
+                <div className="max-w-5xl mx-auto">
+                  <div className="bg-secondary/80 backdrop-blur-lg rounded-3xl p-8 md:p-14 border border-white/20 shadow-glass animate-fade-in-up">
+                    <h2 className="text-4xl md:text-7xl font-display font-bold text-white mb-6 leading-tight tracking-tight">
+                      {slide.title}
+                    </h2>
+                    <p className="text-lg md:text-2xl text-white/95 leading-relaxed max-w-3xl">
+                      {slide.description}
+                    </p>
+                    <button 
+                      className="mt-8 font-bold px-8 py-4 rounded-xl shadow-xl-red hover:shadow-glow-red transform hover:-translate-y-1 transition-all duration-300 text-lg"
+                      style={{ backgroundColor: '#E63946', color: 'white' }}
+                    >
+                      Order Now
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
@@ -373,36 +393,41 @@ const Home = () => {
 
           <button
             onClick={prevSlide}
-            className="absolute left-4 top-1/2 -translate-y-1/2 w-12 h-12 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center hover:bg-white/30 transition-all"
+            className="absolute left-6 top-1/2 -translate-y-1/2 w-14 h-14 bg-primary/90 backdrop-blur-sm rounded-full flex items-center justify-center hover:bg-primary hover:shadow-glow-red transition-all duration-300 hover:scale-110 group"
           >
-            <ChevronLeft className="w-6 h-6 text-white" />
+            <ChevronLeft className="w-7 h-7 text-white group-hover:-translate-x-1 transition-transform" />
           </button>
           <button
             onClick={nextSlide}
-            className="absolute right-4 top-1/2 -translate-y-1/2 w-12 h-12 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center hover:bg-white/30 transition-all"
+            className="absolute right-6 top-1/2 -translate-y-1/2 w-14 h-14 bg-primary/90 backdrop-blur-sm rounded-full flex items-center justify-center hover:bg-primary hover:shadow-glow-red transition-all duration-300 hover:scale-110 group"
           >
-            <ChevronRight className="w-6 h-6 text-white" />
+            <ChevronRight className="w-7 h-7 text-white group-hover:translate-x-1 transition-transform" />
           </button>
 
-          <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex space-x-2">
+          <div className="absolute bottom-10 left-1/2 -translate-x-1/2 flex space-x-3">
             {heroSlides.map((_, index) => (
               <button
                 key={index}
                 onClick={() => setCurrentSlide(index)}
-                className={`w-3 h-3 rounded-full transition-all ${
-                  index === currentSlide ? "bg-white w-8" : "bg-white/50"
+                className={`h-1.5 rounded-full transition-all duration-400 ${
+                  index === currentSlide 
+                    ? "bg-white w-12 shadow-glow-yellow" 
+                    : "bg-white/50 w-8 hover:bg-white/70"
                 }`}
               />
             ))}
           </div>
         </div>
         {/* Top 4 Most Sold Foods */}
-        <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-          <div className="text-center mb-12">
-            <h2 className="text-4xl font-bold text-primary mb-3">
-              Most Popular Dishes
+        <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
+          <div className="text-center mb-16 animate-fade-in-up">
+            <h2 className="text-5xl md:text-6xl font-display font-bold mb-4">
+              <span className="gradient-text">Most Popular</span> Dishes
             </h2>
-            <div className="w-24 h-1 bg-primary mx-auto rounded-full"></div>
+            <p className="text-gray-600 text-lg max-w-2xl mx-auto mb-6">
+              Discover what everyone's craving. Our most-loved dishes delivered fresh to your door.
+            </p>
+            <div className="w-24 h-1.5 bg-gradient-primary mx-auto rounded-full shadow-glow-red"></div>
           </div>
 
           {loading ? (
@@ -472,30 +497,43 @@ const Home = () => {
         </div>
       </section> */}
         {/* Restaurants List */}
-        <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-          <div className="mb-8">
-            <div className="text-center mb-3">
-              <h2 className="text-4xl font-bold text-primary mb-3">
-                Explore Restaurants
-              </h2>
-              <div className="w-24 h-1 bg-primary mx-auto rounded-full"></div>
+        <section className="bg-white py-20">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="mb-12">
+              <div className="text-center mb-8 animate-fade-in-up">
+                <h2 className="text-5xl md:text-6xl font-display font-bold mb-4">
+                  Explore <span className="gradient-text-accent">Restaurants</span>
+                </h2>
+                <p className="text-gray-600 text-lg max-w-2xl mx-auto mb-6">
+                  Browse through our curated selection of top-rated restaurants near you.
+                </p>
+                <div className="w-24 h-1.5 bg-gradient-accent mx-auto rounded-full shadow-glow-yellow"></div>
+              </div>
+              <div className="flex justify-end mt-8">
+                <select
+                  value={sortBy}
+                  onChange={(e) => setSortBy(e.target.value)}
+                  className="px-6 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary bg-white text-gray-700 font-semibold cursor-pointer hover:border-accent transition-all shadow-soft hover:shadow-medium"
+                >
+                  <option value="date">Sort by Date</option>
+                  <option value="price-low">Sort by Price: Low to High</option>
+                  <option value="price-high">Sort by Price: High to Low</option>
+                </select>
+              </div>
             </div>
-            <div className="flex justify-end mt-6">
-              <select
-                value={sortBy}
-                onChange={(e) => setSortBy(e.target.value)}
-                className="px-6 py-2 border-2 border-primary rounded-full focus:outline-none focus:ring-2 focus:ring-primary bg-white text-gray-700 font-medium cursor-pointer hover:border-accent transition-colors"
-              >
-                <option value="date">Sort by Date</option>
-                <option value="price-low">Sort by Price: Low to High</option>
-                <option value="price-high">Sort by Price: High to Low</option>
-              </select>
-            </div>
-          </div>
 
           {loading ? (
-            <div className="text-center py-12">
-              <p className="text-gray-600">Loading restaurants...</p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+              {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
+                <div key={i} className="bg-white rounded-2xl overflow-hidden shadow-soft animate-pulse">
+                  <div className="aspect-video bg-gray-200" />
+                  <div className="p-4 space-y-3">
+                    <div className="h-6 bg-gray-200 rounded w-3/4" />
+                    <div className="h-4 bg-gray-200 rounded w-1/2" />
+                    <div className="h-10 bg-gray-200 rounded" />
+                  </div>
+                </div>
+              ))}
             </div>
           ) : (
             <>
@@ -519,10 +557,10 @@ const Home = () => {
 
               {(restaurantPage + 1) * restaurantsPerPage <
                 sortedRestaurants.length && (
-                <div className="text-center mt-12">
+                <div className="text-center mt-16">
                   <button
                     onClick={() => setRestaurantPage(restaurantPage + 1)}
-                    className="bg-primary text-white px-12 py-4 rounded-full hover:bg-accent transition-all font-semibold text-lg hover:shadow-xl transform hover:-translate-y-1"
+                    className="bg-gradient-accent text-textPrimary px-12 py-4 rounded-xl hover:shadow-xl-yellow transition-all font-bold text-lg transform hover:-translate-y-1 duration-300"
                   >
                     Load More Restaurants
                   </button>
@@ -530,63 +568,66 @@ const Home = () => {
               )}
             </>
           )}
+          </div>
         </section>
-        {/* Footer */}
-        <footer className="bg-secondary text-white py-8 mt-auto">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        
+        {/* Premium Footer */}
+        <footer className="bg-gradient-secondary text-white py-16 mt-auto relative overflow-hidden">
+          <div className="absolute inset-0 bg-mesh-gradient opacity-10" />
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
             <div className="flex flex-col md:flex-row justify-between items-center">
-              <div className="flex items-center space-x-3 mb-4 md:mb-0">
-                <div className="w-10 h-10 bg-primary rounded-full flex items-center justify-center">
-                  <ShoppingCart className="w-6 h-6 text-white" />
+              <div className="flex items-center space-x-3 mb-6 md:mb-0">
+                <div className="w-12 h-12 bg-gradient-accent rounded-xl flex items-center justify-center shadow-glow-yellow">
+                  <span className="text-2xl">🍔</span>
                 </div>
-                <span className="text-2xl font-bold">BiteNow</span>
+                <span className="text-3xl font-bold font-display">BiteNow</span>
               </div>
-              <div className="flex items-center space-x-6 mb-4 md:mb-0">
+              <div className="flex items-center space-x-8 mb-6 md:mb-0">
                 <a
                   href="#about"
-                  className="text-white hover:text-accent-light transition-colors font-medium"
+                  className="text-white/90 hover:text-accent-light transition-all font-medium hover:scale-105 transform"
                 >
                   About Us
                 </a>
                 <a
                   href="#contact"
-                  className="text-white hover:text-accent-light transition-colors font-medium"
+                  className="text-white/90 hover:text-accent-light transition-all font-medium hover:scale-105 transform"
                 >
                   Contact Us
                 </a>
               </div>
-              <p className="text-white/80">
+              <p className="text-white/70 text-sm">
                 © 2026 BiteNow. All rights reserved.
               </p>
             </div>
           </div>
         </footer>
       </div>
-      {/* Clear Cart Confirmation Modal */}
+      {/* Premium Clear Cart Confirmation Modal */}
       {showClearCartModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl">
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-fade-in">
+          <div className="bg-white rounded-3xl max-w-md w-full p-8 shadow-large transform animate-scale-in">
             <div className="text-center">
-              <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <ShoppingCart className="w-8 h-8 text-red-600" />
+              <div className="w-20 h-20 bg-gradient-to-br from-red-100 to-red-50 rounded-full flex items-center justify-center mx-auto mb-6 shadow-soft">
+                <ShoppingCart className="w-10 h-10 text-primary" />
               </div>
-              <h3 className="text-2xl font-bold text-gray-800 mb-2">
+              <h3 className="text-3xl font-bold text-textPrimary mb-3 font-display">
                 Clear Cart?
               </h3>
-              <p className="text-gray-600 mb-6">
+              <p className="text-gray-600 mb-8 leading-relaxed">
                 Are you sure you want to clear your entire cart? This action
                 cannot be undone.
               </p>
               <div className="space-y-3">
                 <button
                   onClick={confirmClearCart}
-                  className="w-full bg-red-500 text-white py-3 rounded-full hover:bg-red-600 transition-all font-semibold"
+                  className="w-full bg-gradient-primary text-white py-4 rounded-xl hover:shadow-xl-red transition-all font-bold text-lg transform hover:-translate-y-0.5 duration-300"
                 >
                   Yes, Clear Cart
                 </button>
                 <button
                   onClick={() => setShowClearCartModal(false)}
-                  className="w-full bg-gray-200 text-gray-800 py-3 rounded-full hover:bg-gray-300 transition-all font-semibold"
+                  className="w-full bg-gray-100 text-gray-700 py-4 rounded-xl hover:bg-gray-200 transition-all font-semibold text-lg"
                 >
                   Cancel
                 </button>

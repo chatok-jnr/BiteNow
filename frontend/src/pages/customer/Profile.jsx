@@ -1,17 +1,15 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import {
-  ShoppingCart,
   Mail,
   Phone,
   User,
   Calendar,
   Camera,
-  LogOut,
   MapPin,
-  Home as HomeIcon,
-  Package,
+  LogOut,
 } from "lucide-react";
+import CustomerNavbar from "../../components/CustomerNavbar";
 import {
   getCustomerProfile,
   updateCustomerProfile,
@@ -316,9 +314,13 @@ const Profile = () => {
 
   if (loading && !profileData.email) {
     return (
-      <div className="min-h-screen bg-bgPrimary flex items-center justify-center">
-        <div className="text-center">
-          <p className="text-gray-600 text-xl">Loading profile...</p>
+      <div className="min-h-screen bg-bgPrimary flex flex-col">
+        <CustomerNavbar activeTab="profile" />
+        <div className="flex-1 flex items-center justify-center pt-24">
+          <div className="text-center">
+            <div className="w-16 h-16 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+            <p className="text-gray-600 text-xl">Loading profile...</p>
+          </div>
         </div>
       </div>
     );
@@ -326,60 +328,10 @@ const Profile = () => {
 
   return (
     <div className="min-h-screen bg-bgPrimary flex flex-col">
-      {/* Navbar */}
-      <nav className="sticky top-0 z-50 bg-primary shadow-md">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            <div
-              onClick={() => navigate("/")}
-              className="flex items-center space-x-3 cursor-pointer"
-            >
-              <div className="w-10 h-10 bg-tertiary rounded-full flex items-center justify-center">
-                <ShoppingCart className="w-6 h-6 text-primary" />
-              </div>
-              <span className="text-2xl font-bold text-white">BiteNow</span>
-            </div>
-            <div className="flex items-center space-x-4">
-              <button
-                onClick={() => navigate("/")}
-                className="text-white hover:text-tertiary transition-colors font-medium px-4 py-2 flex items-center gap-2"
-              >
-                <HomeIcon className="w-5 h-5" />
-                Home
-              </button>
-              <button
-                onClick={() => navigate("/orderStatus")}
-                className="text-white hover:text-tertiary transition-colors font-medium px-4 py-2 flex items-center gap-2"
-              >
-                <Package className="w-5 h-5" />
-                Orders
-              </button>
-              <button
-                onClick={() => navigate("/profile")}
-                className="bg-tertiary text-primary px-6 py-2 rounded-full font-semibold flex items-center gap-2"
-              >
-                <User className="w-5 h-5" />
-                Profile
-              </button>
-              <button
-                onClick={() => {
-                  localStorage.removeItem("token");
-                  localStorage.removeItem("user");
-                  localStorage.removeItem("guest_session_id");
-                  navigate("/login");
-                }}
-                className="text-white hover:text-red-300 transition-colors font-medium px-4 py-2 flex items-center gap-2"
-              >
-                <LogOut className="w-5 h-5" />
-                Logout
-              </button>
-            </div>
-          </div>
-        </div>
-      </nav>
+      <CustomerNavbar activeTab="profile" />
 
-      {/* Profile Container */}
-      <div className="flex-1 px-4 py-12">
+      {/* Profile Container with top padding for fixed navbar */}
+      <div className="flex-1 px-4 py-12 pt-28">
         <div className="max-w-4xl mx-auto">
           {/* Profile Card */}
           <div className="bg-tertiary rounded-3xl shadow-2xl overflow-hidden">

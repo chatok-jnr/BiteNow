@@ -2,7 +2,6 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { X } from "lucide-react";
 import {
-  ShoppingCart,
   Package,
   Clock,
   Search,
@@ -12,9 +11,8 @@ import {
   User,
   MapPin,
   Phone,
-  Home as HomeIcon,
-  LogOut,
 } from "lucide-react";
+import CustomerNavbar from "../../components/CustomerNavbar";
 import { getUserOrders } from "../../utils/orderService";
 import { useNotification } from "../../contexts/NotificationContext";
 
@@ -360,58 +358,9 @@ const OrderStatus = () => {
 
   return (
     <div className="min-h-screen bg-bgPrimary">
-      {/* Navbar */}
-      <nav className="sticky top-0 z-50 bg-primary shadow-md">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            <div
-              onClick={() => navigate("/")}
-              className="flex items-center space-x-3 cursor-pointer"
-            >
-              <div className="w-10 h-10 bg-tertiary rounded-full flex items-center justify-center">
-                <ShoppingCart className="w-6 h-6 text-primary" />
-              </div>
-              <span className="text-2xl font-bold text-white">BiteNow</span>
-            </div>
-            <div className="flex items-center space-x-4">
-              <button
-                onClick={() => navigate("/")}
-                className="text-white hover:text-tertiary transition-colors font-medium px-4 py-2 flex items-center gap-2"
-              >
-                <HomeIcon className="w-5 h-5" />
-                Home
-              </button>
-              <button
-                onClick={() => navigate("/orderStatus")}
-                className="bg-tertiary text-primary px-6 py-2 rounded-full font-semibold flex items-center gap-2"
-              >
-                <Package className="w-5 h-5" />
-                Orders
-              </button>
-              <button
-                onClick={() => navigate("/profile")}
-                className="text-white hover:text-tertiary transition-colors font-medium px-4 py-2 flex items-center gap-2"
-              >
-                <User className="w-5 h-5" />
-                Profile
-              </button>
-              <button
-                onClick={() => {
-                  localStorage.removeItem("token");
-                  localStorage.removeItem("user");
-                  localStorage.removeItem("guest_session_id");
-                  navigate("/login");
-                }}
-                className="text-white hover:text-red-300 transition-colors font-medium px-4 py-2 flex items-center gap-2"
-              >
-                <LogOut className="w-5 h-5" />
-                Logout
-              </button>
-            </div>
-          </div>
-        </div>
-      </nav>
-
+      <CustomerNavbar activeTab="orders" />
+      
+      <div className="pt-24">
       {/* Modal for Food Item Details */}
       {selectedOrder && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
@@ -624,6 +573,7 @@ const OrderStatus = () => {
             </div>
           )}
         </div>
+      </div>
       </div>
     </div>
   );
