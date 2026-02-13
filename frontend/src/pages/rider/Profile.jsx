@@ -262,9 +262,10 @@ const Profile = () => {
     }
 
     try {
-      const MAPBOX_TOKEN =
-        import.meta.env.VITE_MAPBOX_ACCESS_TOKEN ||
-        "pk.eyJ1IjoiYml0ZW5vd2FwcCIsImEiOiJjbTU1bDJyeWwwNXJwMmtzNWhwaGV1emU3In0.kEVkESt-xSfPz3lfKJQ0RA";
+      const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_ACCESS_TOKEN;
+      if (!MAPBOX_TOKEN) {
+        throw new Error('Mapbox access token is not configured');
+      }
       const url = `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(query)}.json?access_token=${MAPBOX_TOKEN}&country=BD&limit=5`;
 
       console.log("Searching address:", query);
@@ -296,9 +297,10 @@ const Profile = () => {
   // Reverse geocode coordinates to get address
   const reverseGeocode = async (longitude, latitude) => {
     try {
-      const MAPBOX_TOKEN =
-        import.meta.env.VITE_MAPBOX_ACCESS_TOKEN ||
-        "pk.eyJ1IjoiYml0ZW5vd2FwcCIsImEiOiJjbTU1bDJyeWwwNXJwMmtzNWhwaGV1emU3In0.kEVkESt-xSfPz3lfKJQ0RA";
+      const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_ACCESS_TOKEN;
+      if (!MAPBOX_TOKEN) {
+        throw new Error('Mapbox access token is not configured');
+      }
       const url = `https://api.mapbox.com/geocoding/v5/mapbox.places/${longitude},${latitude}.json?access_token=${MAPBOX_TOKEN}`;
 
       console.log("Reverse geocoding:", { longitude, latitude });
