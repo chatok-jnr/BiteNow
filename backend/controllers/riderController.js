@@ -90,46 +90,44 @@ exports.getRiderById = async (req, res) => {
   }
 };
 
-// Get user info 
-exports.getMe = async(req, res) => {
-  try{
-
+// Get user info
+exports.getMe = async (req, res) => {
+  try {
     const rider_id = req.user._id;
     const riderInfo = await Rider.findById(rider_id);
-    if(!riderInfo) {
+    if (!riderInfo) {
       res.status(404).json({
-        status:'failed',
-        message:'Rider Not found'
+        status: "failed",
+        message: "Rider Not found",
       });
     }
 
     const rider = {
-      id:req.user._id,
-      name:riderInfo.rider_name,
-      email:riderInfo.rider_email,
-      date_of_birth:riderInfo.rider_date_of_birth,
-      gender:riderInfo.rider_gender || '',
-      address:riderInfo.rider_address || '',
+      id: req.user._id,
+      name: riderInfo.rider_name,
+      email: riderInfo.rider_email,
+      date_of_birth: riderInfo.rider_date_of_birth,
+      gender: riderInfo.rider_gender || "",
+      address: riderInfo.rider_address || "",
       location: riderInfo.rider_location || null,
-      account_status:riderInfo.rider_status,
-      image:riderInfo.rider_image || null,
-      documents:riderInfo.rider_documents,
-      contact_info:riderInfo.rider_contact_info,
-      stats:riderInfo.rider_stats,
+      account_status: riderInfo.rider_status,
+      image: riderInfo.rider_image || null,
+      documents: riderInfo.rider_documents,
+      contact_info: riderInfo.rider_contact_info,
+      stats: riderInfo.rider_stats,
     };
 
     res.status(200).json({
-      status:'success',
-      rider
+      status: "success",
+      rider,
     });
-
-  } catch(err) {
+  } catch (err) {
     res.status(400).json({
-      status:'failed',
-      message:err.message
+      status: "failed",
+      message: err.message,
     });
   }
-}
+};
 
 //update rider
 exports.updateRider = async (req, res) => {
@@ -166,6 +164,7 @@ exports.updateRider = async (req, res) => {
       "rider_address",
       "rider_contact_info.emergency_contact",
       "rider_contact_info.alternative_phone",
+      "rider_coordinates",
     ];
 
     //step 04 => filter out and check valid update
@@ -175,6 +174,8 @@ exports.updateRider = async (req, res) => {
         update[key] = req.body[key];
       }
     });
+
+    console.log("Allowed updates from request:", update);
 
     //check valid update
     if (Object.keys(update).length === 0) {
@@ -187,7 +188,28 @@ exports.updateRider = async (req, res) => {
     //Step 05 => update the rider and show data
     // Handle nested properties with dot notation
     Object.keys(update).forEach((key) => {
-      if (key.includes(".")) {
+      if (key === "rider_coordinates") {
+        // Handle coordinates specially - map to rider_location.coordinates
+        console.log("Processing rider_coordinates:", update[key]);
+        if (Array.isArray(update[key]) && update[key].length === 2) {
+          if (!rider.rider_location) {
+            rider.rider_location = {
+              type: "Point",
+              coordinates: update[key],
+            };
+            console.log("Created new rider_location:", rider.rider_location);
+          } else {
+            rider.rider_location.coordinates = update[key];
+            console.log(
+              "Updated rider_location.coordinates:",
+              rider.rider_location.coordinates,
+            );
+          }
+          rider.lastLocationUpdate = Date.now();
+        } else {
+          console.log("Invalid coordinates format:", update[key]);
+        }
+      } else if (key.includes(".")) {
         // Handle nested properties like "rider_contact_info.emergency_contact"
         const keys = key.split(".");
         if (keys.length === 2) {
@@ -426,7 +448,7 @@ exports.updateRiderImage = async (req, res) => {
     const newImage = await imageUpdationHelper(
       req.file,
       rider.rider_name,
-      oldPublicId
+      oldPublicId,
     );
 
     //save image
@@ -573,7 +595,7 @@ exports.deleteRiderDoc = async (req, res) => {
     }
     //find the documents
     const docIndex = rider.rider_documents.findIndex(
-      (doc) => doc._id.toString() === docId.toString()
+      (doc) => doc._id.toString() === docId.toString(),
     );
 
     if (docIndex === -1) {

@@ -12,7 +12,27 @@ exports.createOrder = async (req, res) => {
   session.startTransaction();
 
   try {
-    const { delivery_address, payment_method, special_instructions } = req.body;
+    const {
+      delivery_address_coordinates,
+      payment_method,
+      special_instructions,
+    } = req.body;
+
+    // Validate delivery address coordinates
+    if (
+      !delivery_address_coordinates ||
+      !Array.isArray(delivery_address_coordinates) ||
+      delivery_address_coordinates.length !== 2 ||
+      typeof delivery_address_coordinates[0] !== "number" ||
+      typeof delivery_address_coordinates[1] !== "number"
+    ) {
+      await session.abortTransaction();
+      return res.status(400).json({
+        status: "failed",
+        message:
+          "Valid delivery address coordinates [longitude, latitude] are required",
+      });
+    }
 
     // In real app, get user_id from auth middleware
     const user_id = req.user._id;
@@ -99,12 +119,17 @@ exports.createOrder = async (req, res) => {
       subtotal: cart.subtotal,
       delivery_charge: cart.delivery_charge,
       total_amount: cart.total_amount,
-      delivery_address,
       special_instructions,
       estimated_delivery_time: new Date(Date.now() + 45 * 60000), // 45 minutes from now
     };
 
-    // Add customer location if available
+    // Set delivery_address to the coordinates provided by customer
+    orderData.delivery_address = {
+      type: "Point",
+      coordinates: delivery_address_coordinates, // [longitude, latitude]
+    };
+
+    // Add customer location if available (for customer tracking)
     if (
       customer &&
       customer.customer_location &&
@@ -440,14 +465,59 @@ exports.availableToDeliver = async (req, res) => {
     const pin1 = Math.floor(Math.random() * (9999 - 1000 + 1)) + 1000;
     const pin2 = Math.floor(Math.random() * (9999 - 1000 + 1)) + 1000;
 
+    // Get the order with full details
+    const order = await Order.findById(req.params.orderId)
+      .populate("restaurant_id", "restaurant_address restaurant_location")
+      .populate("customer_id", "customer_location");
+
+    if (!order) {
+      return res.status(404).json({
+        status: "failed",
+        message: "Order not found",
+      });
+    }
+
+    // Prepare update object
+    const updateData = {
+      rider_id: req.user._id,
+      rider_pin: pin1,
+      customer_pin: pin2,
+      order_status: "preparing",
+    };
+
+    // Ensure restaurant location is set
+    if (!order.restaurant_location || !order.restaurant_location.coordinates) {
+      if (
+        order.restaurant_id &&
+        order.restaurant_id.restaurant_location &&
+        order.restaurant_id.restaurant_location.coordinates
+      ) {
+        updateData.restaurant_location = {
+          type: "Point",
+          coordinates: order.restaurant_id.restaurant_location.coordinates,
+        };
+      }
+    }
+
+    // Ensure customer location is set
+    if (!order.customer_location || !order.customer_location.coordinates) {
+      if (
+        order.customer_id &&
+        order.customer_id.customer_location &&
+        order.customer_id.customer_location.coordinates
+      ) {
+        updateData.customer_location = {
+          type: "Point",
+          coordinates: order.customer_id.customer_location.coordinates,
+        };
+      }
+    }
+
+    // Note: DO NOT override delivery_address here - it should remain as specified by customer
+
     const acceptRide = await Order.findByIdAndUpdate(
       req.params.orderId,
-      {
-        rider_id: req.user._id,
-        rider_pin: pin1,
-        customer_pin: pin2,
-        order_status: "preparing",
-      },
+      updateData,
       {
         new: true,
         runValidators: true,
@@ -525,8 +595,10 @@ exports.verifyRider = async (req, res) => {
     }
 
     // Find order with restaurant and rider_pin information
-    const orderInfo = await Order.findById(order_id)
-      .populate("restaurant_id", "owner_id restaurant_name");
+    const orderInfo = await Order.findById(order_id).populate(
+      "restaurant_id",
+      "owner_id restaurant_name",
+    );
 
     if (!orderInfo) {
       return res.status(404).json({
@@ -564,7 +636,12 @@ exports.verifyRider = async (req, res) => {
     const areYouRider = orderInfo.rider_pin === parsedOtp;
 
     console.log("Comparison result:", areYouRider);
-    console.log("Types - DB:", typeof orderInfo.rider_pin, "Request:", typeof parsedOtp);
+    console.log(
+      "Types - DB:",
+      typeof orderInfo.rider_pin,
+      "Request:",
+      typeof parsedOtp,
+    );
 
     if (!areYouRider) {
       return res.status(400).json({
@@ -654,8 +731,10 @@ exports.migrateOrderLocations = async (req, res) => {
       $or: [
         { customer_location: { $exists: false } },
         { restaurant_location: { $exists: false } },
+        { delivery_address: { $exists: false } },
         { "customer_location.coordinates": { $exists: false } },
         { "restaurant_location.coordinates": { $exists: false } },
+        { "delivery_address.coordinates": { $exists: false } },
       ],
     });
 
@@ -697,6 +776,23 @@ exports.migrateOrderLocations = async (req, res) => {
               type: "Point",
               coordinates: restaurant.restaurant_location.coordinates,
             };
+          }
+        }
+
+        // Set delivery_address if missing (only if order has no delivery_address set)
+        // Note: In old orders, delivery_address might not exist, so we use customer_location as fallback
+        if (!order.delivery_address || !order.delivery_address.coordinates) {
+          const customerCoords =
+            updateData.customer_location?.coordinates ||
+            order.customer_location?.coordinates;
+          if (customerCoords) {
+            updateData.delivery_address = {
+              type: "Point",
+              coordinates: customerCoords,
+            };
+            console.log(
+              `Set delivery_address for order ${order._id} using customer location as fallback`,
+            );
           }
         }
 

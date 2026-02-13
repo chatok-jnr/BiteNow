@@ -83,11 +83,15 @@ const orderSchema = new mongoose.Schema(
     delivery_charge: Number,
     total_amount: Number,
     delivery_address: {
-      street: String,
-      city: String,
-      state: String,
-      zip_code: String,
-      country: String,
+      type: {
+        type: String,
+        enum: ["Point"],
+        default: "Point",
+      },
+      coordinates: {
+        type: [Number], // [longitude, latitude]
+        default: undefined,
+      },
     },
     payment_status: {
       type: String,

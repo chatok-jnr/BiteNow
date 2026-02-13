@@ -21,6 +21,8 @@ import {
   Clock,
   Upload,
   XCircle,
+  Navigation,
+  Search,
 } from "lucide-react";
 import {
   getRiderProfile,
@@ -32,9 +34,11 @@ import {
 } from "../../utils/riderService";
 import { getMyOrderList } from "../../utils/orderService";
 import { useNavigate } from "react-router-dom";
+import { useNotification } from "../../contexts/NotificationContext";
 
 const Profile = () => {
   const navigate = useNavigate();
+  const { showSuccess, showError, showWarning, showInfo } = useNotification();
   const [isEditing, setIsEditing] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -43,7 +47,6 @@ const Profile = () => {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [documentFiles, setDocumentFiles] = useState([]);
   const [uploadingDocs, setUploadingDocs] = useState(false);
-  const [toast, setToast] = useState({ show: false, message: "", type: "" });
   const [showDocDeleteConfirm, setShowDocDeleteConfirm] = useState(false);
   const [docToDelete, setDocToDelete] = useState(null);
   const [navbarProfile, setNavbarProfile] = useState({
@@ -51,24 +54,24 @@ const Profile = () => {
     gender: null,
     name: null,
   });
+  const [loadingLocation, setLoadingLocation] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [searchResults, setSearchResults] = useState([]);
+  const [showSearchResults, setShowSearchResults] = useState(false);
+  const [coordinates, setCoordinates] = useState(null);
 
   const [editForm, setEditForm] = useState({
     rider_name: "",
     rider_date_of_birth: "",
     rider_gender: "",
     rider_address: "",
+    coordinates: null,
     "rider_contact_info.emergency_contact": "",
     "rider_contact_info.alternative_phone": "",
     rider_password: "",
     confirmPassword: "",
     imageFile: null,
   });
-
-  // Toast notification helper
-  const showToast = (message, type = "info") => {
-    setToast({ show: true, message, type });
-    setTimeout(() => setToast({ show: false, message: "", type: "" }), 4000);
-  };
 
   // Fetch rider profile and orders on component mount
   useEffect(() => {
@@ -95,6 +98,9 @@ const Profile = () => {
         });
 
         // Initialize edit form with current data
+        const riderCoords = response.rider.location?.coordinates || null;
+        setCoordinates(riderCoords);
+
         setEditForm({
           rider_name: response.rider.name || "",
           rider_date_of_birth: response.rider.date_of_birth
@@ -102,6 +108,7 @@ const Profile = () => {
             : "",
           rider_gender: response.rider.gender || "",
           rider_address: response.rider.address || "",
+          coordinates: riderCoords,
           "rider_contact_info.emergency_contact":
             response.rider.contact_info?.emergency_contact || "",
           "rider_contact_info.alternative_phone":
@@ -113,7 +120,7 @@ const Profile = () => {
       }
     } catch (error) {
       console.error("Error fetching rider profile:", error);
-      showToast("Failed to load profile. Please try again.", "error");
+      showError("Failed to load profile. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -137,6 +144,7 @@ const Profile = () => {
   const handleEditToggle = () => {
     if (isEditing && profileData) {
       // Reset form when canceling edit
+      const riderCoords = profileData.location?.coordinates || null;
       setEditForm({
         rider_name: profileData.name || "",
         rider_date_of_birth: profileData.date_of_birth
@@ -144,6 +152,7 @@ const Profile = () => {
           : "",
         rider_gender: profileData.gender || "",
         rider_address: profileData.address || "",
+        coordinates: riderCoords,
         "rider_contact_info.emergency_contact":
           profileData.contact_info?.emergency_contact || "",
         "rider_contact_info.alternative_phone":
@@ -152,6 +161,10 @@ const Profile = () => {
         confirmPassword: "",
         imageFile: null,
       });
+      setCoordinates(riderCoords);
+      setSearchQuery("");
+      setSearchResults([]);
+      setShowSearchResults(false);
     }
     setIsEditing(!isEditing);
   };
@@ -169,12 +182,12 @@ const Profile = () => {
     if (file) {
       // Validate file type
       if (!file.type.startsWith("image/")) {
-        showToast("Please select an image file", "error");
+        showError("Please select an image file");
         return;
       }
       // Validate file size (max 5MB)
       if (file.size > 5 * 1024 * 1024) {
-        showToast("Image size should be less than 5MB", "error");
+        showError("Image size should be less than 5MB");
         return;
       }
       setEditForm((prev) => ({
@@ -184,6 +197,155 @@ const Profile = () => {
     }
   };
 
+  // Use browser geolocation to get current position
+  const handleUseMyLocation = async () => {
+    if (!navigator.geolocation) {
+      showError("Geolocation is not supported by your browser");
+      return;
+    }
+
+    setLoadingLocation(true);
+    console.log("Requesting geolocation...");
+
+    navigator.geolocation.getCurrentPosition(
+      async (position) => {
+        const { latitude, longitude } = position.coords;
+        const coords = [longitude, latitude];
+
+        console.log("Location detected:", { latitude, longitude });
+
+        setCoordinates(coords);
+        setEditForm((prev) => ({ ...prev, coordinates: coords }));
+
+        // Reverse geocode to get address
+        console.log("Reverse geocoding...");
+        const address = await reverseGeocode(longitude, latitude);
+        if (address) {
+          console.log("Address found:", address);
+          setEditForm((prev) => ({ ...prev, rider_address: address }));
+          showSuccess("Location detected successfully!");
+        } else {
+          showWarning("Location detected but address not found");
+        }
+        setLoadingLocation(false);
+      },
+      (error) => {
+        console.error("Geolocation error:", error);
+        let errorMessage = "Unable to retrieve your location.";
+
+        switch (error.code) {
+          case error.PERMISSION_DENIED:
+            errorMessage =
+              "Location permission denied. Please enable location access.";
+            break;
+          case error.POSITION_UNAVAILABLE:
+            errorMessage = "Location information unavailable.";
+            break;
+          case error.TIMEOUT:
+            errorMessage = "Location request timed out.";
+            break;
+        }
+
+        showError(errorMessage);
+        setLoadingLocation(false);
+      },
+      { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 },
+    );
+  };
+
+  // Search for addresses using Mapbox Geocoding API
+  const handleAddressSearch = async (query) => {
+    if (!query || query.length < 3) {
+      setSearchResults([]);
+      setShowSearchResults(false);
+      return;
+    }
+
+    try {
+      const MAPBOX_TOKEN =
+        import.meta.env.VITE_MAPBOX_ACCESS_TOKEN ||
+        "pk.eyJ1IjoiYml0ZW5vd2FwcCIsImEiOiJjbTU1bDJyeWwwNXJwMmtzNWhwaGV1emU3In0.kEVkESt-xSfPz3lfKJQ0RA";
+      const url = `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(query)}.json?access_token=${MAPBOX_TOKEN}&country=BD&limit=5`;
+
+      console.log("Searching address:", query);
+      const response = await fetch(url);
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      console.log("Search results:", data.features);
+
+      if (data.features && data.features.length > 0) {
+        setSearchResults(data.features);
+        setShowSearchResults(true);
+      } else {
+        setSearchResults([]);
+        setShowSearchResults(false);
+        showInfo("No addresses found. Try a different search term.");
+      }
+    } catch (err) {
+      console.error("Address search error:", err);
+      showError("Failed to search address. Please try again.");
+      setSearchResults([]);
+      setShowSearchResults(false);
+    }
+  };
+
+  // Reverse geocode coordinates to get address
+  const reverseGeocode = async (longitude, latitude) => {
+    try {
+      const MAPBOX_TOKEN =
+        import.meta.env.VITE_MAPBOX_ACCESS_TOKEN ||
+        "pk.eyJ1IjoiYml0ZW5vd2FwcCIsImEiOiJjbTU1bDJyeWwwNXJwMmtzNWhwaGV1emU3In0.kEVkESt-xSfPz3lfKJQ0RA";
+      const url = `https://api.mapbox.com/geocoding/v5/mapbox.places/${longitude},${latitude}.json?access_token=${MAPBOX_TOKEN}`;
+
+      console.log("Reverse geocoding:", { longitude, latitude });
+      const response = await fetch(url);
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      console.log("Reverse geocode result:", data);
+
+      if (data.features && data.features.length > 0) {
+        const address = data.features[0].place_name;
+        console.log("Address extracted:", address);
+        return address;
+      }
+      return null;
+    } catch (err) {
+      console.error("Reverse geocode error:", err);
+      return null;
+    }
+  };
+
+  // Select a location from search results
+  const handleSelectLocation = (feature) => {
+    const [longitude, latitude] = feature.center;
+    const coords = [longitude, latitude];
+
+    console.log("Location selected:", {
+      name: feature.place_name,
+      coordinates: coords,
+    });
+
+    setCoordinates(coords);
+    setEditForm((prev) => ({
+      ...prev,
+      coordinates: coords,
+      rider_address: feature.place_name,
+    }));
+
+    setSearchQuery("");
+    setShowSearchResults(false);
+    setSearchResults([]);
+    showSuccess("Location selected successfully!");
+  };
+
   const handleSaveProfile = async () => {
     try {
       // Validate password match if changing password
@@ -191,7 +353,7 @@ const Profile = () => {
         editForm.rider_password &&
         editForm.rider_password !== editForm.confirmPassword
       ) {
-        showToast("Passwords do not match!", "error");
+        showError("Passwords do not match!");
         return;
       }
 
@@ -207,10 +369,18 @@ const Profile = () => {
           editForm["rider_contact_info.alternative_phone"],
       };
 
+      // Add coordinates if they exist
+      if (coordinates) {
+        updateData.rider_coordinates = coordinates;
+        console.log("Adding coordinates to update:", coordinates);
+      }
+
       // Add password only if it's being changed
       if (editForm.rider_password) {
         updateData.rider_password = editForm.rider_password;
       }
+
+      console.log("Update data being sent:", updateData);
 
       // Update profile information
       const response = await updateRider(profileData.id, updateData);
@@ -222,9 +392,8 @@ const Profile = () => {
             await uploadRiderImage(profileData.id, editForm.imageFile);
           } catch (imgError) {
             console.error("Error uploading image:", imgError);
-            showToast(
+            showWarning(
               "Profile updated but image upload failed. Please try uploading the image separately.",
-              "warning",
             );
           }
         }
@@ -232,14 +401,13 @@ const Profile = () => {
         // Refresh profile data
         await fetchRiderProfile();
         setIsEditing(false);
-        showToast("Profile updated successfully!", "success");
+        showSuccess("Profile updated successfully!");
       }
     } catch (error) {
       console.error("Error updating profile:", error);
-      showToast(
+      showError(
         error.response?.data?.message ||
           "Failed to update profile. Please try again.",
-        "error",
       );
     }
   };
@@ -248,7 +416,7 @@ const Profile = () => {
     try {
       const response = await deleteRider(profileData.id);
       if (response.status === "success") {
-        showToast("Account deleted successfully", "success");
+        showSuccess("Account deleted successfully");
         // Clear local storage and redirect to login
         setTimeout(() => {
           localStorage.clear();
@@ -257,10 +425,9 @@ const Profile = () => {
       }
     } catch (error) {
       console.error("Error deleting account:", error);
-      showToast(
+      showError(
         error.response?.data?.message ||
           "Failed to delete account. Please try again.",
-        "error",
       );
     } finally {
       setShowDeleteModal(false);
@@ -272,7 +439,7 @@ const Profile = () => {
 
     // Validate number of files (max 5)
     if (files.length > 5) {
-      showToast("You can upload a maximum of 5 documents at once", "error");
+      showError("You can upload a maximum of 5 documents at once");
       return;
     }
 
@@ -288,17 +455,14 @@ const Profile = () => {
     );
 
     if (invalidFiles.length > 0) {
-      showToast(
-        "Please upload only PDF or image files (JPG, JPEG, PNG)",
-        "error",
-      );
+      showError("Please upload only PDF or image files (JPG, JPEG, PNG)");
       return;
     }
 
     // Validate file sizes (max 5MB each)
     const oversizedFiles = files.filter((file) => file.size > 5 * 1024 * 1024);
     if (oversizedFiles.length > 0) {
-      showToast("Each file should be less than 5MB", "error");
+      showError("Each file should be less than 5MB");
       return;
     }
 
@@ -307,7 +471,7 @@ const Profile = () => {
 
   const handleUploadDocuments = async () => {
     if (documentFiles.length === 0) {
-      showToast("Please select documents to upload", "error");
+      showError("Please select documents to upload");
       return;
     }
 
@@ -319,7 +483,7 @@ const Profile = () => {
       );
 
       if (response.status === "success") {
-        showToast("Documents uploaded successfully!", "success");
+        showSuccess("Documents uploaded successfully!");
         setDocumentFiles([]);
         // Clear the file input
         const fileInput = document.getElementById("document-upload");
@@ -329,10 +493,9 @@ const Profile = () => {
       }
     } catch (error) {
       console.error("Error uploading documents:", error);
-      showToast(
+      showError(
         error.response?.data?.message ||
           "Failed to upload documents. Please try again.",
-        "error",
       );
     } finally {
       setUploadingDocs(false);
@@ -351,16 +514,15 @@ const Profile = () => {
       const response = await deleteRiderDocument(profileData.id, docToDelete);
 
       if (response.status === "success") {
-        showToast("Document deleted successfully!", "success");
+        showSuccess("Document deleted successfully!");
         // Refresh profile to remove deleted document
         await fetchRiderProfile();
       }
     } catch (error) {
       console.error("Error deleting document:", error);
-      showToast(
+      showError(
         error.response?.data?.message ||
           "Failed to delete document. Please try again.",
-        "error",
       );
     } finally {
       setShowDocDeleteConfirm(false);
@@ -681,26 +843,154 @@ const Profile = () => {
                   </div>
 
                   {/* Address */}
-                  <div className="bg-surface p-4 rounded-xl">
-                    <label className="flex items-center space-x-2 text-sm text-gray-600 mb-2">
-                      <MapPin className="w-4 h-4 text-primary" />
-                      <span>Address</span>
-                    </label>
-                    {isEditing ? (
-                      <input
-                        type="text"
-                        name="rider_address"
-                        value={editForm.rider_address}
-                        onChange={handleInputChange}
-                        maxLength={50}
-                        className="w-full px-4 py-2 rounded-lg border-2 border-secondary focus:border-primary focus:outline-none bg-white"
-                      />
-                    ) : (
+                  {isEditing && (
+                    <div className="bg-tertiary p-6 rounded-xl space-y-4 md:col-span-2">
+                      <h3 className="text-xl font-bold text-gray-800">
+                        Location & Address
+                      </h3>
+
+                      {/* Location Selector */}
+                      <div className="bg-surface p-4 rounded-lg space-y-3">
+                        <label className="block text-sm font-semibold text-gray-700">
+                          Quick Location Selection
+                        </label>
+                        <div className="flex flex-col sm:flex-row gap-3">
+                          <button
+                            type="button"
+                            onClick={handleUseMyLocation}
+                            disabled={loadingLocation}
+                            className="flex-1 bg-primary text-white px-4 py-3 rounded-lg hover:bg-accent-dark transition-all font-semibold flex items-center justify-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                          >
+                            <Navigation className="w-5 h-5" />
+                            <span>
+                              {loadingLocation
+                                ? "Getting Location..."
+                                : "Use My Location"}
+                            </span>
+                          </button>
+                        </div>
+
+                        {/* Address Search */}
+                        <div className="relative">
+                          <label className="block text-sm font-semibold text-gray-700 mb-2">
+                            Search Address
+                          </label>
+                          <div className="relative">
+                            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+                            <input
+                              type="text"
+                              value={searchQuery}
+                              onChange={(e) => {
+                                const value = e.target.value;
+                                setSearchQuery(value);
+                                if (value.length >= 3) {
+                                  handleAddressSearch(value);
+                                } else {
+                                  setSearchResults([]);
+                                  setShowSearchResults(false);
+                                }
+                              }}
+                              onFocus={() =>
+                                searchResults.length > 0 &&
+                                setShowSearchResults(true)
+                              }
+                              onBlur={() => {
+                                // Delay to allow click on results
+                                setTimeout(
+                                  () => setShowSearchResults(false),
+                                  200,
+                                );
+                              }}
+                              className="w-full pl-10 pr-4 py-3 rounded-lg border-2 border-secondary focus:border-primary focus:outline-none bg-white"
+                              placeholder="Search for an address..."
+                            />
+                          </div>
+
+                          {/* Search Results Dropdown */}
+                          {showSearchResults && searchResults.length > 0 && (
+                            <div className="absolute z-20 w-full mt-1 bg-white border-2 border-secondary rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                              {searchResults.map((result, index) => (
+                                <button
+                                  key={index}
+                                  type="button"
+                                  onMouseDown={(e) => {
+                                    // Prevent input blur
+                                    e.preventDefault();
+                                    handleSelectLocation(result);
+                                  }}
+                                  className="w-full text-left px-4 py-3 hover:bg-surface transition-colors border-b border-gray-200 last:border-b-0"
+                                >
+                                  <div className="flex items-start space-x-2">
+                                    <MapPin className="w-4 h-4 text-primary mt-1 flex-shrink-0" />
+                                    <div>
+                                      <p className="font-medium text-gray-800 text-sm">
+                                        {result.text}
+                                      </p>
+                                      <p className="text-xs text-gray-600">
+                                        {result.place_name}
+                                      </p>
+                                    </div>
+                                  </div>
+                                </button>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Current Coordinates Display */}
+                        {(coordinates || editForm.coordinates) && (
+                          <div className="bg-white p-3 rounded-lg">
+                            <p className="text-xs text-gray-600 mb-1">
+                              Selected Coordinates:
+                            </p>
+                            <p className="text-sm font-medium text-gray-800">
+                              Lat:{" "}
+                              {(
+                                coordinates?.[1] || editForm.coordinates?.[1]
+                              )?.toFixed(6)}
+                              , Lng:{" "}
+                              {(
+                                coordinates?.[0] || editForm.coordinates?.[0]
+                              )?.toFixed(6)}
+                            </p>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Full Address Field */}
+                      <div>
+                        <label className="block text-sm font-semibold text-gray-700 mb-2">
+                          Full Address
+                        </label>
+                        <textarea
+                          name="rider_address"
+                          value={editForm.rider_address}
+                          onChange={handleInputChange}
+                          rows="3"
+                          className="w-full px-4 py-3 rounded-lg border-2 border-secondary focus:border-primary focus:outline-none bg-white resize-none"
+                          placeholder="Enter full address or use location tools above to auto-fill"
+                        />
+                        <p className="text-xs text-gray-500 mt-1">
+                          💡 Tip: Use &quot;Use My Location&quot; or
+                          &quot;Search Address&quot; to automatically fill this
+                          field
+                        </p>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Address Display (when not editing) */}
+                  {!isEditing && (
+                    <div className="bg-surface p-4 rounded-xl md:col-span-2">
+                      <label className="flex items-center space-x-2 text-sm text-gray-600 mb-2">
+                        <MapPin className="w-4 h-4 text-primary" />
+                        <span>Address</span>
+                      </label>
                       <p className="text-lg font-semibold text-gray-800">
                         {profileData.address || "Not provided"}
                       </p>
-                    )}
-                  </div>
+                    </div>
+                  )}
 
                   {/* Date of Birth */}
                   <div className="bg-surface p-4 rounded-xl md:col-span-2">
@@ -928,40 +1218,6 @@ const Profile = () => {
           </div>
         </div>
       </div>
-
-      {/* Toast Notification */}
-      {toast.show && (
-        <div className="fixed top-4 right-4 z-50 animate-fade-in-down">
-          <div
-            className={`rounded-lg shadow-2xl p-4 min-w-[300px] max-w-md ${
-              toast.type === "success"
-                ? "bg-green-500 text-white"
-                : toast.type === "error"
-                  ? "bg-red-500 text-white"
-                  : toast.type === "warning"
-                    ? "bg-yellow-500 text-white"
-                    : "bg-blue-500 text-white"
-            }`}
-          >
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-3">
-                {toast.type === "success" && (
-                  <CheckCircle className="w-6 h-6" />
-                )}
-                {toast.type === "error" && <XCircle className="w-6 h-6" />}
-                {toast.type === "warning" && <Clock className="w-6 h-6" />}
-                <p className="font-medium">{toast.message}</p>
-              </div>
-              <button
-                onClick={() => setToast({ show: false, message: "", type: "" })}
-                className="ml-4 hover:opacity-75"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* Document Delete Confirmation Modal */}
       {showDocDeleteConfirm && (

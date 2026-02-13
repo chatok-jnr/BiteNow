@@ -194,15 +194,21 @@ function Checkout() {
     try {
       setSubmitting(true);
 
+      // Validate selected address has coordinates
+      if (!selectedAddress.longitude || !selectedAddress.latitude) {
+        showError(
+          "Selected address is missing location coordinates. Please update the address.",
+        );
+        setSubmitting(false);
+        return;
+      }
+
       // Create order from cart via backend API
       const orderPayload = {
-        delivery_address: {
-          street: selectedAddress.address,
-          city: "City", // You may want to add city to your address model
-          state: "State", // You may want to add state to your address model
-          zip_code: "00000", // You may want to add zip_code to your address model
-          country: "Country", // You may want to add country to your address model
-        },
+        delivery_address_coordinates: [
+          selectedAddress.longitude,
+          selectedAddress.latitude,
+        ], // GeoJSON format: [lng, lat]
         payment_method: "cash",
         special_instructions: specialInstructions || undefined,
       };

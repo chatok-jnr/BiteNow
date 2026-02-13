@@ -17,9 +17,12 @@ import {
 } from "lucide-react";
 import ApprovalMessage from "../../components/ApprovalMessage";
 import axiosInstance from "../../utils/axios";
+import RiderMap from "./RiderMap";
+import { useNotification } from "../../contexts/NotificationContext";
 
 const Home = () => {
   const navigate = useNavigate();
+  const { showSuccess, showError, showWarning, showInfo } = useNotification();
   const [activeTab, setActiveTab] = useState("requests");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -42,13 +45,8 @@ const Home = () => {
     gender: null,
     name: null,
   });
-  const [toast, setToast] = useState({ show: false, message: "", type: "" });
-
-  // Toast notification helper
-  const showToast = (message, type = "info") => {
-    setToast({ show: true, message, type });
-    setTimeout(() => setToast({ show: false, message: "", type: "" }), 4000);
-  };
+  const [showMapModal, setShowMapModal] = useState(false);
+  const [selectedOrderId, setSelectedOrderId] = useState(null);
 
   // Fetch order requests and accepted orders from API
   useEffect(() => {
@@ -68,35 +66,65 @@ const Home = () => {
 
       if (response.data && response.data.data && response.data.data.needRider) {
         // Transform API data to match component structure
-        const transformedOrders = response.data.data.needRider.map((order) => ({
-          id: order._id,
-          restaurant:
-            order.restaurant_id?.restaurant_name || "Unknown Restaurant",
-          restaurantImage:
-            order.restaurant_id?.restaurant_image ||
-            "https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=400&q=80",
-          restaurantAddress: order.restaurant_id?.restaurant_address || "",
-          customerName: order.customer_id?.name || "Customer",
-          customerAddress: order.delivery_address
-            ? `${order.delivery_address.street || ""}, ${order.delivery_address.city || ""}`
-            : "",
-          items: order.items?.map((item) => item.food_name) || [],
-          orderValue: order.total_amount || 0,
-          deliveryFee: order.delivery_charge || 0,
-          distance: order.distance || "N/A",
-          estimatedTime: order.estimated_delivery_time
-            ? new Date(order.estimated_delivery_time).toLocaleTimeString(
-                "en-US",
-                { hour: "numeric", minute: "2-digit" },
-              )
-            : "N/A",
-          orderTime: order.createdAt
-            ? new Date(order.createdAt).toLocaleTimeString("en-US", {
-                hour: "numeric",
-                minute: "2-digit",
-              })
-            : "",
-        }));
+        const transformedOrders = response.data.data.needRider.map((order) => {
+          // Extract delivery address - handle string or object formats
+          let deliveryAddress = "Delivery Location";
+          
+          // Check if delivery_address is a string
+          if (typeof order.delivery_address === "string" && order.delivery_address) {
+            deliveryAddress = order.delivery_address;
+          }
+          // Check if delivery_address is an object with street property (GeoJSON format)
+          else if (order.delivery_address && typeof order.delivery_address === "object") {
+            if (order.delivery_address.street) {
+              deliveryAddress = order.delivery_address.street;
+            } else if (order.delivery_address.city || order.delivery_address.country) {
+              // Build address from available fields
+              const parts = [];
+              if (order.delivery_address.city) parts.push(order.delivery_address.city);
+              if (order.delivery_address.country && order.delivery_address.country !== "Country") parts.push(order.delivery_address.country);
+              if (parts.length > 0) {
+                deliveryAddress = parts.join(", ");
+              }
+            }
+          }
+          // Check delivery_address_text field
+          else if (order.delivery_address_text) {
+            deliveryAddress = order.delivery_address_text;
+          }
+          // Check customer address
+          else if (typeof order.customer_id?.address === "string" && order.customer_id.address) {
+            deliveryAddress = order.customer_id.address;
+          }
+
+          return {
+            id: order._id,
+            restaurant:
+              order.restaurant_id?.restaurant_name || "Unknown Restaurant",
+            restaurantImage:
+              order.restaurant_id?.restaurant_image ||
+              "https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=400&q=80",
+            restaurantAddress: order.restaurant_id?.restaurant_address || "",
+            customerName: order.customer_id?.name || "Customer",
+            customerAddress: deliveryAddress,
+            items: order.items?.map((item) => item.food_name) || [],
+            orderValue: order.total_amount || 0,
+            deliveryFee: order.delivery_charge || 0,
+            distance: order.distance || "N/A",
+            estimatedTime: order.estimated_delivery_time
+              ? new Date(order.estimated_delivery_time).toLocaleTimeString(
+                  "en-US",
+                  { hour: "numeric", minute: "2-digit" },
+                )
+              : "N/A",
+            orderTime: order.createdAt
+              ? new Date(order.createdAt).toLocaleTimeString("en-US", {
+                  hour: "numeric",
+                  minute: "2-digit",
+                })
+              : "",
+          };
+        });
 
         setOrderRequests(transformedOrders);
       }
@@ -128,7 +156,6 @@ const Home = () => {
   const fetchRiderProfile = async () => {
     try {
       const response = await axiosInstance.get("/api/v1/riders/profile");
-      console.log("Rider profile response:", response.data);
 
       // Get rider data from response
       const riderData = response.data?.rider;
@@ -149,18 +176,7 @@ const Home = () => {
         // Update rider status from API response
         if (riderData.account_status) {
           setRiderStatus(riderData.account_status);
-          console.log(
-            "Rider status updated from API:",
-            riderData.account_status,
-          );
         }
-
-        console.log("Profile set:", {
-          image: imageUrl,
-          gender: riderData.gender,
-          name: riderData.name,
-          status: riderData.account_status,
-        });
       }
     } catch (err) {
       console.error("Error fetching rider profile:", err);
@@ -176,26 +192,59 @@ const Home = () => {
 
       if (response.data && response.data.myOrder) {
         // Transform API data to match component structure
-        const transformedOrders = response.data.myOrder.map((order) => ({
-          id: order._id,
-          restaurant:
-            order.restaurant_id?.restaurant_name || "Unknown Restaurant",
-          restaurantImage:
-            order.restaurant_id?.restaurant_image ||
-            "https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=400&q=80",
-          restaurantAddress: order.restaurant_id?.restaurant_address || "",
-          customerName: order.customer_id?.name || "Customer",
-          customerPhone: order.customer_id?.phone || "",
-          customerAddress: order.delivery_address
-            ? `${order.delivery_address.street || ""}, ${order.delivery_address.city || ""}`
-            : "",
-          items: order.items?.map((item) => item.food_name) || [],
-          orderValue: order.total_amount || 0,
-          deliveryFee: order.delivery_charge || 0,
-          distance: order.distance || "N/A",
-          status: order.order_status || "preparing",
-          riderPin: order.rider_pin || "",
-          confirmationPin: order.customer_pin || "",
+        const transformedOrders = response.data.myOrder.map((order) => {
+          // Extract restaurant image URL - handle both string and object formats
+          const restaurantImageData = order.restaurant_id?.restaurant_image;
+          const restaurantImageUrl = typeof restaurantImageData === "object" 
+            ? restaurantImageData?.url 
+            : restaurantImageData || "https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=400&q=80";
+
+          // Extract delivery address - handle string or object formats
+          let deliveryAddress = "Delivery Location";
+          
+          // Check if delivery_address is a string
+          if (typeof order.delivery_address === "string" && order.delivery_address) {
+            deliveryAddress = order.delivery_address;
+          }
+          // Check if delivery_address is an object with street property (GeoJSON format)
+          else if (order.delivery_address && typeof order.delivery_address === "object") {
+            if (order.delivery_address.street) {
+              deliveryAddress = order.delivery_address.street;
+            } else if (order.delivery_address.city || order.delivery_address.country) {
+              // Build address from available fields
+              const parts = [];
+              if (order.delivery_address.city) parts.push(order.delivery_address.city);
+              if (order.delivery_address.country && order.delivery_address.country !== "Country") parts.push(order.delivery_address.country);
+              if (parts.length > 0) {
+                deliveryAddress = parts.join(", ");
+              }
+            }
+          }
+          // Check delivery_address_text field
+          else if (order.delivery_address_text) {
+            deliveryAddress = order.delivery_address_text;
+          }
+          // Check customer address
+          else if (typeof order.customer_id?.address === "string" && order.customer_id.address) {
+            deliveryAddress = order.customer_id.address;
+          }
+
+          const transformedOrder = {
+            id: order._id,
+            restaurant:
+              order.restaurant_id?.restaurant_name || "Unknown Restaurant",
+            restaurantImage: restaurantImageUrl,
+            restaurantAddress: order.restaurant_id?.restaurant_address || "",
+            customerName: order.customer_id?.name || "Customer",
+            customerPhone: order.customer_id?.phone || "",
+            customerAddress: deliveryAddress,
+            items: order.items?.map((item) => item.food_name) || [],
+            orderValue: order.total_amount || 0,
+            deliveryFee: order.delivery_charge || 0,
+            distance: order.distance || "N/A",
+            status: order.order_status || "preparing",
+            riderPin: order.rider_pin || "",
+            confirmationPin: order.customer_pin || "",
           acceptedTime: order.updatedAt
             ? new Date(order.updatedAt).toLocaleTimeString("en-US", {
                 hour: "numeric",
@@ -208,29 +257,31 @@ const Home = () => {
                 { hour: "numeric", minute: "2-digit" },
               )
             : "",
-          pickedUpTime: order.picked_up_at
-            ? new Date(order.picked_up_at).toLocaleTimeString("en-US", {
-                hour: "numeric",
-                minute: "2-digit",
-              })
-            : "",
-          completedTime: order.delivered_at
-            ? new Date(order.delivered_at).toLocaleString("en-US", {
-                month: "short",
-                day: "numeric",
-                hour: "numeric",
-                minute: "2-digit",
-              })
-            : "",
-          orderTime: order.createdAt
-            ? new Date(order.createdAt).toLocaleString("en-US", {
-                month: "short",
-                day: "numeric",
-                hour: "numeric",
-                minute: "2-digit",
-              })
-            : "",
-        }));
+            pickedUpTime: order.picked_up_at
+              ? new Date(order.picked_up_at).toLocaleTimeString("en-US", {
+                  hour: "numeric",
+                  minute: "2-digit",
+                })
+              : "",
+            completedTime: order.delivered_at
+              ? new Date(order.delivered_at).toLocaleString("en-US", {
+                  month: "short",
+                  day: "numeric",
+                  hour: "numeric",
+                  minute: "2-digit",
+                })
+              : "",
+            orderTime: order.createdAt
+              ? new Date(order.createdAt).toLocaleString("en-US", {
+                  month: "short",
+                  day: "numeric",
+                  hour: "numeric",
+                  minute: "2-digit",
+                })
+              : "",
+          };
+          return transformedOrder;
+        });
 
         // Filter orders by status
         const delivered = transformedOrders.filter(
@@ -239,7 +290,7 @@ const Home = () => {
         const active = transformedOrders.filter(
           (order) => order.status.toLowerCase() !== "delivered",
         );
-
+        
         setCompletedOrders(delivered);
         setActiveOrders(active);
       }
@@ -273,7 +324,8 @@ const Home = () => {
         },
       );
 
-      if (response.data && response.data.success) {
+      // Backend returns {status: "Accepted", data: {...}} instead of {success: true}
+      if (response.status === 200 && response.data) {
         // Remove from order requests
         setOrderRequests(orderRequests.filter((order) => order.id !== orderId));
 
@@ -283,22 +335,45 @@ const Home = () => {
           fetchAcceptedOrders(),
           fetchRiderStats(),
         ]);
+
+        // Switch to active orders tab
+        setActiveTab("active");
+        
+        showSuccess("Order accepted successfully!");
+      } else {
+        showWarning("Order acceptance response was unexpected. Please refresh the page.");
       }
     } catch (err) {
       console.error("Error accepting order:", err);
       setError(err.response?.data?.message || "Failed to accept order");
+      showError(err.response?.data?.message || "Failed to accept order");
     } finally {
       setLoading(false);
     }
   };
 
+  const formatStatus = (status) => {
+    const statusMap = {
+      preparing: "Preparing",
+      ready_for_pickup: "Ready to Pick Up",
+      out_for_delivery: "Out for Delivery",
+      picked_up: "Picked Up",
+      on_the_way: "On the Way",
+    };
+    return statusMap[status?.toLowerCase()] || status;
+  };
+
   const getStatusColor = (status) => {
-    switch (status) {
-      case "Preparing":
+    const normalizedStatus = status?.toLowerCase();
+    switch (normalizedStatus) {
+      case "preparing":
         return "bg-blue-500";
-      case "Ready to Pick Up":
+      case "ready_for_pickup":
+      case "ready to pick up":
         return "bg-purple-500";
-      case "Out for delivery":
+      case "out_for_delivery":
+      case "picked_up":
+      case "on_the_way":
         return "bg-primary";
       default:
         return "bg-gray-500";
@@ -441,8 +516,8 @@ const Home = () => {
           <p className="text-xs text-gray-600 mb-1 font-semibold">Deliver To</p>
           <div className="flex items-start space-x-1">
             <MapPin className="w-3 h-3 text-primary mt-0.5 flex-shrink-0" />
-            <p className="text-xs text-gray-700 line-clamp-1">
-              {order.customerName}
+            <p className="text-xs text-gray-700 line-clamp-2">
+              {order.customerAddress}
             </p>
           </div>
         </div>
@@ -489,9 +564,8 @@ const Home = () => {
         <button
           onClick={() => {
             if (riderStatus !== "Approved") {
-              showToast(
+              showWarning(
                 "Your account must be approved before you can accept orders",
-                "warning",
               );
               return;
             }
@@ -525,9 +599,9 @@ const Home = () => {
             </div>
           </div>
           <div
-            className={`${getStatusColor(order.status)} text-white px-2 py-1 rounded-full font-semibold text-xs`}
+            className={`${getStatusColor(order.status)} text-white px-3 py-1.5 rounded-full font-semibold text-xs whitespace-nowrap`}
           >
-            {order.status}
+            {formatStatus(order.status)}
           </div>
         </div>
 
@@ -588,7 +662,7 @@ const Home = () => {
           <p className="text-xs text-gray-600 mb-1 font-semibold">Deliver To</p>
           <div className="flex items-start space-x-1">
             <MapPin className="w-3 h-3 text-primary mt-0.5 flex-shrink-0" />
-            <p className="text-xs text-gray-700 line-clamp-1">
+            <p className="text-xs text-gray-700 line-clamp-2">
               {order.customerAddress}
             </p>
           </div>
@@ -633,7 +707,10 @@ const Home = () => {
         {/* Action Buttons */}
         <div className="grid grid-cols-2 gap-2">
           <button
-            onClick={() => navigate(`/rider/map/${order.id}`)}
+            onClick={() => {
+              setSelectedOrderId(order.id);
+              setShowMapModal(true);
+            }}
             className="bg-surface text-primary py-2 rounded-full hover:bg-bgPrimary transition-all font-semibold text-sm flex items-center justify-center gap-1"
           >
             <Navigation className="w-4 h-4" />
@@ -681,8 +758,8 @@ const Home = () => {
           </p>
           <div className="flex items-start space-x-1">
             <MapPin className="w-3 h-3 text-primary mt-0.5 flex-shrink-0" />
-            <p className="text-xs text-gray-700 line-clamp-1">
-              {order.customerName}
+            <p className="text-xs text-gray-700 line-clamp-2">
+              {order.customerAddress}
             </p>
           </div>
         </div>
@@ -966,40 +1043,6 @@ const Home = () => {
         </div>
       </footer>
 
-      {/* Toast Notification */}
-      {toast.show && (
-        <div className="fixed top-4 right-4 z-50 animate-fade-in-down">
-          <div
-            className={`rounded-lg shadow-2xl p-4 min-w-[300px] max-w-md ${
-              toast.type === "success"
-                ? "bg-green-500 text-white"
-                : toast.type === "error"
-                  ? "bg-red-500 text-white"
-                  : toast.type === "warning"
-                    ? "bg-yellow-500 text-white"
-                    : "bg-blue-500 text-white"
-            }`}
-          >
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-3">
-                {toast.type === "success" && (
-                  <CheckCircle className="w-6 h-6" />
-                )}
-                {toast.type === "error" && <X className="w-6 h-6" />}
-                {toast.type === "warning" && <Clock className="w-6 h-6" />}
-                <p className="font-medium">{toast.message}</p>
-              </div>
-              <button
-                onClick={() => setToast({ show: false, message: "", type: "" })}
-                className="ml-4 hover:opacity-75"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
       {/* PIN Verification Modal */}
       {showPinModal && selectedOrder && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
@@ -1083,6 +1126,17 @@ const Home = () => {
             </div>
           </div>
         </div>
+      )}
+
+      {/* Map Modal */}
+      {showMapModal && selectedOrderId && (
+        <RiderMap
+          orderId={selectedOrderId}
+          onClose={() => {
+            setShowMapModal(false);
+            setSelectedOrderId(null);
+          }}
+        />
       )}
     </div>
   );

@@ -153,10 +153,7 @@ const OrderStatus = () => {
       estimatedTime:
         formatDate(order.estimated_delivery_time) || "Calculating...",
       deliveredTime: formatDate(order.delivered_at),
-      address:
-        order.delivery_address?.formatted_address ||
-        `${order.delivery_address?.street || ""}, ${order.delivery_address?.city || ""}`.trim() ||
-        "Address not available",
+      address: "Delivery Location", // delivery_address is now GeoJSON coordinates
       confirmationPin: order.customer_pin || null,
       rider: order.rider_id
         ? {
@@ -359,221 +356,224 @@ const OrderStatus = () => {
   return (
     <div className="min-h-screen bg-bgPrimary">
       <CustomerNavbar activeTab="orders" />
-      
+
       <div className="pt-24">
-      {/* Modal for Food Item Details */}
-      {selectedOrder && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
-          <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 relative animate-fadeIn">
-            <button
-              className="absolute top-4 right-4 text-gray-500 hover:text-gray-800"
-              onClick={() => setSelectedOrder(null)}
-              aria-label="Close"
-            >
-              <X className="w-6 h-6" />
-            </button>
-            <h2 className="text-2xl font-bold mb-2 text-primary">
-              Order #{selectedOrder.id}
-            </h2>
-            <h3 className="text-lg font-semibold mb-4 text-gray-800">
-              {selectedOrder.restaurant}
-            </h3>
-            <div className="mb-4 flex items-center space-x-3">
-              <img
-                src={selectedOrder.restaurantImage}
-                alt={selectedOrder.restaurant}
-                className="w-16 h-16 rounded-xl object-cover"
-              />
-              <span className="text-gray-700 font-medium">
+        {/* Modal for Food Item Details */}
+        {selectedOrder && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
+            <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 relative animate-fadeIn">
+              <button
+                className="absolute top-4 right-4 text-gray-500 hover:text-gray-800"
+                onClick={() => setSelectedOrder(null)}
+                aria-label="Close"
+              >
+                <X className="w-6 h-6" />
+              </button>
+              <h2 className="text-2xl font-bold mb-2 text-primary">
+                Order #{selectedOrder.id}
+              </h2>
+              <h3 className="text-lg font-semibold mb-4 text-gray-800">
                 {selectedOrder.restaurant}
-              </span>
-            </div>
-            <div>
-              <p className="text-sm text-gray-600 mb-2">Food Items Ordered:</p>
-              <ul className="space-y-3">
-                {selectedOrder.items.map((item, idx) => (
-                  <li
-                    key={idx}
-                    className="flex items-center space-x-3 bg-surface px-4 py-2 rounded-lg"
-                  >
-                    <img
-                      src={item.image}
-                      alt={item.name}
-                      className="w-12 h-12 rounded-lg object-cover"
-                    />
-                    <span className="text-gray-800 font-medium flex-1">
-                      {item.name}
-                    </span>
-                    <span className="text-primary font-semibold">
-                      ৳{item.price.toFixed(2)}
-                    </span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-            <div className="mt-6">
-              <div className="flex justify-between items-center mb-2">
-                <span className="text-gray-600">Delivery Charge</span>
-                <span className="text-primary font-semibold">
-                  ৳
-                  {selectedOrder.deliveryCharge
-                    ? selectedOrder.deliveryCharge.toFixed(2)
-                    : "0.00"}
+              </h3>
+              <div className="mb-4 flex items-center space-x-3">
+                <img
+                  src={selectedOrder.restaurantImage}
+                  alt={selectedOrder.restaurant}
+                  className="w-16 h-16 rounded-xl object-cover"
+                />
+                <span className="text-gray-700 font-medium">
+                  {selectedOrder.restaurant}
                 </span>
               </div>
-              <div className="flex justify-between items-center mb-2">
-                <span className="text-gray-600">Total Amount</span>
-                <span className="text-primary font-bold">
-                  ৳{selectedOrder.total.toFixed(2)}
-                </span>
+              <div>
+                <p className="text-sm text-gray-600 mb-2">
+                  Food Items Ordered:
+                </p>
+                <ul className="space-y-3">
+                  {selectedOrder.items.map((item, idx) => (
+                    <li
+                      key={idx}
+                      className="flex items-center space-x-3 bg-surface px-4 py-2 rounded-lg"
+                    >
+                      <img
+                        src={item.image}
+                        alt={item.name}
+                        className="w-12 h-12 rounded-lg object-cover"
+                      />
+                      <span className="text-gray-800 font-medium flex-1">
+                        {item.name}
+                      </span>
+                      <span className="text-primary font-semibold">
+                        ৳{item.price.toFixed(2)}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
               </div>
-              {selectedOrder.confirmationPin &&
-                selectedOrder.status?.toLowerCase() === "out_for_delivery" && (
-                  <div className="flex justify-between items-center mt-4 bg-primary px-4 py-2 rounded-lg">
-                    <span className="text-white font-medium">
-                      Confirmation PIN
-                    </span>
-                    <span className="bg-white text-primary font-bold px-4 py-2 rounded-lg text-xl tracking-wider">
-                      {selectedOrder.confirmationPin}
-                    </span>
-                  </div>
-                )}
+              <div className="mt-6">
+                <div className="flex justify-between items-center mb-2">
+                  <span className="text-gray-600">Delivery Charge</span>
+                  <span className="text-primary font-semibold">
+                    ৳
+                    {selectedOrder.deliveryCharge
+                      ? selectedOrder.deliveryCharge.toFixed(2)
+                      : "0.00"}
+                  </span>
+                </div>
+                <div className="flex justify-between items-center mb-2">
+                  <span className="text-gray-600">Total Amount</span>
+                  <span className="text-primary font-bold">
+                    ৳{selectedOrder.total.toFixed(2)}
+                  </span>
+                </div>
+                {selectedOrder.confirmationPin &&
+                  selectedOrder.status?.toLowerCase() ===
+                    "out_for_delivery" && (
+                    <div className="flex justify-between items-center mt-4 bg-primary px-4 py-2 rounded-lg">
+                      <span className="text-white font-medium">
+                        Confirmation PIN
+                      </span>
+                      <span className="bg-white text-primary font-bold px-4 py-2 rounded-lg text-xl tracking-wider">
+                        {selectedOrder.confirmationPin}
+                      </span>
+                    </div>
+                  )}
+              </div>
             </div>
           </div>
+        )}
+
+        {/* Page Header */}
+        <div className="bg-secondary py-12">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <h1 className="text-4xl md:text-5xl font-bold text-white mb-3">
+              My Orders
+            </h1>
+            <p className="text-white/90 text-lg">
+              Track and manage your food deliveries
+            </p>
+          </div>
         </div>
-      )}
 
-      {/* Page Header */}
-      <div className="bg-secondary py-12">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h1 className="text-4xl md:text-5xl font-bold text-white mb-3">
-            My Orders
-          </h1>
-          <p className="text-white/90 text-lg">
-            Track and manage your food deliveries
-          </p>
-        </div>
-      </div>
-
-      {/* Tabs */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-6">
-        <div className="flex space-x-4">
-          <button
-            onClick={() => setActiveTab("active")}
-            className={`flex-1 py-4 px-6 rounded-t-2xl font-semibold transition-all ${
-              activeTab === "active"
-                ? "bg-surface text-primary shadow-lg"
-                : "bg-tertiary text-gray-600 hover:bg-surface/50"
-            }`}
-          >
-            <div className="flex items-center justify-center space-x-2">
-              <Truck className="w-5 h-5" />
-              <span>Active Deliveries</span>
-              <span className="bg-primary text-white px-2 py-1 rounded-full text-xs">
-                {activeOrders.length}
-              </span>
-            </div>
-          </button>
-          <button
-            onClick={() => setActiveTab("completed")}
-            className={`flex-1 py-4 px-6 rounded-t-2xl font-semibold transition-all ${
-              activeTab === "completed"
-                ? "bg-surface text-primary shadow-lg"
-                : "bg-tertiary text-gray-600 hover:bg-surface/50"
-            }`}
-          >
-            <div className="flex items-center justify-center space-x-2">
-              <CheckCircle className="w-5 h-5" />
-              <span>Completed Orders</span>
-              <span className="bg-primary text-white px-2 py-1 rounded-full text-xs">
-                {completedOrders.length}
-              </span>
-            </div>
-          </button>
-        </div>
-      </div>
-
-      {/* Orders Content */}
-      <div className="bg-surface min-h-screen">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          {/* Loading State */}
-          {loading && (
-            <div className="text-center py-16">
-              <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-primary mx-auto mb-4"></div>
-              <p className="text-gray-600 text-lg">Loading your orders...</p>
-            </div>
-          )}
-
-          {/* Error State */}
-          {error && !loading && (
-            <div className="text-center py-16">
-              <div className="bg-red-100 border border-red-400 text-red-700 px-6 py-4 rounded-lg mx-auto max-w-md">
-                <p className="font-bold mb-2">Error Loading Orders</p>
-                <p>{error}</p>
-                <button
-                  onClick={fetchOrders}
-                  className="mt-4 bg-red-600 text-white px-6 py-2 rounded-full hover:bg-red-700 transition-all"
-                >
-                  Try Again
-                </button>
+        {/* Tabs */}
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-6">
+          <div className="flex space-x-4">
+            <button
+              onClick={() => setActiveTab("active")}
+              className={`flex-1 py-4 px-6 rounded-t-2xl font-semibold transition-all ${
+                activeTab === "active"
+                  ? "bg-surface text-primary shadow-lg"
+                  : "bg-tertiary text-gray-600 hover:bg-surface/50"
+              }`}
+            >
+              <div className="flex items-center justify-center space-x-2">
+                <Truck className="w-5 h-5" />
+                <span>Active Deliveries</span>
+                <span className="bg-primary text-white px-2 py-1 rounded-full text-xs">
+                  {activeOrders.length}
+                </span>
               </div>
-            </div>
-          )}
-
-          {/* Orders Display */}
-          {!loading && !error && activeTab === "active" && (
-            <div>
-              {activeOrders.length > 0 ? (
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                  {activeOrders.map((order) => (
-                    <OrderCard
-                      key={order._id || order.id}
-                      order={transformOrder(order)}
-                      isActive={true}
-                    />
-                  ))}
-                </div>
-              ) : (
-                <div className="text-center py-16">
-                  <Package className="w-20 h-20 text-gray-400 mx-auto mb-4" />
-                  <h3 className="text-2xl font-bold text-gray-600 mb-2">
-                    No Active Orders
-                  </h3>
-                  <p className="text-gray-500">
-                    You don't have any active deliveries at the moment
-                  </p>
-                </div>
-              )}
-            </div>
-          )}
-
-          {!loading && !error && activeTab === "completed" && (
-            <div>
-              {completedOrders.length > 0 ? (
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                  {completedOrders.map((order) => (
-                    <OrderCard
-                      key={order._id || order.id}
-                      order={transformOrder(order)}
-                      isActive={false}
-                    />
-                  ))}
-                </div>
-              ) : (
-                <div className="text-center py-16">
-                  <CheckCircle className="w-20 h-20 text-gray-400 mx-auto mb-4" />
-                  <h3 className="text-2xl font-bold text-gray-600 mb-2">
-                    No Completed Orders
-                  </h3>
-                  <p className="text-gray-500">
-                    Your order history will appear here
-                  </p>
-                </div>
-              )}
-            </div>
-          )}
+            </button>
+            <button
+              onClick={() => setActiveTab("completed")}
+              className={`flex-1 py-4 px-6 rounded-t-2xl font-semibold transition-all ${
+                activeTab === "completed"
+                  ? "bg-surface text-primary shadow-lg"
+                  : "bg-tertiary text-gray-600 hover:bg-surface/50"
+              }`}
+            >
+              <div className="flex items-center justify-center space-x-2">
+                <CheckCircle className="w-5 h-5" />
+                <span>Completed Orders</span>
+                <span className="bg-primary text-white px-2 py-1 rounded-full text-xs">
+                  {completedOrders.length}
+                </span>
+              </div>
+            </button>
+          </div>
         </div>
-      </div>
+
+        {/* Orders Content */}
+        <div className="bg-surface min-h-screen">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            {/* Loading State */}
+            {loading && (
+              <div className="text-center py-16">
+                <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-primary mx-auto mb-4"></div>
+                <p className="text-gray-600 text-lg">Loading your orders...</p>
+              </div>
+            )}
+
+            {/* Error State */}
+            {error && !loading && (
+              <div className="text-center py-16">
+                <div className="bg-red-100 border border-red-400 text-red-700 px-6 py-4 rounded-lg mx-auto max-w-md">
+                  <p className="font-bold mb-2">Error Loading Orders</p>
+                  <p>{error}</p>
+                  <button
+                    onClick={fetchOrders}
+                    className="mt-4 bg-red-600 text-white px-6 py-2 rounded-full hover:bg-red-700 transition-all"
+                  >
+                    Try Again
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* Orders Display */}
+            {!loading && !error && activeTab === "active" && (
+              <div>
+                {activeOrders.length > 0 ? (
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    {activeOrders.map((order) => (
+                      <OrderCard
+                        key={order._id || order.id}
+                        order={transformOrder(order)}
+                        isActive={true}
+                      />
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-16">
+                    <Package className="w-20 h-20 text-gray-400 mx-auto mb-4" />
+                    <h3 className="text-2xl font-bold text-gray-600 mb-2">
+                      No Active Orders
+                    </h3>
+                    <p className="text-gray-500">
+                      You don't have any active deliveries at the moment
+                    </p>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {!loading && !error && activeTab === "completed" && (
+              <div>
+                {completedOrders.length > 0 ? (
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    {completedOrders.map((order) => (
+                      <OrderCard
+                        key={order._id || order.id}
+                        order={transformOrder(order)}
+                        isActive={false}
+                      />
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-16">
+                    <CheckCircle className="w-20 h-20 text-gray-400 mx-auto mb-4" />
+                    <h3 className="text-2xl font-bold text-gray-600 mb-2">
+                      No Completed Orders
+                    </h3>
+                    <p className="text-gray-500">
+                      Your order history will appear here
+                    </p>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        </div>
       </div>
     </div>
   );
