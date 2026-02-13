@@ -266,7 +266,7 @@ const Restaurants = () => {
       // Using Mapbox Geocoding API
       const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_ACCESS_TOKEN;
       if (!MAPBOX_TOKEN) {
-        throw new Error('Mapbox access token is not configured');
+        throw new Error("Mapbox access token is not configured");
       }
       const response = await fetch(
         `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(query)}.json?access_token=${MAPBOX_TOKEN}&limit=5&types=address,place,poi`,
@@ -290,7 +290,7 @@ const Restaurants = () => {
     try {
       const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_ACCESS_TOKEN;
       if (!MAPBOX_TOKEN) {
-        throw new Error('Mapbox access token is not configured');
+        throw new Error("Mapbox access token is not configured");
       }
       const response = await fetch(
         `https://api.mapbox.com/geocoding/v5/mapbox.places/${longitude},${latitude}.json?access_token=${MAPBOX_TOKEN}`,
@@ -699,161 +699,158 @@ const Restaurants = () => {
             </button>
           </div>
 
-            {/* Show approval notice if not approved */}
-            {ownerStatus && ownerStatus !== "Approved" && (
-              <div className="mb-6">
-                <ApprovalMessage
-                  status={ownerStatus}
-                  entityType="restaurant owner account"
-                  message="Your account is pending approval. You can view your restaurants but cannot add new ones until approved."
-                />
-              </div>
-            )}
+          {/* Show approval notice if not approved */}
+          {ownerStatus && ownerStatus !== "Approved" && (
+            <div className="mb-6">
+              <ApprovalMessage
+                status={ownerStatus}
+                entityType="restaurant owner account"
+                message="Your account is pending approval. You can view your restaurants but cannot add new ones until approved."
+              />
+            </div>
+          )}
 
-            {/* Loading State */}
-            {loading && restaurants.length === 0 && (
-              <div className="text-center py-12">
-                <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
-                <p className="mt-4 text-gray-600">Loading restaurants...</p>
-              </div>
-            )}
+          {/* Loading State */}
+          {loading && restaurants.length === 0 && (
+            <div className="text-center py-12">
+              <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+              <p className="mt-4 text-gray-600">Loading restaurants...</p>
+            </div>
+          )}
 
-            {/* Empty State */}
-            {!loading && restaurants.length === 0 && (
-              <div className="text-center py-12 bg-tertiary rounded-2xl">
-                <Store className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-                <h3 className="text-xl font-semibold text-gray-700 mb-2">
-                  No restaurants yet
-                </h3>
-                <p className="text-gray-600 mb-4">
-                  {ownerStatus !== "Approved"
-                    ? "Your account needs to be approved before you can add restaurants"
-                    : "Start by adding your first restaurant"}
-                </p>
-                {ownerStatus === "Approved" && (
-                  <button
-                    onClick={() => setShowAddModal(true)}
-                    className="bg-primary text-white px-6 py-3 rounded-full hover:bg-accent-dark transition-all font-semibold inline-flex items-center space-x-2"
-                  >
-                    <Plus className="w-5 h-5" />
-                    <span>Add Restaurant</span>
-                  </button>
-                )}
-              </div>
-            )}
-
-            {/* Restaurant Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-              {restaurants.map((restaurant) => (
-                <div
-                  key={restaurant._id}
-                  className="bg-tertiary rounded-2xl overflow-hidden shadow-lg hover:shadow-xl transition-all"
+          {/* Empty State */}
+          {!loading && restaurants.length === 0 && (
+            <div className="text-center py-12 bg-tertiary rounded-2xl">
+              <Store className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+              <h3 className="text-xl font-semibold text-gray-700 mb-2">
+                No restaurants yet
+              </h3>
+              <p className="text-gray-600 mb-4">
+                {ownerStatus !== "Approved"
+                  ? "Your account needs to be approved before you can add restaurants"
+                  : "Start by adding your first restaurant"}
+              </p>
+              {ownerStatus === "Approved" && (
+                <button
+                  onClick={() => setShowAddModal(true)}
+                  className="bg-primary text-white px-6 py-3 rounded-full hover:bg-accent-dark transition-all font-semibold inline-flex items-center space-x-2"
                 >
-                  <div className="aspect-video overflow-hidden relative">
-                    <img
-                      src={
-                        restaurant.restaurant_image?.url ||
-                        restaurant.restaurant_image ||
-                        "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=400&q=80"
-                      }
-                      alt={restaurant.restaurant_name}
-                      className="w-full h-full object-cover hover:scale-110 transition-transform duration-500"
-                    />
-                    <div className="absolute top-4 right-4 bg-primary text-white px-3 py-1 rounded-full text-sm font-semibold">
-                      {restaurant.restaurant_category?.[0] || "Restaurant"}
-                    </div>
-                  </div>
-                  <div className="p-5">
-                    <h3 className="text-2xl font-bold text-gray-800 mb-2">
-                      {restaurant.restaurant_name}
-                    </h3>
-                    <p className="text-gray-600 text-sm mb-4 line-clamp-2">
-                      {restaurant.restaurant_description}
-                    </p>
-                    <div className="space-y-2 mb-4">
-                      <div className="flex items-start space-x-2">
-                        <MapPin className="w-4 h-4 text-primary mt-0.5 flex-shrink-0" />
-                        <p className="text-sm text-gray-700">
-                          {restaurant.restaurant_address ||
-                            "No address provided"}
-                        </p>
-                      </div>
-                      {restaurant.restaurant_contact_info?.phone && (
-                        <div className="flex items-center space-x-2">
-                          <Phone className="w-4 h-4 text-primary flex-shrink-0" />
-                          <p className="text-sm text-gray-700">
-                            {restaurant.restaurant_contact_info.phone}
-                          </p>
-                        </div>
-                      )}
-                      {restaurant.restaurant_contact_info?.email && (
-                        <div className="flex items-center space-x-2">
-                          <Mail className="w-4 h-4 text-primary flex-shrink-0" />
-                          <p className="text-sm text-gray-700">
-                            {restaurant.restaurant_contact_info.email}
-                          </p>
-                        </div>
-                      )}
-                    </div>
-                    <div className="grid grid-cols-2 gap-2 mb-4">
-                      <div className="bg-surface p-2 rounded-lg text-center">
-                        <div className="flex items-center justify-center mb-1">
-                          <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
-                        </div>
-                        <p className="text-xs text-gray-600">Rating</p>
-                        <p className="font-bold text-gray-800">
-                          {restaurant.restaurant_rating?.average || "N/A"}
-                        </p>
-                      </div>
-                      <div className="bg-surface p-2 rounded-lg text-center">
-                        <div className="flex items-center justify-center mb-1">
-                          <Package className="w-4 h-4 text-primary" />
-                        </div>
-                        <p className="text-xs text-gray-600">Sales</p>
-                        <p className="font-bold text-gray-800">
-                          {restaurant.restaurant_total_sales || 0}
-                        </p>
-                      </div>
-                    </div>
-                    <div className="flex space-x-2">
-                      <button
-                        onClick={() => handleManageRestaurant(restaurant)}
-                        className="flex-1 bg-primary text-white py-3 rounded-full hover:bg-accent-dark transition-all font-semibold flex items-center justify-center space-x-2"
-                      >
-                        <span>Manage</span>
-                        <ChevronRight className="w-5 h-5" />
-                      </button>
-                      <button
-                        onClick={() => handleEditRestaurant(restaurant)}
-                        disabled={loading}
-                        className="bg-blue-500 text-white px-4 py-3 rounded-full hover:bg-blue-600 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-                        title="Edit Restaurant"
-                      >
-                        <Edit className="w-5 h-5" />
-                      </button>
-                      <button
-                        onClick={() => handleDeleteRestaurant(restaurant._id)}
-                        disabled={loading}
-                        className="bg-red-500 text-white px-4 py-3 rounded-full hover:bg-red-600 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-                        title="Delete Restaurant"
-                      >
-                        <Trash2 className="w-5 h-5" />
-                      </button>
-                    </div>
+                  <Plus className="w-5 h-5" />
+                  <span>Add Restaurant</span>
+                </button>
+              )}
+            </div>
+          )}
+
+          {/* Restaurant Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+            {restaurants.map((restaurant) => (
+              <div
+                key={restaurant._id}
+                className="bg-tertiary rounded-2xl overflow-hidden shadow-lg hover:shadow-xl transition-all"
+              >
+                <div className="aspect-video overflow-hidden relative">
+                  <img
+                    src={
+                      restaurant.restaurant_image?.url ||
+                      restaurant.restaurant_image ||
+                      "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=400&q=80"
+                    }
+                    alt={restaurant.restaurant_name}
+                    className="w-full h-full object-cover hover:scale-110 transition-transform duration-500"
+                  />
+                  <div className="absolute top-4 right-4 bg-primary text-white px-3 py-1 rounded-full text-sm font-semibold">
+                    {restaurant.restaurant_category?.[0] || "Restaurant"}
                   </div>
                 </div>
-              ))}
-            </div>
+                <div className="p-5">
+                  <h3 className="text-2xl font-bold text-gray-800 mb-2">
+                    {restaurant.restaurant_name}
+                  </h3>
+                  <p className="text-gray-600 text-sm mb-4 line-clamp-2">
+                    {restaurant.restaurant_description}
+                  </p>
+                  <div className="space-y-2 mb-4">
+                    <div className="flex items-start space-x-2">
+                      <MapPin className="w-4 h-4 text-primary mt-0.5 flex-shrink-0" />
+                      <p className="text-sm text-gray-700">
+                        {restaurant.restaurant_address || "No address provided"}
+                      </p>
+                    </div>
+                    {restaurant.restaurant_contact_info?.phone && (
+                      <div className="flex items-center space-x-2">
+                        <Phone className="w-4 h-4 text-primary flex-shrink-0" />
+                        <p className="text-sm text-gray-700">
+                          {restaurant.restaurant_contact_info.phone}
+                        </p>
+                      </div>
+                    )}
+                    {restaurant.restaurant_contact_info?.email && (
+                      <div className="flex items-center space-x-2">
+                        <Mail className="w-4 h-4 text-primary flex-shrink-0" />
+                        <p className="text-sm text-gray-700">
+                          {restaurant.restaurant_contact_info.email}
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                  <div className="grid grid-cols-2 gap-2 mb-4">
+                    <div className="bg-surface p-2 rounded-lg text-center">
+                      <div className="flex items-center justify-center mb-1">
+                        <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
+                      </div>
+                      <p className="text-xs text-gray-600">Rating</p>
+                      <p className="font-bold text-gray-800">
+                        {restaurant.restaurant_rating?.average || "N/A"}
+                      </p>
+                    </div>
+                    <div className="bg-surface p-2 rounded-lg text-center">
+                      <div className="flex items-center justify-center mb-1">
+                        <Package className="w-4 h-4 text-primary" />
+                      </div>
+                      <p className="text-xs text-gray-600">Sales</p>
+                      <p className="font-bold text-gray-800">
+                        {restaurant.restaurant_total_sales || 0}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex space-x-2">
+                    <button
+                      onClick={() => handleManageRestaurant(restaurant)}
+                      className="flex-1 bg-primary text-white py-3 rounded-full hover:bg-accent-dark transition-all font-semibold flex items-center justify-center space-x-2"
+                    >
+                      <span>Manage</span>
+                      <ChevronRight className="w-5 h-5" />
+                    </button>
+                    <button
+                      onClick={() => handleEditRestaurant(restaurant)}
+                      disabled={loading}
+                      className="bg-blue-500 text-white px-4 py-3 rounded-full hover:bg-blue-600 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                      title="Edit Restaurant"
+                    >
+                      <Edit className="w-5 h-5" />
+                    </button>
+                    <button
+                      onClick={() => handleDeleteRestaurant(restaurant._id)}
+                      disabled={loading}
+                      className="bg-red-500 text-white px-4 py-3 rounded-full hover:bg-red-600 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                      title="Delete Restaurant"
+                    >
+                      <Trash2 className="w-5 h-5" />
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ))}
           </div>
-        </main>
+        </div>
+      </main>
 
-        <footer className="bg-secondary text-white py-6 mt-auto">
-          <div className="max-w-7xl mx-auto px-4 text-center">
-            <p className="text-white/80">
-              © 2026 BiteNow. All rights reserved.
-            </p>
-          </div>
-        </footer>
+      <footer className="bg-secondary text-white py-6 mt-auto">
+        <div className="max-w-7xl mx-auto px-4 text-center">
+          <p className="text-white/80">© 2026 BiteNow. All rights reserved.</p>
+        </div>
+      </footer>
 
       {showAddModal && (
         <div

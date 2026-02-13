@@ -264,7 +264,7 @@ const Profile = () => {
     try {
       const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_ACCESS_TOKEN;
       if (!MAPBOX_TOKEN) {
-        throw new Error('Mapbox access token is not configured');
+        throw new Error("Mapbox access token is not configured");
       }
       const url = `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(query)}.json?access_token=${MAPBOX_TOKEN}&country=BD&limit=5`;
 
@@ -299,7 +299,7 @@ const Profile = () => {
     try {
       const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_ACCESS_TOKEN;
       if (!MAPBOX_TOKEN) {
-        throw new Error('Mapbox access token is not configured');
+        throw new Error("Mapbox access token is not configured");
       }
       const url = `https://api.mapbox.com/geocoding/v5/mapbox.places/${longitude},${latitude}.json?access_token=${MAPBOX_TOKEN}`;
 
