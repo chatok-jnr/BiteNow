@@ -69,20 +69,34 @@ const Home = () => {
         const transformedOrders = response.data.data.needRider.map((order) => {
           // Extract delivery address - handle string or object formats
           let deliveryAddress = "Delivery Location";
-          
+
           // Check if delivery_address is a string
-          if (typeof order.delivery_address === "string" && order.delivery_address) {
+          if (
+            typeof order.delivery_address === "string" &&
+            order.delivery_address
+          ) {
             deliveryAddress = order.delivery_address;
           }
           // Check if delivery_address is an object with street property (GeoJSON format)
-          else if (order.delivery_address && typeof order.delivery_address === "object") {
+          else if (
+            order.delivery_address &&
+            typeof order.delivery_address === "object"
+          ) {
             if (order.delivery_address.street) {
               deliveryAddress = order.delivery_address.street;
-            } else if (order.delivery_address.city || order.delivery_address.country) {
+            } else if (
+              order.delivery_address.city ||
+              order.delivery_address.country
+            ) {
               // Build address from available fields
               const parts = [];
-              if (order.delivery_address.city) parts.push(order.delivery_address.city);
-              if (order.delivery_address.country && order.delivery_address.country !== "Country") parts.push(order.delivery_address.country);
+              if (order.delivery_address.city)
+                parts.push(order.delivery_address.city);
+              if (
+                order.delivery_address.country &&
+                order.delivery_address.country !== "Country"
+              )
+                parts.push(order.delivery_address.country);
               if (parts.length > 0) {
                 deliveryAddress = parts.join(", ");
               }
@@ -93,7 +107,10 @@ const Home = () => {
             deliveryAddress = order.delivery_address_text;
           }
           // Check customer address
-          else if (typeof order.customer_id?.address === "string" && order.customer_id.address) {
+          else if (
+            typeof order.customer_id?.address === "string" &&
+            order.customer_id.address
+          ) {
             deliveryAddress = order.customer_id.address;
           }
 
@@ -195,26 +212,42 @@ const Home = () => {
         const transformedOrders = response.data.myOrder.map((order) => {
           // Extract restaurant image URL - handle both string and object formats
           const restaurantImageData = order.restaurant_id?.restaurant_image;
-          const restaurantImageUrl = typeof restaurantImageData === "object" 
-            ? restaurantImageData?.url 
-            : restaurantImageData || "https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=400&q=80";
+          const restaurantImageUrl =
+            typeof restaurantImageData === "object"
+              ? restaurantImageData?.url
+              : restaurantImageData ||
+                "https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=400&q=80";
 
           // Extract delivery address - handle string or object formats
           let deliveryAddress = "Delivery Location";
-          
+
           // Check if delivery_address is a string
-          if (typeof order.delivery_address === "string" && order.delivery_address) {
+          if (
+            typeof order.delivery_address === "string" &&
+            order.delivery_address
+          ) {
             deliveryAddress = order.delivery_address;
           }
           // Check if delivery_address is an object with street property (GeoJSON format)
-          else if (order.delivery_address && typeof order.delivery_address === "object") {
+          else if (
+            order.delivery_address &&
+            typeof order.delivery_address === "object"
+          ) {
             if (order.delivery_address.street) {
               deliveryAddress = order.delivery_address.street;
-            } else if (order.delivery_address.city || order.delivery_address.country) {
+            } else if (
+              order.delivery_address.city ||
+              order.delivery_address.country
+            ) {
               // Build address from available fields
               const parts = [];
-              if (order.delivery_address.city) parts.push(order.delivery_address.city);
-              if (order.delivery_address.country && order.delivery_address.country !== "Country") parts.push(order.delivery_address.country);
+              if (order.delivery_address.city)
+                parts.push(order.delivery_address.city);
+              if (
+                order.delivery_address.country &&
+                order.delivery_address.country !== "Country"
+              )
+                parts.push(order.delivery_address.country);
               if (parts.length > 0) {
                 deliveryAddress = parts.join(", ");
               }
@@ -225,7 +258,10 @@ const Home = () => {
             deliveryAddress = order.delivery_address_text;
           }
           // Check customer address
-          else if (typeof order.customer_id?.address === "string" && order.customer_id.address) {
+          else if (
+            typeof order.customer_id?.address === "string" &&
+            order.customer_id.address
+          ) {
             deliveryAddress = order.customer_id.address;
           }
 
@@ -245,18 +281,18 @@ const Home = () => {
             status: order.order_status || "preparing",
             riderPin: order.rider_pin || "",
             confirmationPin: order.customer_pin || "",
-          acceptedTime: order.updatedAt
-            ? new Date(order.updatedAt).toLocaleTimeString("en-US", {
-                hour: "numeric",
-                minute: "2-digit",
-              })
-            : "",
-          estimatedPickup: order.estimated_delivery_time
-            ? new Date(order.estimated_delivery_time).toLocaleTimeString(
-                "en-US",
-                { hour: "numeric", minute: "2-digit" },
-              )
-            : "",
+            acceptedTime: order.updatedAt
+              ? new Date(order.updatedAt).toLocaleTimeString("en-US", {
+                  hour: "numeric",
+                  minute: "2-digit",
+                })
+              : "",
+            estimatedPickup: order.estimated_delivery_time
+              ? new Date(order.estimated_delivery_time).toLocaleTimeString(
+                  "en-US",
+                  { hour: "numeric", minute: "2-digit" },
+                )
+              : "",
             pickedUpTime: order.picked_up_at
               ? new Date(order.picked_up_at).toLocaleTimeString("en-US", {
                   hour: "numeric",
@@ -290,7 +326,7 @@ const Home = () => {
         const active = transformedOrders.filter(
           (order) => order.status.toLowerCase() !== "delivered",
         );
-        
+
         setCompletedOrders(delivered);
         setActiveOrders(active);
       }
@@ -338,10 +374,12 @@ const Home = () => {
 
         // Switch to active orders tab
         setActiveTab("active");
-        
+
         showSuccess("Order accepted successfully!");
       } else {
-        showWarning("Order acceptance response was unexpected. Please refresh the page.");
+        showWarning(
+          "Order acceptance response was unexpected. Please refresh the page.",
+        );
       }
     } catch (err) {
       console.error("Error accepting order:", err);
