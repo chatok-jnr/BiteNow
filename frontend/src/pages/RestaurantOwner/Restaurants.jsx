@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 import OwnerNavbar from "../../components/OwnerNavbar";
 import ApprovalMessage from "../../components/ApprovalMessage";
+import Footer from "../../components/Footer";
 import { useNotification } from "../../contexts/NotificationContext";
 import {
   getMyRestaurants,
@@ -846,11 +847,7 @@ const Restaurants = () => {
         </div>
       </main>
 
-      <footer className="bg-secondary text-white py-6 mt-auto">
-        <div className="max-w-7xl mx-auto px-4 text-center">
-          <p className="text-white/80">© 2026 BiteNow. All rights reserved.</p>
-        </div>
-      </footer>
+      <Footer />
 
       {showAddModal && (
         <div

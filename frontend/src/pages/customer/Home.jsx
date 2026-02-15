@@ -12,6 +12,7 @@ import {
 import FoodCard from "../../components/FoodCard";
 import RestaurantCard from "../../components/RestaurantCard";
 import CartSidebar from "../../components/CartSidebar";
+import Footer from "../../components/Footer";
 import { getAllRestaurants } from "../../utils/restaurantService";
 import { getAllFoods, getDiscountedFoods } from "../../utils/foodService";
 import {
@@ -572,36 +573,7 @@ const Home = () => {
         </section>
         
         {/* Premium Footer */}
-        <footer className="bg-gradient-secondary text-white py-16 mt-auto relative overflow-hidden">
-          <div className="absolute inset-0 bg-mesh-gradient opacity-10" />
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-            <div className="flex flex-col md:flex-row justify-between items-center">
-              <div className="flex items-center space-x-3 mb-6 md:mb-0">
-                <div className="w-12 h-12 bg-gradient-accent rounded-xl flex items-center justify-center shadow-glow-yellow">
-                  <span className="text-2xl">🍔</span>
-                </div>
-                <span className="text-3xl font-bold font-display">BiteNow</span>
-              </div>
-              <div className="flex items-center space-x-8 mb-6 md:mb-0">
-                <a
-                  href="#about"
-                  className="text-white/90 hover:text-accent-light transition-all font-medium hover:scale-105 transform"
-                >
-                  About Us
-                </a>
-                <a
-                  href="#contact"
-                  className="text-white/90 hover:text-accent-light transition-all font-medium hover:scale-105 transform"
-                >
-                  Contact Us
-                </a>
-              </div>
-              <p className="text-white/70 text-sm">
-                © 2026 BiteNow. All rights reserved.
-              </p>
-            </div>
-          </div>
-        </footer>
+        <Footer />
       </div>
       {/* Premium Clear Cart Confirmation Modal */}
       {showClearCartModal && (

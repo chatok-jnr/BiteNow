@@ -4,6 +4,10 @@ import { NotificationProvider } from "./contexts/NotificationContext";
 // Role Selection
 import RoleSelection from "./pages/RoleSelection";
 
+// General Pages
+import About from "./pages/About";
+import Contact from "./pages/Contact";
+
 //Customer Pages
 import CustomerHome from "./pages/customer/Home";
 import CustomerRestaurantDetail from "./pages/customer/RestaurantDetail";
@@ -37,6 +41,10 @@ function App() {
             <Routes>
               {/* Role Selection */}
               <Route path="/login" element={<RoleSelection />} />
+
+              {/* General Routes */}
+              <Route path="/about" element={<About />} />
+              <Route path="/contact" element={<Contact />} />
 
               {/* Customer Routes */}
               <Route path="/" element={<CustomerHome />} />

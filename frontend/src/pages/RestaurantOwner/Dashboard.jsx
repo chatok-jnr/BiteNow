@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import OwnerNavbar from "../../components/OwnerNavbar";
 import ApprovalMessage from "../../components/ApprovalMessage";
+import Footer from "../../components/Footer";
 import { getOwnerDashboard } from "../../utils/restaurantOwnerService";
 import { useNotification } from "../../contexts/NotificationContext";
 
@@ -331,11 +332,7 @@ const Dashboard = () => {
       </main>
 
       {/* Footer */}
-      <footer className="bg-secondary text-white py-6 mt-auto">
-        <div className="max-w-7xl mx-auto px-4 text-center">
-          <p className="text-white/80">© 2026 BiteNow. All rights reserved.</p>
-        </div>
-      </footer>
+      <Footer />
     </div>
   );
 };

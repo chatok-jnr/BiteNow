@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import FoodCard from "../../components/FoodCard";
 import CartSidebar from "../../components/CartSidebar";
+import Footer from "../../components/Footer";
 import { getRestaurantById } from "../../utils/restaurantService";
 import { getFoodsByRestaurant } from "../../utils/foodService";
 import {
@@ -486,19 +487,7 @@ const RestaurantDetail = () => {
         </div>
 
         {/* Footer */}
-        <footer className="bg-secondary text-white py-8">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-            <div className="flex items-center justify-center space-x-3 mb-4">
-              <div className="w-10 h-10 bg-primary rounded-full flex items-center justify-center">
-                <ShoppingCart className="w-6 h-6 text-white" />
-              </div>
-              <span className="text-2xl font-bold">BiteNow</span>
-            </div>
-            <p className="text-white/80">
-              © 2026 BiteNow. All rights reserved.
-            </p>
-          </div>
-        </footer>
+        <Footer />
       </div>
 
       {/* Cart Sidebar */}
