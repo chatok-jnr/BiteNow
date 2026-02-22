@@ -6,6 +6,18 @@ import Footer from "../components/Footer";
 const Contact = () => {
   const developers = [
     {
+      name: "Suraia Mim",
+      role: "Frontend Developer",
+      email: "msuraia55@gmail.com",
+      linkedin: "https://www.linkedin.com/in/suraia-mim/",
+    },
+    {
+      name: "A.O.M. Ramim Chowdhury",
+      role: "Frontend Developer",
+      email: "0432220005101146@uits.edu.bd",
+      linkedin: "https://www.linkedin.com/in/a-o-m-ramim-chowdhury/",
+    },
+    {
       name: "Md. Sakib Hosen",
       role: "Backend Developer",
       email: "md.sakib.hos3n@gmail.com",
@@ -56,40 +68,40 @@ const Contact = () => {
           </div>
 
           {/* Developer Cards */}
-          <div className="grid md:grid-cols-2 gap-8 mb-16">
+          <div className="grid md:grid-cols-2 gap-6 mb-16">
             {developers.map((developer, index) => (
               <div
                 key={index}
-                className="bg-white shadow-soft p-8 border border-gray-200 hover:border-black transition-colors"
+                className="bg-white shadow-soft p-6 border border-gray-200 hover:border-black transition-colors"
               >
-                <div className="flex items-center justify-center mb-6">
-                  <div className="w-24 h-24 bg-gradient-primary rounded-full flex items-center justify-center">
-                    <User className="w-12 h-12 text-white" />
+                <div className="flex items-center justify-center mb-4">
+                  <div className="w-16 h-16 bg-gradient-primary rounded-full flex items-center justify-center">
+                    <User className="w-8 h-8 text-white" />
                   </div>
                 </div>
 
-                <div className="text-center mb-6">
-                  <h2 className="text-2xl font-bold text-textPrimary mb-2 font-display">
+                <div className="text-center mb-4">
+                  <h2 className="text-xl font-bold text-textPrimary mb-1 font-display">
                     {developer.name}
                   </h2>
-                  <div className="flex items-center justify-center space-x-2 text-gray-600 mb-4">
-                    <Code2 className="w-5 h-5" />
-                    <span className="font-medium">{developer.role}</span>
+                  <div className="flex items-center justify-center space-x-2 text-gray-600 mb-2">
+                    <Code2 className="w-4 h-4" />
+                    <span className="text-sm font-medium">{developer.role}</span>
                   </div>
                 </div>
 
-                <div className="space-y-4">
+                <div className="space-y-3">
                   {/* Email */}
-                  <div className="bg-tertiary rounded-xl p-4">
-                    <div className="flex items-center space-x-3">
-                      <div className="w-10 h-10 bg-gradient-secondary rounded-lg flex items-center justify-center flex-shrink-0">
-                        <Mail className="w-5 h-5 text-white" />
+                  <div className="bg-tertiary rounded-lg p-3">
+                    <div className="flex items-center space-x-2">
+                      <div className="w-8 h-8 bg-gradient-secondary rounded-lg flex items-center justify-center flex-shrink-0">
+                        <Mail className="w-4 h-4 text-white" />
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className="text-sm text-gray-500 mb-1">Email</p>
+                        <p className="text-xs text-gray-500 mb-0.5">Email</p>
                         <a
                           href={`mailto:${developer.email}`}
-                          className="text-textPrimary hover:text-primary transition-colors font-medium break-all"
+                          className="text-sm text-textPrimary hover:text-primary transition-colors font-medium break-all"
                         >
                           {developer.email}
                         </a>
@@ -98,22 +110,22 @@ const Contact = () => {
                   </div>
 
                   {/* LinkedIn */}
-                  <div className="bg-tertiary rounded-xl p-4">
-                    <div className="flex items-center space-x-3">
-                      <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center flex-shrink-0">
-                        <Linkedin className="w-5 h-5 text-white" />
+                  <div className="bg-tertiary rounded-lg p-3">
+                    <div className="flex items-center space-x-2">
+                      <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center flex-shrink-0">
+                        <Linkedin className="w-4 h-4 text-white" />
                       </div>
                       <div className="flex-1">
-                        <p className="text-sm text-gray-500 mb-1">LinkedIn</p>
+                        <p className="text-xs text-gray-500 mb-0.5">LinkedIn</p>
                         <a
                           href={developer.linkedin}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="text-blue-600 hover:text-blue-700 transition-colors font-medium inline-flex items-center space-x-1"
+                          className="text-sm text-blue-600 hover:text-blue-700 transition-colors font-medium inline-flex items-center space-x-1"
                         >
                           <span>View Profile</span>
                           <svg
-                            className="w-4 h-4"
+                            className="w-3 h-3"
                             fill="none"
                             stroke="currentColor"
                             viewBox="0 0 24 24"
