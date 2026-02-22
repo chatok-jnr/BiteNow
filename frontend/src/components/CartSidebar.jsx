@@ -68,7 +68,7 @@ const CartSidebar = ({
         {/* Cart Items with Custom Scrollbar */}
         <div
           className="flex-1 overflow-y-auto p-5 custom-scrollbar"
-          style={{ height: "calc(100vh - 220px)" }}
+          style={{ height: "calc(100vh - 280px)" }}
         >
           {cartItems.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-full text-gray-400 animate-fade-in-up">
@@ -140,7 +140,7 @@ const CartSidebar = ({
 
         {/* Premium Footer - Checkout */}
         {cartItems.length > 0 && (
-          <div className="border-t border-gray-100 p-5 bg-white shadow-large">
+          <div className="border-t border-gray-100 px-5 pt-5 pb-16 bg-white shadow-large">
             <div className="flex justify-between items-center mb-5">
               <span className="text-lg font-semibold text-gray-600">
                 Total:
@@ -151,7 +151,7 @@ const CartSidebar = ({
             </div>
             <button
               onClick={onCheckout}
-              className="w-full bg-gradient-accent text-textPrimary py-4 rounded-xl hover:shadow-xl-yellow transition-all duration-300 font-bold text-lg shadow-soft transform hover:-translate-y-1 flex items-center justify-center gap-2 group"
+              className="w-full bg-gradient-accent text-textPrimary py-4 rounded-xl hover:shadow-xl-yellow transition-all duration-300 font-bold text-lg shadow-soft transform hover:-translate-y-1 flex items-center justify-center gap-2 group mb-4"
             >
               <span>Proceed to Checkout</span>
               <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
