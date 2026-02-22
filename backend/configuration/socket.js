@@ -47,11 +47,11 @@ const initSocket = (server) => {
 
       //for debug
       console.log(
-        `Location updated from User: ${socket.userId}, Role: ${socket.userRole}`
+        `Location updated from User: ${socket.userId}, Role: ${socket.userRole}`,
       );
       if (socket.userRole === "rider") {
         //update location by using broadcast and emit methods
-        socket.boardcast.emit("rider:location", {
+        socket.broadcast.emit("rider:location", {
           riderId: socket.userId,
           latitude,
           longitude,
@@ -71,7 +71,7 @@ const initSocket = (server) => {
     });
     //Rider avaiability
     socket.on("rider:available", (isAvailable) => {
-      socket.boardcast.to("admin").emit("rider:status:change", {
+      socket.broadcast.to("admin").emit("rider:status:change", {
         riderId: socket.userId,
         isAvailable,
         timestamp: new Date(),
@@ -98,4 +98,4 @@ const getIO = () => {
   return io;
 };
 
-module.exports = {initSocket, getIO};
+module.exports = { initSocket, getIO };

@@ -103,7 +103,7 @@ exports.getFood = async (req, res) => {
 // Add New Food
 exports.createFood = async (req, res) => {
   try {
-    console.log(`Debug = ${req.user._id}`);
+    
 
     const restaurantInfo = await Restaurant.findById(req.body.restaurant_id);
     const authorized = restaurantInfo.owner_id.equals(req.user._id);
@@ -111,6 +111,20 @@ exports.createFood = async (req, res) => {
     if (!authorized) {
       return res.status(403).json({
         message: "You are not the owner of this restaurant",
+      });
+    }
+
+    if(restaurantInfo.restaurant_status !== 'Accepted') {
+      res.status(403).json({
+        status:'failed',
+        message:'Your Restaurant is not approved yet or rejected'
+      });
+    }
+
+    if(req.body.food_price < 50) {
+      return res.status(400).json({
+        status:'failed',
+        message:'food price can\'t be lsss than 50'
       });
     }
 

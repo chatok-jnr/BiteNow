@@ -1,342 +1,325 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
-import CustomerNavbar from "./CustomerNavbar";
+import { useNavigate, useLocation } from "react-router-dom";
+import {
+  Mail,
+  Phone,
+  User,
+  Calendar,
+  Camera,
+  MapPin,
+  LogOut,
+} from "lucide-react";
+import CustomerNavbar from "../../components/CustomerNavbar";
 import {
   getCustomerProfile,
   updateCustomerProfile,
   updateCustomerImage,
   uploadCustomerImage,
-  deleteCustomerImage,
+  setDefaultAddress,
+  getCustomerAddresses,
 } from "../../utils/customerService";
+import { useNotification } from "../../contexts/NotificationContext";
 
-function Profile() {
+const Profile = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  const { showSuccess, showError } = useNotification();
   const [isEditing, setIsEditing] = useState(false);
-  const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const [deletePassword, setDeletePassword] = useState("");
-  const [deleteError, setDeleteError] = useState("");
   const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
-  const [imageUploading, setImageUploading] = useState(false);
-  const [error, setError] = useState("");
-  const [successMessage, setSuccessMessage] = useState("");
-  const [customerId, setCustomerId] = useState(null);
+  const [error, setError] = useState(null);
 
-  const [user, setUser] = useState({
+  const [profileData, setProfileData] = useState({
     name: "",
     email: "",
     phone: "",
     address: "",
     birthDate: "",
-    gender: "Male",
-    joinedDate: "",
-    status: "",
-    photo: {
-      url: null,
-      altText: "Customer image",
-      public_id: null,
-    },
+    gender: "",
+    image: null,
+    memberSince: "",
+    savedAddresses: [],
+    defaultAddressId: null,
   });
 
-  const [formData, setFormData] = useState({ ...user });
-  const [selectedImage, setSelectedImage] = useState(null);
-  const [imagePreview, setImagePreview] = useState(null);
+  const [editForm, setEditForm] = useState({
+    name: "",
+    phone: "",
+    address: "",
+    birthDate: "",
+    gender: "",
+    image: "",
+    selectedAddressId: null,
+  });
 
+  const [imageFile, setImageFile] = useState(null);
+
+  // Load user data when component mounts or when returning to profile page
   useEffect(() => {
-    const fetchCustomerProfile = async () => {
-      try {
-        // Check authentication
-        const userDataString = localStorage.getItem("user");
-        const token = localStorage.getItem("token");
+    console.log("Profile component mounted or location changed");
+    const checkAuth = async () => {
+      const token = localStorage.getItem("token");
+      const userString = localStorage.getItem("user");
 
-        if (!userDataString || !token) {
-          localStorage.setItem(
-            "intendedDestination",
-            "/customer-dashboard/profile"
-          );
-          navigate("/login");
-          return;
-        }
+      console.log("Auth check:", { hasToken: !!token, hasUser: !!userString });
 
-        const parsedUser = JSON.parse(userDataString);
-
-        if (parsedUser.role !== "customer") {
-          localStorage.setItem(
-            "intendedDestination",
-            "/customer-dashboard/profile"
-          );
-          navigate("/login");
-          return;
-        }
-
-        // Extract customer ID - try multiple field names
-        const userId =
-          parsedUser.id ||
-          parsedUser.customer_id ||
-          parsedUser._id ||
-          parsedUser.userId;
-
-        if (!userId) {
-          console.error("No user ID found in localStorage:", parsedUser);
-          setError("User ID not found. Please login again.");
-          setTimeout(() => {
-            localStorage.removeItem("user");
-            localStorage.removeItem("token");
-            navigate("/login");
-          }, 2000);
-          return;
-        }
-
-        console.log("Fetching profile for user ID:", userId);
-        console.log("User data from localStorage:", parsedUser);
-        setCustomerId(userId);
-
-        // Fetch profile from backend
-        const response = await getCustomerProfile(userId);
-        const profileData = response.data.userRespone;
-
-        // Map backend response to frontend state
-        const profileState = {
-          name: profileData.name || "",
-          email: profileData.email || "",
-          phone: profileData.phone || "",
-          address: profileData.address || "",
-          birthDate: profileData.dob ? profileData.dob.split("T")[0] : "",
-          gender: profileData.gender || "Male",
-          joinedDate: profileData.createdAt || "",
-          status: profileData.status || "Active",
-          photo: profileData.photo || {
-            url: null,
-            altText: "Customer image",
-            public_id: null,
-          },
-        };
-
-        setUser(profileState);
-        setFormData(profileState);
-        setLoading(false);
-      } catch (err) {
-        console.error("Error fetching profile:", err);
-
-        // Show more specific error messages
-        let errorMessage = "Failed to load profile";
-        if (err.message === "You are not authorized to see this data") {
-          errorMessage =
-            "Authorization error. The user ID in your session doesn't match. Please login again.";
-          setTimeout(() => {
-            localStorage.removeItem("user");
-            localStorage.removeItem("token");
-            navigate("/login");
-          }, 3000);
-        } else if (err.status === 401) {
-          errorMessage = "Session expired. Please login again.";
-          setTimeout(() => {
-            localStorage.removeItem("user");
-            localStorage.removeItem("token");
-            navigate("/login");
-          }, 2000);
-        } else if (err.status === 403) {
-          errorMessage = "Access denied. Please login again.";
-          setTimeout(() => {
-            localStorage.removeItem("user");
-            localStorage.removeItem("token");
-            navigate("/login");
-          }, 2000);
-        } else {
-          errorMessage = err.message || "Failed to load profile";
-        }
-
-        setError(errorMessage);
-        setLoading(false);
+      if (!token || !userString) {
+        console.log("No auth found, redirecting to login");
+        navigate("/login", { replace: true });
+        return;
       }
+
+      await fetchCustomerProfile();
     };
 
-    fetchCustomerProfile();
-  }, [navigate]);
+    checkAuth();
+  }, [navigate, location.pathname]);
 
-  const handleInputChange = (e) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value,
-    });
-    setError("");
-    setSuccessMessage("");
+  const fetchCustomerProfile = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+
+      // Get user from localStorage
+      const userString = localStorage.getItem("user");
+      const user = JSON.parse(userString);
+      const customerId = user.id || user.userId || user._id || user.customer_id;
+
+      console.log("Fetching profile for customer:", customerId);
+      console.log("User from localStorage:", user);
+
+      // Fetch customer profile from API
+      const response = await getCustomerProfile(customerId);
+
+      console.log("Profile API response:", response);
+
+      if (response && response.data) {
+        // Handle different response structures - backend uses "userRespone" (typo)
+        const customer =
+          response.data.userRespone || response.data.customer || response.data;
+
+        console.log("Customer data:", customer);
+
+        if (!customer) {
+          console.error("No customer data in response");
+          setError("No customer data received from server");
+          return;
+        }
+
+        const memberSince = customer.createdAt
+          ? new Date(customer.createdAt).toLocaleDateString("en-US", {
+              month: "long",
+              year: "numeric",
+            })
+          : "N/A";
+
+        // Capitalize gender to match enum (Male, Female, Other)
+        const capitalizeGender = (gender) => {
+          if (!gender) return "";
+          return gender.charAt(0).toUpperCase() + gender.slice(1).toLowerCase();
+        };
+
+        // Fetch saved addresses separately to ensure we get the latest data
+        let savedAddresses = [];
+        let defaultAddress = null;
+
+        try {
+          const addressResponse = await getCustomerAddresses(customerId);
+          console.log("Addresses API response:", addressResponse);
+          savedAddresses = addressResponse.data?.addresses || [];
+          defaultAddress = savedAddresses.find((addr) => addr.isDefault);
+          console.log("Default address found:", defaultAddress);
+        } catch (addressErr) {
+          console.error("Error fetching addresses:", addressErr);
+          // Fallback to addresses from customer profile if separate fetch fails
+          savedAddresses = customer.saved_addresses || [];
+          defaultAddress = savedAddresses.find((addr) => addr.isDefault);
+        }
+
+        const userData = {
+          name: customer.name || customer.customer_name || "User",
+          email: customer.email || customer.customer_email || "",
+          phone: customer.phone || customer.customer_phone || "",
+          address:
+            defaultAddress?.address ||
+            customer.address ||
+            customer.customer_address ||
+            "",
+          birthDate: customer.dob
+            ? new Date(customer.dob).toISOString().split("T")[0]
+            : customer.customer_birth_date
+              ? new Date(customer.customer_birth_date)
+                  .toISOString()
+                  .split("T")[0]
+              : "",
+          gender: capitalizeGender(
+            customer.gender || customer.customer_gender || "",
+          ),
+          image: customer.photo?.url || customer.customer_image?.url || null,
+          memberSince,
+          savedAddresses: savedAddresses,
+          defaultAddressId: defaultAddress?._id || null,
+        };
+
+        console.log("Setting profile data:", userData);
+
+        setProfileData(userData);
+        setEditForm({
+          name: userData.name,
+          phone: userData.phone,
+          address: userData.address,
+          birthDate: userData.birthDate,
+          gender: userData.gender,
+          image: userData.image,
+          selectedAddressId: userData.defaultAddressId,
+        });
+      } else {
+        console.error("Unexpected API response format:", response);
+        setError("Unexpected response from server");
+      }
+    } catch (err) {
+      console.error("Error fetching profile:", err);
+      console.error("Error details:", err.response?.data);
+      setError(
+        err.response?.data?.message || err.message || "Failed to load profile",
+      );
+      // Don't redirect on API errors, just show the error
+      // Only redirect if it's specifically an auth error
+      if (err.response?.status === 401 || err.response?.status === 403) {
+        localStorage.removeItem("token");
+        localStorage.removeItem("user");
+        navigate("/login", { replace: true });
+      }
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const handleImageSelect = (e) => {
+  const handleEditChange = (e) => {
+    setEditForm({ ...editForm, [e.target.name]: e.target.value });
+  };
+
+  const handleImageUpload = (e) => {
     const file = e.target.files[0];
     if (file) {
-      // Validate file type
-      if (!file.type.startsWith("image/")) {
-        setError("Please select a valid image file");
-        return;
-      }
-
-      // Validate file size (max 5MB)
-      if (file.size > 5 * 1024 * 1024) {
-        setError("Image size should be less than 5MB");
-        return;
-      }
-
-      setSelectedImage(file);
-
-      // Create preview
+      setImageFile(file);
       const reader = new FileReader();
       reader.onloadend = () => {
-        setImagePreview(reader.result);
+        setEditForm({ ...editForm, image: reader.result });
       };
       reader.readAsDataURL(file);
-      setError("");
     }
   };
 
-  const handleRemoveImage = async () => {
-    if (!user.photo?.public_id) {
-      setError("No profile image to remove");
-      return;
-    }
-
-    if (
-      !window.confirm("Are you sure you want to remove your profile picture?")
-    ) {
-      return;
-    }
-
+  const handleSave = async () => {
     try {
-      setImageUploading(true);
-      await deleteCustomerImage(customerId);
+      setLoading(true);
+      setError(null);
 
-      setUser({
-        ...user,
-        photo: {
-          url: null,
-          altText: "Customer image",
-          public_id: null,
-        },
+      const userString = localStorage.getItem("user");
+      const user = JSON.parse(userString);
+      const customerId = user.id || user.userId || user._id || user.customer_id;
+
+      console.log("Updating profile for customer:", customerId);
+      console.log("Update data:", {
+        name: editForm.name,
+        phone: editForm.phone,
+        address: editForm.address,
+        birthDate: editForm.birthDate,
+        gender: editForm.gender,
       });
 
-      setSelectedImage(null);
-      setImagePreview(null);
-      setSuccessMessage("Profile picture removed successfully");
-      setImageUploading(false);
-    } catch (err) {
-      console.error("Error removing image:", err);
-      setError(err.message || "Failed to remove profile picture");
-      setImageUploading(false);
-    }
-  };
-
-  const handleSave = async (e) => {
-    e.preventDefault();
-    setError("");
-    setSuccessMessage("");
-    setSaving(true);
-
-    try {
       // Update profile data
-      await updateCustomerProfile(customerId, formData);
+      const response = await updateCustomerProfile(customerId, {
+        name: editForm.name,
+        phone: editForm.phone,
+        address: editForm.address,
+        birthDate: editForm.birthDate,
+        gender: editForm.gender,
+      });
 
-      // Update user state
-      setUser(formData);
+      console.log("Update response:", response);
 
-      // Update localStorage
-      const storedUser = JSON.parse(localStorage.getItem("user"));
-      localStorage.setItem(
-        "user",
-        JSON.stringify({
-          ...storedUser,
-          name: formData.name,
-          phone: formData.phone,
-        })
-      );
+      // Update default address if changed
+      if (
+        editForm.selectedAddressId &&
+        editForm.selectedAddressId !== profileData.defaultAddressId
+      ) {
+        console.log("Updating default address to:", editForm.selectedAddressId);
+        await setDefaultAddress(customerId, editForm.selectedAddressId);
+      }
 
-      // Handle image upload if selected
-      if (selectedImage) {
+      // Upload or update image if selected
+      if (imageFile) {
+        console.log("Processing image upload/update...");
         try {
-          setImageUploading(true);
-
-          // Check if user already has an image
-          if (user.photo?.public_id) {
+          // Check if customer already has a profile picture
+          if (profileData.image) {
             // Update existing image
-            const imageResponse = await updateCustomerImage(
-              customerId,
-              selectedImage
-            );
-            setUser({
-              ...formData,
-              photo: imageResponse.data.image,
-            });
+            console.log("Updating existing image...");
+            await updateCustomerImage(customerId, imageFile);
           } else {
             // Upload new image
-            const imageResponse = await uploadCustomerImage(
-              customerId,
-              selectedImage
-            );
-            setUser({
-              ...formData,
-              photo: imageResponse.data.images,
-            });
+            console.log("Uploading new image...");
+            await uploadCustomerImage(customerId, imageFile);
           }
-
-          setSelectedImage(null);
-          setImagePreview(null);
-          setImageUploading(false);
         } catch (imgErr) {
-          console.error("Error uploading image:", imgErr);
-          setError(imgErr.message || "Profile updated but image upload failed");
-          setImageUploading(false);
-          setSaving(false);
-          setIsEditing(false);
-          return;
+          console.error("Error processing image:", imgErr);
+          throw new Error(
+            "Failed to upload/update image: " +
+              (imgErr.response?.data?.message || imgErr.message),
+          );
         }
       }
 
-      setSuccessMessage("Profile updated successfully!");
-      setSaving(false);
+      // Refresh profile data
+      await fetchCustomerProfile();
       setIsEditing(false);
+      setImageFile(null);
+      showSuccess("Profile updated successfully!");
     } catch (err) {
       console.error("Error updating profile:", err);
-      setError(err.message || "Failed to update profile");
-      setSaving(false);
+      console.error("Error response:", err.response?.data);
+      setError(
+        err.response?.data?.message ||
+          err.message ||
+          "Failed to update profile",
+      );
+      showError(
+        "Failed to update profile: " +
+          (err.response?.data?.message || err.message),
+      );
+    } finally {
+      setLoading(false);
     }
   };
 
   const handleCancel = () => {
-    setFormData(user);
-    setSelectedImage(null);
-    setImagePreview(null);
-    setError("");
-    setSuccessMessage("");
+    setEditForm({
+      name: profileData.name,
+      phone: profileData.phone,
+      address: profileData.address,
+      birthDate: profileData.birthDate,
+      gender: profileData.gender,
+      image: profileData.image,
+    });
+    setImageFile(null);
     setIsEditing(false);
   };
 
-  const handleDeleteAccount = () => {
-    // Note: Account deletion should be implemented with proper backend endpoint
-    // This is a placeholder that logs out the user
-    setDeleteError(
-      "Account deletion requires admin approval. Please contact support."
-    );
-
-    // For now, just log out
-    // localStorage.removeItem("user");
-    // localStorage.removeItem("token");
-    // navigate("/login");
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+    navigate("/login");
   };
 
-  const handleCloseDeleteModal = () => {
-    setShowDeleteModal(false);
-    setDeletePassword("");
-    setDeleteError("");
-  };
-
-  if (loading) {
+  if (loading && !profileData.email) {
     return (
-      <div className="min-h-screen bg-gray-50">
-        <CustomerNavbar />
-        <div className="flex items-center justify-center h-screen">
+      <div className="min-h-screen bg-bgPrimary flex flex-col">
+        <CustomerNavbar activeTab="profile" />
+        <div className="flex-1 flex items-center justify-center pt-24">
           <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
-            <p className="text-gray-600">Loading profile...</p>
+            <div className="w-16 h-16 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+            <p className="text-gray-600 text-xl">Loading profile...</p>
           </div>
         </div>
       </div>
@@ -344,364 +327,384 @@ function Profile() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <CustomerNavbar />
+    <div className="min-h-screen bg-bgPrimary flex flex-col">
+      <CustomerNavbar activeTab="profile" />
 
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">My Profile</h1>
-          <p className="text-gray-600">Manage your account information</p>
-        </div>
+      {/* Profile Container with top padding for fixed navbar */}
+      <div className="flex-1 px-4 py-12 pt-28">
+        <div className="max-w-4xl mx-auto">
+          {/* Profile Card */}
+          <div className="bg-tertiary rounded-3xl shadow-2xl overflow-hidden">
+            {/* Header Section */}
+            <div className="bg-secondary h-32"></div>
 
-        {/* Success Message */}
-        {successMessage && (
-          <div className="mb-6 bg-green-50 border border-green-200 text-green-800 px-4 py-3 rounded-lg flex items-center">
-            <span className="mr-2">✅</span>
-            {successMessage}
-          </div>
-        )}
+            <div className="relative px-8 pb-8">
+              {/* Error Message */}
+              {error && (
+                <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded-lg text-sm">
+                  {error}
+                </div>
+              )}
 
-        {/* Error Message */}
-        {error && (
-          <div className="mb-6 bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded-lg flex items-center">
-            <span className="mr-2">⚠️</span>
-            {error}
-          </div>
-        )}
-
-        {/* Profile Card */}
-        <div className="bg-white rounded-lg shadow-md overflow-hidden">
-          {/* Profile Header */}
-          <div className="bg-gradient-to-r from-primary to-primary/80 px-6 py-8 text-white">
-            <div className="flex items-center space-x-6">
-              <div className="relative">
-                <div className="w-24 h-24 bg-white rounded-full flex items-center justify-center overflow-hidden">
-                  {imagePreview ? (
+              {/* Profile Image */}
+              <div className="flex justify-center -mt-16 mb-6">
+                <div className="relative">
+                  {(isEditing ? editForm.image : profileData.image) ? (
                     <img
-                      src={imagePreview}
-                      alt="Profile preview"
-                      className="w-full h-full object-cover"
-                    />
-                  ) : user.photo?.url ? (
-                    <img
-                      src={user.photo.url}
-                      alt={user.photo.altText}
-                      className="w-full h-full object-cover"
+                      src={isEditing ? editForm.image : profileData.image}
+                      alt="Profile"
+                      className="w-32 h-32 rounded-full border-4 border-tertiary object-cover shadow-xl"
                     />
                   ) : (
-                    <span className="text-5xl">👤</span>
+                    <div className="w-32 h-32 rounded-full border-4 border-tertiary bg-primary shadow-xl flex items-center justify-center">
+                      <User className="w-16 h-16 text-white" />
+                    </div>
                   )}
-                </div>
-                {isEditing && (
-                  <div className="mt-2 flex gap-2">
-                    <label className="cursor-pointer bg-white text-primary px-3 py-1 rounded text-sm font-medium hover:bg-gray-100 transition-colors">
-                      {selectedImage ? "Change" : "Upload"}
+                  {isEditing && (
+                    <label className="absolute bottom-0 right-0 bg-primary w-10 h-10 rounded-full flex items-center justify-center cursor-pointer hover:bg-accent-dark transition-all shadow-lg">
+                      <Camera className="w-5 h-5 text-white" />
                       <input
                         type="file"
                         accept="image/*"
-                        onChange={handleImageSelect}
+                        onChange={handleImageUpload}
                         className="hidden"
-                        disabled={imageUploading}
                       />
                     </label>
-                    {(user.photo?.url || imagePreview) && (
+                  )}
+                </div>
+              </div>
+
+              {/* Profile Info */}
+              {!isEditing ? (
+                // View Mode
+                <div className="space-y-6">
+                  {/* Name */}
+                  <div className="text-center">
+                    <h2 className="text-3xl font-bold text-gray-800 mb-1">
+                      {profileData.name}
+                    </h2>
+                    <p className="text-gray-600">BiteNow Member</p>
+                  </div>
+
+                  {/* Stats Grid */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-8">
+                    {/* Email */}
+                    <div className="bg-white rounded-2xl p-5 shadow-md">
+                      <div className="flex items-center space-x-3 mb-2">
+                        <div className="w-10 h-10 bg-surface rounded-full flex items-center justify-center">
+                          <Mail className="w-5 h-5 text-primary" />
+                        </div>
+                        <div>
+                          <p className="text-sm text-gray-500 font-semibold">
+                            Email
+                          </p>
+                          <p className="text-gray-800 font-medium">
+                            {profileData.email}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Phone */}
+                    <div className="bg-white rounded-2xl p-5 shadow-md">
+                      <div className="flex items-center space-x-3 mb-2">
+                        <div className="w-10 h-10 bg-surface rounded-full flex items-center justify-center">
+                          <Phone className="w-5 h-5 text-primary" />
+                        </div>
+                        <div>
+                          <p className="text-sm text-gray-500 font-semibold">
+                            Phone
+                          </p>
+                          <p className="text-gray-800 font-medium">
+                            {profileData.phone || "Not provided"}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Default Address */}
+                    <div className="bg-white rounded-2xl p-5 shadow-md">
+                      <div className="flex items-center space-x-3 mb-2">
+                        <div className="w-10 h-10 bg-surface rounded-full flex items-center justify-center">
+                          <MapPin className="w-5 h-5 text-primary" />
+                        </div>
+                        <div className="flex-1">
+                          <p className="text-sm text-gray-500 font-semibold">
+                            Default Delivery Address
+                          </p>
+                          <p className="text-gray-800 font-medium">
+                            {profileData.address || "No address saved"}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Birth Date */}
+                    <div className="bg-white rounded-2xl p-5 shadow-md">
+                      <div className="flex items-center space-x-3 mb-2">
+                        <div className="w-10 h-10 bg-surface rounded-full flex items-center justify-center">
+                          <Calendar className="w-5 h-5 text-primary" />
+                        </div>
+                        <div>
+                          <p className="text-sm text-gray-500 font-semibold">
+                            Birth Date
+                          </p>
+                          <p className="text-gray-800 font-medium">
+                            {profileData.birthDate
+                              ? new Date(
+                                  profileData.birthDate,
+                                ).toLocaleDateString("en-US", {
+                                  year: "numeric",
+                                  month: "long",
+                                  day: "numeric",
+                                })
+                              : "Not provided"}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Gender */}
+                    <div className="bg-white rounded-2xl p-5 shadow-md">
+                      <div className="flex items-center space-x-3 mb-2">
+                        <div className="w-10 h-10 bg-surface rounded-full flex items-center justify-center">
+                          <User className="w-5 h-5 text-primary" />
+                        </div>
+                        <div>
+                          <p className="text-sm text-gray-500 font-semibold">
+                            Gender
+                          </p>
+                          <p className="text-gray-800 font-medium capitalize">
+                            {profileData.gender || "Not provided"}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Member Since */}
+                    <div className="bg-white rounded-2xl p-5 shadow-md">
+                      <div className="flex items-center space-x-3 mb-2">
+                        <div className="w-10 h-10 bg-surface rounded-full flex items-center justify-center">
+                          <Calendar className="w-5 h-5 text-primary" />
+                        </div>
+                        <div>
+                          <p className="text-sm text-gray-500 font-semibold">
+                            Member Since
+                          </p>
+                          <p className="text-gray-800 font-medium">
+                            {profileData.memberSince}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Address Management Section */}
+                  <div className="mt-8 bg-white rounded-2xl p-5 shadow-md">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center space-x-3">
+                        <div className="w-10 h-10 bg-surface rounded-full flex items-center justify-center">
+                          <MapPin className="w-5 h-5 text-primary" />
+                        </div>
+                        <div>
+                          <p className="text-sm text-gray-500 font-semibold">
+                            Saved Addresses
+                          </p>
+                          <p className="text-gray-800 font-medium">
+                            Manage your delivery addresses
+                          </p>
+                        </div>
+                      </div>
                       <button
-                        type="button"
-                        onClick={handleRemoveImage}
-                        disabled={imageUploading}
-                        className="bg-red-500 text-white px-3 py-1 rounded text-sm font-medium hover:bg-red-600 transition-colors disabled:opacity-50"
+                        onClick={() => navigate("/addresses")}
+                        className="bg-primary text-white px-6 py-2 rounded-full font-semibold hover:bg-accent-dark transition-all"
                       >
-                        Remove
+                        Manage
                       </button>
+                    </div>
+                  </div>
+
+                  {/* Update Profile Button */}
+                  <div className="flex justify-center gap-4 mt-8">
+                    <button
+                      onClick={() => setIsEditing(true)}
+                      className="bg-primary text-white px-8 py-3 rounded-full font-bold text-lg hover:bg-accent-dark transition-all hover:shadow-lg transform hover:-translate-y-0.5"
+                    >
+                      Update Profile
+                    </button>
+                    <button
+                      onClick={handleLogout}
+                      className="bg-red-500 text-white px-8 py-3 rounded-full font-bold text-lg hover:bg-red-600 transition-all hover:shadow-lg transform hover:-translate-y-0.5 flex items-center gap-2"
+                    >
+                      <LogOut className="w-5 h-5" />
+                      Logout
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                // Edit Mode
+                <div className="space-y-6">
+                  <div className="text-center mb-6">
+                    <h2 className="text-3xl font-bold text-gray-800 mb-2">
+                      Edit Profile
+                    </h2>
+                    <p className="text-gray-600">Update your information</p>
+                  </div>
+
+                  {/* Name Input */}
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+                      Full Name
+                    </label>
+                    <div className="relative">
+                      <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500">
+                        <User className="w-5 h-5" />
+                      </div>
+                      <input
+                        type="text"
+                        name="name"
+                        value={editForm.name}
+                        onChange={handleEditChange}
+                        placeholder="Your name"
+                        className="w-full pl-12 pr-4 py-3 bg-white rounded-full border-2 border-transparent focus:border-primary focus:outline-none transition-all"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Phone Input */}
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+                      Phone Number
+                    </label>
+                    <div className="relative">
+                      <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500">
+                        <Phone className="w-5 h-5" />
+                      </div>
+                      <input
+                        type="tel"
+                        name="phone"
+                        value={editForm.phone}
+                        onChange={handleEditChange}
+                        placeholder="+1 (555) 000-0000"
+                        className="w-full pl-12 pr-4 py-3 bg-white rounded-full border-2 border-transparent focus:border-primary focus:outline-none transition-all"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Select Default Address */}
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+                      Default Delivery Address
+                    </label>
+                    {profileData.savedAddresses.length > 0 ? (
+                      <select
+                        name="selectedAddressId"
+                        value={editForm.selectedAddressId || ""}
+                        onChange={handleEditChange}
+                        className="w-full px-4 py-3 bg-white rounded-full border-2 border-transparent focus:border-primary focus:outline-none transition-all"
+                      >
+                        <option value="">Select an address</option>
+                        {profileData.savedAddresses.map((addr) => (
+                          <option key={addr._id} value={addr._id}>
+                            {addr.label} - {addr.address}
+                          </option>
+                        ))}
+                      </select>
+                    ) : (
+                      <div className="bg-gray-50 rounded-lg p-4 text-center">
+                        <p className="text-gray-600 mb-3">
+                          No saved addresses yet
+                        </p>
+                        <button
+                          type="button"
+                          onClick={() => navigate("/addresses")}
+                          className="bg-primary text-white px-6 py-2 rounded-full font-semibold hover:bg-accent-dark transition-all inline-flex items-center gap-2"
+                        >
+                          <MapPin className="w-4 h-4" />
+                          Add Address
+                        </button>
+                      </div>
                     )}
                   </div>
-                )}
-              </div>
-              <div>
-                <h2 className="text-2xl font-bold">{user.name}</h2>
-                <p className="text-primary-100">{user.email}</p>
-                <p className="text-sm mt-2 opacity-90">
-                  Member since{" "}
-                  {user.joinedDate
-                    ? new Date(user.joinedDate).toLocaleDateString("en-GB", {
-                        year: "numeric",
-                        month: "long",
-                        day: "numeric",
-                      })
-                    : "N/A"}
-                </p>
-                {user.status && (
-                  <span
-                    className={`inline-block mt-2 px-3 py-1 rounded-full text-xs font-medium ${
-                      user.status === "Active"
-                        ? "bg-green-100 text-green-800"
-                        : "bg-red-100 text-red-800"
-                    }`}
-                  >
-                    {user.status}
-                  </span>
-                )}
-              </div>
-            </div>
-          </div>
 
-          {/* Profile Form */}
-          <form onSubmit={handleSave} className="p-6">
-            <div className="flex justify-between items-center mb-6">
-              <h3 className="text-lg font-semibold text-gray-900">
-                Personal Information
-              </h3>
-              {!isEditing ? (
-                <button
-                  type="button"
-                  onClick={() => setIsEditing(true)}
-                  className="bg-primary text-white px-4 py-2 rounded-lg hover:bg-primary/90 transition-colors font-medium"
-                >
-                  ✏️ Edit Profile
-                </button>
-              ) : (
-                <div className="space-x-3">
-                  <button
-                    type="button"
-                    onClick={handleCancel}
-                    className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-100 transition-colors"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    type="submit"
-                    disabled={saving || imageUploading}
-                    className="bg-secondary text-white px-4 py-2 rounded-lg hover:bg-secondary/90 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    {saving || imageUploading
-                      ? "⏳ Saving..."
-                      : "💾 Save Changes"}
-                  </button>
+                  {/* Birth Date Input */}
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+                      Birth Date
+                    </label>
+                    <div className="relative">
+                      <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500">
+                        <Calendar className="w-5 h-5" />
+                      </div>
+                      <input
+                        type="date"
+                        name="birthDate"
+                        value={editForm.birthDate}
+                        onChange={handleEditChange}
+                        className="w-full pl-12 pr-4 py-3 bg-white rounded-full border-2 border-transparent focus:border-primary focus:outline-none transition-all"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Gender Select */}
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+                      Gender
+                    </label>
+                    <select
+                      name="gender"
+                      value={editForm.gender}
+                      onChange={handleEditChange}
+                      className="w-full px-4 py-3 bg-white rounded-full border-2 border-transparent focus:border-primary focus:outline-none transition-all"
+                    >
+                      <option value="">Select Gender</option>
+                      <option value="Male">Male</option>
+                      <option value="Female">Female</option>
+                      <option value="Other">Other</option>
+                    </select>
+                  </div>
+
+                  {/* Read-only Email */}
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+                      Email Address (Cannot be changed)
+                    </label>
+                    <div className="relative">
+                      <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">
+                        <Mail className="w-5 h-5" />
+                      </div>
+                      <input
+                        type="email"
+                        value={profileData.email}
+                        disabled
+                        className="w-full pl-12 pr-4 py-3 bg-gray-100 rounded-full border-2 border-transparent text-gray-500 cursor-not-allowed"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Action Buttons */}
+                  <div className="flex gap-4 mt-8">
+                    <button
+                      onClick={handleCancel}
+                      className="flex-1 bg-gray-400 text-white py-3 rounded-full font-bold text-lg hover:bg-gray-500 transition-all hover:shadow-lg"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      onClick={handleSave}
+                      className="flex-1 bg-primary text-white py-3 rounded-full font-bold text-lg hover:bg-accent-dark transition-all hover:shadow-lg transform hover:-translate-y-0.5"
+                    >
+                      Save Changes
+                    </button>
+                  </div>
                 </div>
               )}
             </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {/* Full Name */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Full Name
-                </label>
-                <input
-                  type="text"
-                  name="name"
-                  value={formData.name}
-                  onChange={handleInputChange}
-                  disabled={!isEditing}
-                  className={`w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary ${
-                    !isEditing ? "bg-gray-50 text-gray-600" : ""
-                  }`}
-                />
-              </div>
-
-              {/* Email */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Email Address
-                </label>
-                <input
-                  type="email"
-                  name="email"
-                  value={formData.email}
-                  disabled
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-600"
-                />
-                <p className="text-xs text-gray-500 mt-1">
-                  Email cannot be changed
-                </p>
-              </div>
-
-              {/* Phone */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Phone Number
-                </label>
-                <input
-                  type="tel"
-                  name="phone"
-                  value={formData.phone}
-                  onChange={handleInputChange}
-                  disabled={!isEditing}
-                  className={`w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary ${
-                    !isEditing ? "bg-gray-50 text-gray-600" : ""
-                  }`}
-                />
-              </div>
-
-              {/* Gender */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Gender
-                </label>
-                <select
-                  name="gender"
-                  value={formData.gender}
-                  onChange={handleInputChange}
-                  disabled={!isEditing}
-                  className={`w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary ${
-                    !isEditing ? "bg-gray-50 text-gray-600" : ""
-                  }`}
-                >
-                  <option value="Male">Male</option>
-                  <option value="Female">Female</option>
-                  <option value="Other">Other</option>
-                </select>
-              </div>
-
-              {/* Birth Date */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Date of Birth
-                </label>
-                <input
-                  type="date"
-                  name="birthDate"
-                  value={formData.birthDate}
-                  onChange={handleInputChange}
-                  disabled={!isEditing}
-                  max={new Date().toISOString().split("T")[0]}
-                  className={`w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary ${
-                    !isEditing ? "bg-gray-50 text-gray-600" : ""
-                  }`}
-                />
-              </div>
-
-              {/* Address */}
-              <div className="md:col-span-2">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Delivery Address
-                </label>
-                <textarea
-                  name="address"
-                  value={formData.address}
-                  onChange={handleInputChange}
-                  disabled={!isEditing}
-                  rows="3"
-                  className={`w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary resize-none ${
-                    !isEditing ? "bg-gray-50 text-gray-600" : ""
-                  }`}
-                />
-              </div>
-            </div>
-          </form>
-
-          {/* Quick Links */}
-          <div className="border-t border-gray-200 p-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">
-              Quick Links
-            </h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <button
-                onClick={() => navigate("/customer-dashboard/orders")}
-                className="flex items-center justify-between p-4 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
-              >
-                <div className="flex items-center space-x-3">
-                  <span className="text-2xl">📦</span>
-                  <div className="text-left">
-                    <p className="font-medium text-gray-900">My Orders</p>
-                    <p className="text-sm text-gray-600">View order history</p>
-                  </div>
-                </div>
-                <span className="text-gray-400">→</span>
-              </button>
-
-              <button
-                onClick={() => navigate("/customer-dashboard")}
-                className="flex items-center justify-between p-4 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
-              >
-                <div className="flex items-center space-x-3">
-                  <span className="text-2xl">🍽️</span>
-                  <div className="text-left">
-                    <p className="font-medium text-gray-900">
-                      Browse Restaurants
-                    </p>
-                    <p className="text-sm text-gray-600">Order food now</p>
-                  </div>
-                </div>
-                <span className="text-gray-400">→</span>
-              </button>
-            </div>
-          </div>
-
-          {/* Danger Zone */}
-          <div className="border-t border-gray-200 bg-red-50 p-6">
-            <h3 className="text-lg font-semibold text-red-900 mb-2">
-              Danger Zone
-            </h3>
-            <p className="text-sm text-red-700 mb-4">
-              Once you delete your account, there is no going back. Please be
-              certain.
-            </p>
-            <button
-              onClick={() => setShowDeleteModal(true)}
-              className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-colors font-medium"
-            >
-              🗑️ Delete Account
-            </button>
           </div>
         </div>
       </div>
-
-      {/* Delete Confirmation Modal */}
-      {showDeleteModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg max-w-md w-full p-6">
-            <h3 className="text-xl font-bold text-gray-900 mb-4">
-              Delete Account?
-            </h3>
-            <p className="text-gray-600 mb-4">
-              Are you sure you want to delete your account? This action cannot
-              be undone and all your data will be permanently removed.
-            </p>
-
-            {/* Password Confirmation */}
-            <div className="mb-6">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Confirm your password to continue
-              </label>
-              <input
-                type="password"
-                value={deletePassword}
-                onChange={(e) => {
-                  setDeletePassword(e.target.value);
-                  setDeleteError("");
-                }}
-                placeholder="Enter your password"
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
-              />
-              {deleteError && (
-                <p className="text-red-600 text-sm mt-2 flex items-center">
-                  <span className="mr-1">⚠️</span>
-                  {deleteError}
-                </p>
-              )}
-            </div>
-
-            <div className="flex space-x-3">
-              <button
-                onClick={handleCloseDeleteModal}
-                className="flex-1 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-100"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleDeleteAccount}
-                className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 font-medium"
-              >
-                Delete
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
-}
+};
 
 export default Profile;

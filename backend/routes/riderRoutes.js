@@ -8,8 +8,16 @@ const router = express.Router();
 router.use(protect);
 
 router
+  .route("/stats")
+  .get(restrictTo("rider"), riderController.getRiderStats);
+
+router
   .route("/all")
   .get(restrictTo("rider", "admin"), riderController.getAllRiders);
+
+router 
+  .route("/profile")
+  .get(restrictTo("rider"), riderController.getMe);
 
 router
   .route("/:id")

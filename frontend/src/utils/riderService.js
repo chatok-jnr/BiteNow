@@ -4,6 +4,17 @@ import axiosInstance from "./axios";
  * Rider Service - API calls for rider profile management
  */
 
+// Get current authenticated rider's profile (Protected)
+export const getRiderProfile = async () => {
+  try {
+    const response = await axiosInstance.get(`/api/v1/riders/profile`);
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching rider profile:", error);
+    throw error;
+  }
+};
+
 // Get rider profile by ID (Protected)
 export const getRiderById = async (riderId) => {
   try {
@@ -150,6 +161,7 @@ export const deleteRider = async (riderId) => {
 };
 
 export default {
+  getRiderProfile,
   getRiderById,
   updateRider,
   uploadRiderImage,

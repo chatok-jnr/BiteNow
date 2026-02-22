@@ -209,6 +209,9 @@ restaurantSchema.pre("save", function (next) {
   next();
 });
 
+// Indexes for performance optimization
+restaurantSchema.index({ owner_id: 1 });
+
 const Restaurant = mongoose.model("Restaurant", restaurantSchema);
 module.exports = Restaurant;
 

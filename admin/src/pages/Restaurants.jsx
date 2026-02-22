@@ -200,10 +200,10 @@ export default function Restaurants() {
   const tabs = ['All', 'Pending', 'Accepted', 'Suspended', 'Verified'];
 
   return (
-    <div className="flex h-screen bg-[#0a0a0f] text-gray-100">
+    <div className="flex h-screen bg-custom_black text-gray-100">
       <Sidebar />
 
-      <main className="flex-1 overflow-auto bg-[#0a0a0f]">
+      <main className="flex-1 overflow-auto bg-custom_black">
         <div className="p-8 max-w-7xl mx-auto">
           {/* Header */}
           <div className="mb-8">
@@ -214,14 +214,14 @@ export default function Restaurants() {
           {/* Tabs and Search */}
           <div className="mb-6 flex flex-col gap-4">
             {/* Tabs */}
-            <div className="flex gap-2 bg-[#1a1a22] p-1.5 rounded-2xl border border-white/10 overflow-x-auto">
+            <div className="flex gap-2 bg-secondary p-1.5 rounded-2xl border border-white/10 overflow-x-auto">
               {tabs.map((tab) => (
                 <button
                   key={tab}
                   onClick={() => setActiveTab(tab)}
                   className={`px-6 py-2 rounded-xl text-sm font-medium transition-all whitespace-nowrap ${
                     activeTab === tab
-                      ? 'bg-gradient-to-r from-[#fc5e03] to-[#fc5e03] text-white shadow-lg shadow-[#fc5e03]/20'
+                      ? 'bg-gradient-to-r from-accent to-accent text-white shadow-lg shadow-accent/20'
                       : 'text-gray-400 hover:text-gray-200 hover:bg-white/5'
                   }`}
                 >
@@ -240,7 +240,7 @@ export default function Restaurants() {
                   placeholder="Search restaurants by name, ID, cuisine..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2.5 bg-[#1a1a22] border border-white/10 rounded-xl text-sm text-gray-300 placeholder-gray-600 focus:outline-none focus:border-orange-500/50 focus:bg-[#1f1f2a] transition-all"
+                  className="w-full pl-10 pr-4 py-2.5 bg-secondary border border-white/10 rounded-xl text-sm text-gray-300 placeholder-gray-600 focus:outline-none focus:border-orange-500/50 focus:bg-secondary transition-all"
                 />
               </div>
 
@@ -252,7 +252,7 @@ export default function Restaurants() {
                   placeholder="Filter by owner name or ID..."
                   value={ownerFilterQuery}
                   onChange={(e) => setOwnerFilterQuery(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2.5 bg-[#1a1a22] border border-white/10 rounded-xl text-sm text-gray-300 placeholder-gray-600 focus:outline-none focus:border-orange-500/50 focus:bg-[#1f1f2a] transition-all"
+                  className="w-full pl-10 pr-4 py-2.5 bg-secondary border border-white/10 rounded-xl text-sm text-gray-300 placeholder-gray-600 focus:outline-none focus:border-orange-500/50 focus:bg-secondary transition-all"
                 />
               </div>
             </div>
@@ -293,7 +293,7 @@ export default function Restaurants() {
               <div
                 key={restaurant.id}
                 onClick={() => handleCardClick(restaurant)}
-                className="group relative bg-[#1a1a22] border border-white/10 rounded-2xl p-6 cursor-pointer transition-all duration-300 hover:border-orange-500/50 hover:shadow-xl hover:shadow-orange-500/10 hover:-translate-y-1"
+                className="group relative bg-secondary border border-white/10 rounded-2xl p-6 cursor-pointer transition-all duration-300 hover:border-orange-500/50 hover:shadow-xl hover:shadow-orange-500/10 hover:-translate-y-1"
               >
                 {/* Three Dots Menu */}
                 <div className="absolute top-4 right-4 z-10">
@@ -306,7 +306,7 @@ export default function Restaurants() {
 
                   {/* Action Dropdown */}
                   {showActionMenu === restaurant.id && (
-                    <div className="absolute right-0 mt-2 w-48 bg-[#1f1f2a] border border-white/10 rounded-xl shadow-2xl overflow-hidden z-20">
+                    <div className="absolute right-0 mt-2 w-48 bg-secondary border border-white/10 rounded-xl shadow-2xl overflow-hidden z-20">
                       {restaurant.status === 'Pending' && (
                         <>
                           <button
@@ -379,7 +379,7 @@ export default function Restaurants() {
                         className="w-24 h-24 rounded-full object-cover border-4 border-white/10 group-hover:border-orange-500/50 transition-colors"
                       />
                     )}
-                    <div className={`absolute bottom-0 right-0 w-5 h-5 rounded-full border-2 border-[#1a1a22] ${
+                    <div className={`absolute bottom-0 right-0 w-5 h-5 rounded-full border-2 border-secondary ${
                       restaurant.status === 'Accepted' ? 'bg-green-500' : 
                       restaurant.status === 'Pending' ? 'bg-yellow-500' : 'bg-red-500'
                     }`}></div>
@@ -464,11 +464,11 @@ export default function Restaurants() {
           }}
         >
           <div 
-            className="bg-[#1a1a22] border border-white/10 rounded-2xl max-w-4xl w-full max-h-[90vh] overflow-auto"
+            className="bg-secondary border border-white/10 rounded-2xl max-w-4xl w-full max-h-[90vh] overflow-auto"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Modal Header */}
-            <div className="sticky top-0 bg-[#1a1a22] border-b border-white/10 p-6 flex justify-between items-center z-10">
+            <div className="sticky top-0 bg-secondary border-b border-white/10 p-6 flex justify-between items-center z-10">
               <h3 className="text-2xl font-bold text-gray-100">Restaurant Details</h3>
               <button
                 onClick={() => setShowDetailModal(false)}
@@ -531,13 +531,13 @@ export default function Restaurants() {
               {/* Address */}
               <div className="mb-6">
                 <label className="text-sm font-medium text-gray-400 mb-2 block">Address</label>
-                <p className="text-gray-200 bg-[#111116] p-4 rounded-xl border border-white/10">
+                <p className="text-gray-200 bg-custom_black p-4 rounded-xl border border-white/10">
                   {selectedRestaurant.address}
                 </p>
               </div>
 
               {/* Owner Information */}
-              <div className="mb-6 bg-[#111116] border border-white/10 rounded-xl p-5">
+              <div className="mb-6 bg-custom_black border border-white/10 rounded-xl p-5">
                 <label className="text-sm font-medium text-gray-400 mb-3 block flex items-center gap-2">
                   <User className="w-4 h-4" />
                   Restaurant Owner
@@ -560,7 +560,7 @@ export default function Restaurants() {
 
               {/* Order & Tax Statistics */}
               <div className="mb-6 grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="bg-[#111116] border border-white/10 rounded-xl p-5">
+                <div className="bg-custom_black border border-white/10 rounded-xl p-5">
                   <div className="flex items-center gap-3 mb-3">
                     <div className="p-2 bg-green-500/10 rounded-lg">
                       <ShoppingBag className="w-5 h-5 text-green-400" />
@@ -573,7 +573,7 @@ export default function Restaurants() {
                   <p className="text-xs text-gray-400">Completed / Total Orders</p>
                 </div>
 
-                <div className="bg-[#111116] border border-white/10 rounded-xl p-5">
+                <div className="bg-custom_black border border-white/10 rounded-xl p-5">
                   <div className="flex items-center gap-3 mb-3">
                     <div className="p-2 bg-orange-500/10 rounded-lg">
                       <DollarSign className="w-5 h-5 text-orange-400" />
@@ -598,7 +598,7 @@ export default function Restaurants() {
                         href={doc.url}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="flex items-center justify-between p-4 bg-[#111116] border border-white/10 rounded-xl hover:border-orange-500/50 transition-all group"
+                        className="flex items-center justify-between p-4 bg-custom_black border border-white/10 rounded-xl hover:border-orange-500/50 transition-all group"
                       >
                         <div className="flex items-center gap-3">
                           <div className="p-2 bg-orange-500/10 rounded-lg">
@@ -666,7 +666,7 @@ export default function Restaurants() {
       {/* Confirmation Dialog */}
       {showConfirmDialog && pendingAction && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-[60] p-4">
-          <div className="bg-[#1a1a22] border border-white/10 rounded-2xl max-w-md w-full p-6">
+          <div className="bg-secondary border border-white/10 rounded-2xl max-w-md w-full p-6">
             <h3 className="text-xl font-bold text-gray-100 mb-2">Confirm Action</h3>
             <p className="text-gray-400 mb-4">
               Are you sure you want to <span className="font-semibold text-orange-400">{pendingAction.action.toLowerCase()}</span> restaurant{' '}
@@ -681,7 +681,7 @@ export default function Restaurants() {
                 onChange={(e) => setActionReason(e.target.value)}
                 placeholder="Please provide a reason for this action..."
                 rows="4"
-                className="w-full px-4 py-3 bg-[#111116] border border-white/10 rounded-xl text-sm text-gray-300 placeholder-gray-600 focus:outline-none focus:border-orange-500/50 resize-none"
+                className="w-full px-4 py-3 bg-custom_black border border-white/10 rounded-xl text-sm text-gray-300 placeholder-gray-600 focus:outline-none focus:border-orange-500/50 resize-none"
               />
             </div>
             

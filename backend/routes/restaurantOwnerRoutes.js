@@ -7,6 +7,15 @@ const {
 } = require("./../utils/cloudinary");
 const router = express.Router();
 
+// Dashboard route
+router
+  .route("/dashboard")
+  .get(
+    protect,
+    restrictTo("restaurant_owner"),
+    restaurantOwnerController.getDashboard
+  );
+
 router
   .route("/update/:id")
   .patch(
@@ -16,13 +25,14 @@ router
   );
 
 router
-  .route("/delete/:id")
+  .route("/delete/:id") // delete restaurnat owner profie
   .delete(
     protect,
     restrictTo("restaurant_owner"),
     restaurantOwnerController.deleteRestaurantOwner
   );
-router
+
+router // get restaunr owner profile
   .route("/:id")
   .get(
     protect,

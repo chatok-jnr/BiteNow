@@ -166,22 +166,42 @@ exports.createCustomer = async (req, res) => {
 //login
 exports.loginCustomer = async (req, res) => {
   try {
-    const { customer_email, customer_password } = req.body;
-    if (!customer_email || !customer_password) {
+    const { customer_email, customer_phone, customer_password } = req.body;
+    
+    // Check if password is provided
+    if (!customer_password) {
       return res.status(400).json({
         status: "failed",
-        message: "Please enter your email and passowrd",
+        message: "Please enter your password",
       });
     }
 
-    const customer = await Customer.findOne({
-      customer_email: customer_email,
-    }).select("+customer_password +customer_status");
+    // Check if either email or phone is provided
+    if (!customer_email && !customer_phone) {
+      return res.status(400).json({
+        status: "failed",
+        message: "Please enter your email or phone number",
+      });
+    }
+
+    // Find customer by email or phone
+    let customer;
+    if (customer_email) {
+      customer = await Customer.findOne({
+        customer_email: customer_email,
+      }).select("+customer_password +customer_status");
+    } else if (customer_phone) {
+      customer = await Customer.findOne({
+        customer_phone: customer_phone,
+      }).select("+customer_password +customer_status");
+    }
 
     if (!customer) {
       return res.status(404).json({
         status: "failed",
-        message: "You enterd a wrong email address",
+        message: customer_email 
+          ? "You entered a wrong email address"
+          : "You entered a wrong phone number",
       });
     }
 
@@ -193,7 +213,7 @@ exports.loginCustomer = async (req, res) => {
     if (!isPasswordValid) {
       return res.status(400).json({
         status: "failed",
-        message: "You enterd an wrong passowrd",
+        message: "You entered a wrong password",
       });
     }
 
@@ -215,7 +235,7 @@ exports.loginCustomer = async (req, res) => {
     const token = jwt.sign(
       {
         id: customer._id,
-        email: req.body.customer_email,
+        email: customer.customer_email,
         role: "customer",
       },
       process.env.JWT_SECRET,
@@ -243,7 +263,7 @@ exports.loginCustomer = async (req, res) => {
       message: "Login successfully",
       token,
       data: {
-        user: customerResponse,
+        customer: customerResponse,
       },
     });
   } catch (err) {
@@ -437,21 +457,6 @@ exports.loginRider = async (req, res) => {
       });
     }
 
-    if (rider.rider_status !== "Approved") {
-      let msg = "Your rider request is not approved yet";
-      if (rider.rider_status === "Rejected") {
-        msg = "Your are not valid to become a rider";
-      } else if (rider.rider_status === "Suspended") {
-        msg =
-          "Your account has been suspended. Please Contact the support team to learn more";
-      }
-
-      return res.status(400).json({
-        status: "failed",
-        message: msg,
-      });
-    }
-
     const isPasswordValid = await bcrypt.compare(
       rider_password,
       rider.rider_password
@@ -482,7 +487,7 @@ exports.loginRider = async (req, res) => {
       rider_id: rider._id,
       rider_name: rider.rider_name,
       rider_address: rider.rider_address,
-      rider_status: "Approved",
+      rider_status: rider.rider_status, // Include actual status
       rider_documents: {
         nid_no: req.body.nid_no,
       },
@@ -689,18 +694,6 @@ exports.loginRestaurantOwner = async (req, res) => {
       return res.status(400).json({
         status: "failed",
         message: "Wrong Password",
-      });
-    }
-    
-
-    if (sts !== "Approved") {
-      let msg = "Your account is not acitve yet";
-      if (sts === "Suspended")
-        msg =
-          "Your account has been suspended. To learn more please contatct the support team";
-      return res.status(400).json({
-        status: "failed",
-        message: msg,
       });
     }
 
@@ -1087,18 +1080,6 @@ exports.googleAuthSuccessRestaurant = async (req, res) => {
   try {
     const restaurantOwner = req.user;
 
-    // Check restaurant owner status
-    if (restaurantOwner.restaurant_owner_status !== "Approved") {
-      let errorMsg = "account_not_approved";
-      if (restaurantOwner.restaurant_owner_status === "Suspended") {
-        errorMsg = "account_suspended";
-      } else if (restaurantOwner.restaurant_owner_status === "Rejected") {
-        errorMsg = "account_rejected";
-      }
-      const errorUrl = `${process.env.FRONTEND_URL || "http://localhost:5173"}/login?error=${errorMsg}`;
-      return res.redirect(errorUrl);
-    }
-
     const token = jwt.sign(
       { 
         id: restaurantOwner._id,
@@ -1122,18 +1103,6 @@ exports.googleAuthSuccessRestaurant = async (req, res) => {
 exports.googleAuthSuccessRider = async (req, res) => {
   try {
     const rider = req.user;
-
-    // Check rider status
-    if (rider.rider_status !== "Approved") {
-      let errorMsg = "account_not_approved";
-      if (rider.rider_status === "Suspended") {
-        errorMsg = "account_suspended";
-      } else if (rider.rider_status === "Rejected") {
-        errorMsg = "account_rejected";
-      }
-      const errorUrl = `${process.env.FRONTEND_URL || "http://localhost:5173"}/login?error=${errorMsg}`;
-      return res.redirect(errorUrl);
-    }
 
     const token = jwt.sign(
       { 

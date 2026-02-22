@@ -80,7 +80,7 @@ const reverseGeocode = async (latitude, longitude) => {
 const findNearestRestaurants = async (
   customerLat,
   customerLon,
-  maxDistance = 10
+  maxDistance = 10,
 ) => {
   try {
     //get all restaurants from the database
@@ -99,7 +99,7 @@ const findNearestRestaurants = async (
         customerLat,
         customerLon,
         restLat,
-        restLon
+        restLon,
       );
 
       return {
@@ -128,16 +128,15 @@ const findNearestOrders = async (riderLat, riderLon, maxDistance = 15) => {
     const orders = await Order.find({
       order_status: "look_rider",
       rider_id: null,
-      'restaurant_location.coordinates': {$exists: true},
-      'customer_location.coordinates': {$exists: true},
+      "restaurant_location.coordinates": { $exists: true },
+      "customer_location.coordinates": { $exists: true },
     })
       .populate("restaurant_id", "restaurant_name restaurant_address")
       .populate("customer_id", "customer_name customer_phone");
 
     //calculate distance rider to restaurant and restaurant to customer
     const ordersWithDistance = orders.map((order) => {
-      const [restLon, restLat] =
-        order.restaurant_location.coordinates;
+      const [restLon, restLat] = order.restaurant_location.coordinates;
       const [cusLat, cusLon] = order.customer_location.coordinates;
       const d1 = calculateDistance(riderLat, riderLon, restLat, restLon);
       const d2 = calculateDistance(restLat, restLon, cusLat, cusLon);
@@ -166,16 +165,30 @@ const findNearestOrders = async (riderLat, riderLon, maxDistance = 15) => {
 //finding best directions
 const getDirections = async (origin, destination) => {
   try {
+    console.log("Fetching directions from Mapbox:");
+    console.log("  Origin:", origin);
+    console.log("  Destination:", destination);
+
     const res = await directionsService
       .getDirections({
-        profile: "driving",
+        profile: "driving-traffic", // Use driving-traffic for real-time traffic data
         waypoints: [{ coordinates: origin }, { coordinates: destination }],
         geometries: "geojson",
+        overview: "full", // Get full geometry, not simplified
+        steps: true, // Include turn-by-turn instructions
       })
       .send();
 
     if (res.body.routes.length > 0) {
       const route = res.body.routes[0];
+      console.log("Route found:");
+      console.log("  Distance:", (route.distance / 1000).toFixed(2), "km");
+      console.log("  Duration:", Math.round(route.duration / 60), "minutes");
+      console.log(
+        "  Geometry points:",
+        route.geometry.coordinates?.length || 0,
+      );
+
       return {
         distance: (route.distance / 1000).toFixed(2), //convert meter to Km
         duration: Math.round(route.duration / 60), //convert second to minute
@@ -185,6 +198,7 @@ const getDirections = async (origin, destination) => {
     throw new Error("No route found");
   } catch (err) {
     console.error("Directions error:", err);
+    console.error("Error details:", err.message);
     throw err;
   }
 };

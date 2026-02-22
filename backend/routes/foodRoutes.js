@@ -10,11 +10,17 @@ router
   .get(Food.getAllFood) // All Food in the platform
   .post(protect, restrictTo("restaurant_owner"), Food.createFood); // Create a new food
 
-router.route("/price").get(Food.getFoodByPriceRange); // Get Food by price range
+router
+  .route("/price")
+  .get(Food.getFoodByPriceRange); // Get Food by price range
 
-router.route("/discounted").get(Food.getDiscountedFood); // Get Food by discount
+router
+  .route("/discounted")
+  .get(Food.getDiscountedFood); // Get Food by discount
 
-router.route("/restaurant/:restaurantId").get(Food.getFoodByRestaurant); // Get food by a specific restaurnat
+router
+  .route("/restaurant/:restaurantId")
+  .get(Food.getFoodByRestaurant); // Get food by a specific restaurnat
 
 router
   .route("/:id/restock")

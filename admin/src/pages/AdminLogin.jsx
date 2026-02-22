@@ -53,10 +53,10 @@ export default function AdminLogin() {
   };
 
   return (
-    <div className="min-h-screen bg-[#0a0a0f] flex items-center justify-center p-4">
+    <div className="min-h-screen bg-custom_black flex items-center justify-center p-4">
       <div className="w-full max-w-md">
         {/* Login Card */}
-        <div className="relative border border-white/10 rounded-3xl p-8 bg-gradient-to-br from-[#16161d] to-[#1a1a22] shadow-2xl overflow-hidden">
+        <div className="relative border border-white/10 rounded-3xl p-8 bg-gradient-to-br from-custom_black to-secondary shadow-2xl overflow-hidden">
           {/* Decorative gradient background */}
           <div className="absolute inset-0 bg-gradient-to-br from-orange-500/10 via-transparent to-amber-500/5 opacity-50" />
           
@@ -89,7 +89,7 @@ export default function AdminLogin() {
                   placeholder="admin@bitenow.com"
                   required
                   disabled={loading}
-                  className="w-full px-4 py-3 bg-[#1a1a22] border border-white/10 rounded-2xl text-gray-100 placeholder-gray-600 focus:outline-none focus:border-orange-500/50 focus:bg-[#1f1f2a] transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="w-full px-4 py-3 bg-secondary border border-white/10 rounded-2xl text-gray-100 placeholder-gray-600 focus:outline-none focus:border-orange-500/50 focus:bg-secondary transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                 />
               </div>
 
@@ -105,7 +105,7 @@ export default function AdminLogin() {
                     placeholder="••••••••"
                     required
                     disabled={loading}
-                    className="w-full px-4 py-3 bg-[#1a1a22] border border-white/10 rounded-2xl text-gray-100 placeholder-gray-600 focus:outline-none focus:border-orange-500/50 focus:bg-[#1f1f2a] transition-all disabled:opacity-50 disabled:cursor-not-allowed pr-12"
+                    className="w-full px-4 py-3 bg-secondary border border-white/10 rounded-2xl text-gray-100 placeholder-gray-600 focus:outline-none focus:border-orange-500/50 focus:bg-secondary transition-all disabled:opacity-50 disabled:cursor-not-allowed pr-12"
                   />
                   <button
                     type="button"

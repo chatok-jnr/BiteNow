@@ -83,11 +83,15 @@ const orderSchema = new mongoose.Schema(
     delivery_charge: Number,
     total_amount: Number,
     delivery_address: {
-      street: String,
-      city: String,
-      state: String,
-      zip_code: String,
-      country: String,
+      type: {
+        type: String,
+        enum: ["Point"],
+        default: "Point",
+      },
+      coordinates: {
+        type: [Number], // [longitude, latitude]
+        default: undefined,
+      },
     },
     payment_status: {
       type: String,
@@ -219,6 +223,9 @@ orderSchema.statics.getRevenueByRestaurant = async function (
 
   return result[0] || { totalRevenue: 0, totalOrders: 0, averageOrderValue: 0 };
 };
+
+// Indexes for performance optimization
+orderSchema.index({ restaurant_id: 1, createdAt: 1 });
 
 const Order = mongoose.model("Order", orderSchema);
 module.exports = Order;

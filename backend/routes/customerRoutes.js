@@ -18,13 +18,28 @@ router
   .post(
     restrictTo("customer"),
     customerUploader.single("image"),
-    customerController.uploadCustomerImage
+    customerController.uploadCustomerImage,
   )
   .patch(
     restrictTo("customer"),
     customerUploader.single("image"),
-    customerController.updateCustomerImage
+    customerController.updateCustomerImage,
   )
   .delete(restrictTo("customer"), customerController.deleteCustomerImage);
+
+//address management routes
+router
+  .route("/:id/addresses")
+  .get(restrictTo("customer"), customerController.getAddresses)
+  .post(restrictTo("customer"), customerController.addAddress);
+
+router
+  .route("/:id/addresses/:addressId")
+  .patch(restrictTo("customer"), customerController.updateAddress)
+  .delete(restrictTo("customer"), customerController.deleteAddress);
+
+router
+  .route("/:id/addresses/:addressId/default")
+  .patch(restrictTo("customer"), customerController.setDefaultAddress);
 
 module.exports = router;

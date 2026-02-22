@@ -22,7 +22,7 @@ const customerSchema = new mongoose.Schema(
     },
     customer_phone: {
       type: String,
-      required: function() {
+      required: function () {
         return !this.isGoogleAuth; // Not required for Google auth users
       },
       //unique: true,
@@ -30,14 +30,14 @@ const customerSchema = new mongoose.Schema(
     },
     customer_birth_date: {
       type: Date,
-      required: function() {
+      required: function () {
         return !this.isGoogleAuth;
       },
     },
     customer_gender: {
       type: String,
       enum: ["Male", "Female", "Other"],
-      required: function() {
+      required: function () {
         return !this.isGoogleAuth;
       },
     },
@@ -48,13 +48,13 @@ const customerSchema = new mongoose.Schema(
     },
     customer_address: {
       type: String,
-      required: function() {
+      required: function () {
         return !this.isGoogleAuth;
       },
     },
     customer_password: {
       type: String,
-      required: function() {
+      required: function () {
         return !this.isGoogleAuth;
       },
       minlength: [6, "A password length must be 6 or more"],
@@ -66,7 +66,7 @@ const customerSchema = new mongoose.Schema(
     },
     customer_photo: {
       type: String,
-      default: '',
+      default: "",
     },
     role: {
       type: String,
@@ -110,13 +110,43 @@ const customerSchema = new mongoose.Schema(
       type: Boolean,
       default: true,
     },
+    saved_addresses: [
+      {
+        label: {
+          type: String,
+          required: [true, "Address label is required"],
+          trim: true,
+        },
+        address: {
+          type: String,
+          required: [true, "Address is required"],
+          trim: true,
+        },
+        latitude: {
+          type: Number,
+          required: [true, "Latitude is required"],
+        },
+        longitude: {
+          type: Number,
+          required: [true, "Longitude is required"],
+        },
+        isDefault: {
+          type: Boolean,
+          default: false,
+        },
+        createdAt: {
+          type: Date,
+          default: Date.now,
+        },
+      },
+    ],
     passwordChangedAt: Date,
     // passwordResetToken: String,
     // passwordResetExpires: Date
   },
   {
     timestamps: true,
-  }
+  },
 );
 
 // Hashing the password before saving
@@ -158,7 +188,7 @@ customerSchema.methods.changedPasswordAfter = function (JWTTimestamps) {
   if (this.passwordChangedAt) {
     const changeTimestamps = parseInt(
       this.passwordChangedAt.getTime() / 1000,
-      10
+      10,
     );
     // Return true if token was issued before password change
     return JWTTimestamps < changeTimestamps;

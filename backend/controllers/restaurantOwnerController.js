@@ -1,5 +1,7 @@
 const mongoose = require("mongoose");
 const RestaurantOwner = require("./../models/restaurantOwnerModel");
+const Restaurant = require('./../models/restaurantModel');
+const Order = require('./../models/orderModel');
 const {
   imageUploadHelper,
   imageDeleteHelper,
@@ -8,6 +10,85 @@ const {
   docDeleteHelper,
   docsDeleteHelper,
 } = require("./../utils/cloudinary");
+
+//Get dashboard
+exports.getDashboard = async (req, res) => {
+  try {
+    const owner_id = req.user._id;
+
+    const now = new Date();
+    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+    const startOfNextMonth = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+
+    const myRestaurants = await Restaurant.aggregate([
+      // 1️⃣ Only owner’s restaurants
+      {
+        $match: { owner_id }
+      },
+
+      // 2️⃣ Lookup orders (this month only)
+      {
+        $lookup: {
+          from: "orders",
+          let: { restaurantId: "$_id" },
+          pipeline: [
+            {
+              $match: {
+                $expr: {
+                  $eq: ["$restaurant_id", "$$restaurantId"]
+                },
+                createdAt: {
+                  $gte: startOfMonth,
+                  $lt: startOfNextMonth
+                }
+              }
+            },
+
+            // 3️⃣ Group orders → count + revenue
+            {
+              $group: {
+                _id: null,
+                order_count: { $sum: 1 },
+                total_revenue: { $sum: "$total_amount" }
+              }
+            }
+          ],
+          as: "order_stats"
+        }
+      },
+
+      // 4️⃣ Clean output (avoid empty arrays)
+      {
+        $addFields: {
+          order_count: {
+            $ifNull: [{ $arrayElemAt: ["$order_stats.order_count", 0] }, 0]
+          },
+          total_revenue: {
+            $ifNull: [{ $arrayElemAt: ["$order_stats.total_revenue", 0] }, 0]
+          }
+        }
+      },
+
+      // 5️⃣ Remove internal field
+      {
+        $project: {
+          order_stats: 0
+        }
+      }
+    ]);
+
+    res.status(200).json({
+      status: "success",
+      myRestaurants
+    });
+
+  } catch (err) {
+    res.status(400).json({
+      status: "failed",
+      message: err.message
+    });
+  }
+};
 
 // Get restaurant owner by ID
 exports.getRestaurantOwner = async (req, res) => {
@@ -32,6 +113,18 @@ exports.getRestaurantOwner = async (req, res) => {
       });
     }
 
+    const response = {
+      name:restaurantOwner.restaurant_owner_name,
+      phone:restaurantOwner.restaurant_owner_phone || '',
+      email:restaurantOwner.restaurant_owner_email,
+      image:restaurantOwner.restaurant_owner_image,
+      documents:restaurantOwner.restaurant_owner_documents,
+      gender:restaurantOwner.restaurant_owner_gender || 'Male',
+      status:restaurantOwner.restaurant_owner_status,
+      dob:restaurantOwner.restaurant_owner_dob || null,
+      address:restaurantOwner.restaurant_owner_address,
+    }
+
     res.status(200).json({
       status: "success",
       data: {
@@ -53,6 +146,7 @@ exports.getRestaurantOwner = async (req, res) => {
   }
 };
 
+// Update Restaurant Owner
 exports.updateRestaurantOwner = async (req, res) => {
   try {
     const ownerID = req.params.id;
@@ -113,6 +207,8 @@ exports.updateRestaurantOwner = async (req, res) => {
     });
   }
 };
+
+// Delete Restaurant Owner
 exports.deleteRestaurantOwner = async (req, res) => {
   try {
     const ownerID = req.params.id;

@@ -89,6 +89,46 @@ exports.getRiderById = async (req, res) => {
     });
   }
 };
+
+// Get user info
+exports.getMe = async (req, res) => {
+  try {
+    const rider_id = req.user._id;
+    const riderInfo = await Rider.findById(rider_id);
+    if (!riderInfo) {
+      res.status(404).json({
+        status: "failed",
+        message: "Rider Not found",
+      });
+    }
+
+    const rider = {
+      id: req.user._id,
+      name: riderInfo.rider_name,
+      email: riderInfo.rider_email,
+      date_of_birth: riderInfo.rider_date_of_birth,
+      gender: riderInfo.rider_gender || "",
+      address: riderInfo.rider_address || "",
+      location: riderInfo.rider_location || null,
+      account_status: riderInfo.rider_status,
+      image: riderInfo.rider_image || null,
+      documents: riderInfo.rider_documents,
+      contact_info: riderInfo.rider_contact_info,
+      stats: riderInfo.rider_stats,
+    };
+
+    res.status(200).json({
+      status: "success",
+      rider,
+    });
+  } catch (err) {
+    res.status(400).json({
+      status: "failed",
+      message: err.message,
+    });
+  }
+};
+
 //update rider
 exports.updateRider = async (req, res) => {
   try {
@@ -124,6 +164,7 @@ exports.updateRider = async (req, res) => {
       "rider_address",
       "rider_contact_info.emergency_contact",
       "rider_contact_info.alternative_phone",
+      "rider_coordinates",
     ];
 
     //step 04 => filter out and check valid update
@@ -134,6 +175,8 @@ exports.updateRider = async (req, res) => {
       }
     });
 
+    console.log("Allowed updates from request:", update);
+
     //check valid update
     if (Object.keys(update).length === 0) {
       return res.status(400).json({
@@ -143,7 +186,43 @@ exports.updateRider = async (req, res) => {
     }
 
     //Step 05 => update the rider and show data
-    Object.assign(rider, update);
+    // Handle nested properties with dot notation
+    Object.keys(update).forEach((key) => {
+      if (key === "rider_coordinates") {
+        // Handle coordinates specially - map to rider_location.coordinates
+        console.log("Processing rider_coordinates:", update[key]);
+        if (Array.isArray(update[key]) && update[key].length === 2) {
+          if (!rider.rider_location) {
+            rider.rider_location = {
+              type: "Point",
+              coordinates: update[key],
+            };
+            console.log("Created new rider_location:", rider.rider_location);
+          } else {
+            rider.rider_location.coordinates = update[key];
+            console.log(
+              "Updated rider_location.coordinates:",
+              rider.rider_location.coordinates,
+            );
+          }
+          rider.lastLocationUpdate = Date.now();
+        } else {
+          console.log("Invalid coordinates format:", update[key]);
+        }
+      } else if (key.includes(".")) {
+        // Handle nested properties like "rider_contact_info.emergency_contact"
+        const keys = key.split(".");
+        if (keys.length === 2) {
+          if (!rider[keys[0]]) {
+            rider[keys[0]] = {};
+          }
+          rider[keys[0]][keys[1]] = update[key];
+        }
+      } else {
+        // Handle regular properties
+        rider[key] = update[key];
+      }
+    });
     await rider.save();
     res.status(200).json({
       status: "success",
@@ -369,7 +448,7 @@ exports.updateRiderImage = async (req, res) => {
     const newImage = await imageUpdationHelper(
       req.file,
       rider.rider_name,
-      oldPublicId
+      oldPublicId,
     );
 
     //save image
@@ -516,7 +595,7 @@ exports.deleteRiderDoc = async (req, res) => {
     }
     //find the documents
     const docIndex = rider.rider_documents.findIndex(
-      (doc) => doc._id.toString() === docId.toString()
+      (doc) => doc._id.toString() === docId.toString(),
     );
 
     if (docIndex === -1) {
@@ -543,6 +622,58 @@ exports.deleteRiderDoc = async (req, res) => {
       status: "error",
       message: "Failed to delete document",
       error: err.message,
+    });
+  }
+};
+
+// Get rider statistics
+exports.getRiderStats = async (req, res) => {
+  try {
+    const riderId = req.user._id;
+    const Order = require("./../models/orderModel");
+
+    // Get today's date range (start of day to end of day)
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const tomorrow = new Date(today);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+
+    // Get today's completed deliveries
+    const todaysDeliveries = await Order.find({
+      rider_id: riderId,
+      order_status: "delivered",
+      delivered_at: {
+        $gte: today,
+        $lt: tomorrow,
+      },
+    });
+
+    // Calculate today's earnings (sum of delivery charges)
+    const todaysEarnings = todaysDeliveries.reduce((total, order) => {
+      return total + (order.delivery_charge || 0);
+    }, 0);
+
+    // Count deliveries completed today
+    const deliveriesCompleted = todaysDeliveries.length;
+
+    // Count available requests (orders looking for rider)
+    const availableRequests = await Order.countDocuments({
+      order_status: "look_rider",
+      rider_id: null,
+    });
+
+    res.status(200).json({
+      status: "success",
+      data: {
+        todaysEarnings: todaysEarnings.toFixed(2),
+        deliveriesCompleted,
+        availableRequests,
+      },
+    });
+  } catch (err) {
+    res.status(500).json({
+      status: "error",
+      message: err.message || "Error fetching rider statistics",
     });
   }
 };

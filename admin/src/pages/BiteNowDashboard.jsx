@@ -70,9 +70,9 @@ export default function BiteNowDashboard() {
 
   if (loading) {
     return (
-      <div className="flex h-screen bg-[#0a0a0f] text-gray-100">
+      <div className="flex h-screen bg-custom_black text-gray-100">
         <Sidebar />
-        <main className="flex-1 overflow-auto bg-[#0a0a0f] flex items-center justify-center">
+        <main className="flex-1 overflow-auto bg-custom_black flex items-center justify-center">
           <div className="text-center">
             <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500 mb-4"></div>
             <p className="text-gray-400">Loading dashboard...</p>
@@ -84,9 +84,9 @@ export default function BiteNowDashboard() {
 
   if (error) {
     return (
-      <div className="flex h-screen bg-[#0a0a0f] text-gray-100">
+      <div className="flex h-screen bg-custom_black text-gray-100">
         <Sidebar />
-        <main className="flex-1 overflow-auto bg-[#0a0a0f] flex items-center justify-center">
+        <main className="flex-1 overflow-auto bg-custom_black flex items-center justify-center">
           <div className="text-center">
             <p className="text-red-400 mb-4">{error}</p>
             <button 
@@ -102,12 +102,12 @@ export default function BiteNowDashboard() {
   }
 
   return (
-    <div className="flex h-screen bg-[#0a0a0f] text-gray-100">
+    <div className="flex h-screen bg-custom_black text-gray-100">
       {/* Sidebar */}
       <Sidebar />
 
       {/* Main Content */}
-      <main className="flex-1 overflow-auto bg-[#0a0a0f]">
+      <main className="flex-1 overflow-auto bg-custom_black">
         <div className="p-8 max-w-6xl mx-auto">
           {/* Header */}
           <div className="mb-8">
@@ -134,7 +134,7 @@ export default function BiteNowDashboard() {
           {/* Bottom Section */}
           <div className="grid grid-cols-3 gap-6">
             {/* Total Users - Takes 1 column */}
-            <div className="relative border border-white/10 rounded-xl p-6 bg-gradient-to-br from-[#16161d] to-[#1a1a22] hover:border-orange-500/40 hover:shadow-2xl hover:shadow-orange-500/10 hover:-translate-y-1 transition-all duration-300 cursor-pointer group overflow-hidden">
+            <div className="relative border border-white/10 rounded-xl p-6 bg-gradient-to-br from-custom_black to-secondary hover:border-orange-500/40 hover:shadow-2xl hover:shadow-orange-500/10 hover:-translate-y-1 transition-all duration-300 cursor-pointer group overflow-hidden">
               <div className="absolute inset-0 bg-gradient-to-br from-orange-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
               <h3 className="text-xl font-semibold mb-6 pb-3 border-b border-white/10 relative z-10 text-gray-50">
                 Total Users
@@ -153,7 +153,7 @@ export default function BiteNowDashboard() {
             </div>
 
             {/* Audit Logs - Takes 2 columns */}
-            <div className="relative col-span-2 border border-white/10 rounded-xl p-6 bg-gradient-to-br from-[#16161d] to-[#1a1a22] hover:border-orange-500/40 hover:shadow-2xl hover:shadow-orange-500/10 hover:-translate-y-1 transition-all duration-300 cursor-pointer group overflow-hidden">
+            <div className="relative col-span-2 border border-white/10 rounded-xl p-6 bg-gradient-to-br from-custom_black to-secondary hover:border-orange-500/40 hover:shadow-2xl hover:shadow-orange-500/10 hover:-translate-y-1 transition-all duration-300 cursor-pointer group overflow-hidden">
               <div className="absolute inset-0 bg-gradient-to-br from-orange-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
               <h3 className="text-xl font-semibold mb-6 pb-3 border-b border-white/10 relative z-10 text-gray-50">
                 Last 4 Audit Logs
