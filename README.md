@@ -826,7 +826,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 👨‍💻 Authors
 
-- **RMOS** - Initial work and development
+- **Ramim, Mim, Opu, Sakib (RMOS)** - Initial work and development
 
 ---
 
@@ -843,7 +843,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 📧 Support
 
-For support, email support@bitenow.com or open an issue in the repository.
+For support, email md.sakib.hos3n@gmail.com or open an issue in the repository.
 
 ---
 
@@ -860,10 +860,8 @@ For support, email support@bitenow.com or open an issue in the repository.
 ## 🔮 Future Enhancements
 
 - [ ] Mobile applications (React Native)
-- [ ] Payment gateway integration (Stripe, PayPal)
+- [ ] Payment gateway integration
 - [ ] Advanced analytics and reporting
-- [ ] AI-powered food recommendations
-- [ ] Multi-language support
 - [ ] Dark mode
 - [ ] Push notifications
 - [ ] In-app chat system
