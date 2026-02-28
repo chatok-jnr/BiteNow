@@ -72,11 +72,11 @@ const Login = () => {
           </div>
 
           {/* Welcome Card */}
-          <div className="bg-gradient-to-br from-secondary/80 to-secondary rounded-xl p-8 text-center shadow-lg mb-6">
-            <h2 className="text-3xl font-bold text-white mb-3">
+          <div className="bg-gradient-to-br from-secondary/80 to-secondary rounded-xl p-5 sm:p-8 text-center shadow-lg mb-5 sm:mb-6">
+            <h2 className="text-2xl sm:text-3xl font-bold text-white mb-2 sm:mb-3">
               Start Earning Today
             </h2>
-            <p className="text-white/90 text-lg leading-relaxed mb-2">
+            <p className="text-white/90 text-base sm:text-lg leading-relaxed mb-2">
               Sign in to start delivering and earning
             </p>
             <p className="text-white/70 text-sm">
@@ -112,7 +112,8 @@ const Login = () => {
 
           {/* Info text */}
           <p className="text-white/60 text-center text-sm mt-6 leading-relaxed">
-            By continuing, you agree to BiteNow's Terms of Service and Privacy Policy
+            By continuing, you agree to BiteNow's Terms of Service and Privacy
+            Policy
           </p>
         </div>
       </div>

@@ -864,12 +864,12 @@ const Home = () => {
       <nav className="sticky top-0 z-50 bg-primary shadow-md">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
-            <div className="flex items-center space-x-3">
+            <div className="flex items-center space-x-2 min-w-0">
               {riderProfile.image ? (
                 <img
                   src={riderProfile.image}
                   alt="Rider profile"
-                  className="w-10 h-10 rounded-full object-cover border-2 border-white"
+                  className="w-9 h-9 sm:w-10 sm:h-10 rounded-full object-cover border-2 border-white flex-shrink-0"
                   onError={(e) => {
                     console.error("Image failed to load:", riderProfile.image);
                     e.target.style.display = "none";
@@ -878,33 +878,33 @@ const Home = () => {
                 />
               ) : null}
               <div
-                className="w-10 h-10 bg-white rounded-full flex items-center justify-center"
+                className="w-9 h-9 sm:w-10 sm:h-10 bg-white rounded-full flex items-center justify-center flex-shrink-0"
                 style={{ display: riderProfile.image ? "none" : "flex" }}
               >
                 {riderProfile.gender?.toLowerCase() === "female" ? (
-                  <UserCircle className="w-6 h-6 text-primary" />
+                  <UserCircle className="w-5 h-5 sm:w-6 sm:h-6 text-primary" />
                 ) : (
-                  <User className="w-6 h-6 text-primary" />
+                  <User className="w-5 h-5 sm:w-6 sm:h-6 text-primary" />
                 )}
               </div>
-              <span className="text-2xl font-bold text-white">
+              <span className="text-lg sm:text-2xl font-bold text-white truncate max-w-[120px] sm:max-w-none">
                 {riderProfile.name || "BiteNow Rider"}
               </span>
             </div>
-            <div className="flex items-center space-x-4">
+            <div className="flex items-center space-x-2 flex-shrink-0">
               <button
                 onClick={() => navigate("/rider/profile")}
-                className="bg-primary text-white px-6 py-2 rounded-full hover:bg-accent-dark transition-all font-semibold flex items-center space-x-2"
+                className="bg-white/20 hover:bg-white/30 text-white px-3 sm:px-6 py-2 rounded-full transition-all font-semibold flex items-center space-x-1 sm:space-x-2"
               >
-                <User className="w-5 h-5" />
-                <span>Profile</span>
+                <User className="w-4 h-4 sm:w-5 sm:h-5" />
+                <span className="hidden sm:inline">Profile</span>
               </button>
               <button
                 onClick={handleLogout}
-                className="bg-red-500 text-white px-6 py-2 rounded-full hover:bg-red-600 transition-all font-semibold flex items-center space-x-2"
+                className="bg-red-500 text-white px-3 sm:px-6 py-2 rounded-full hover:bg-red-600 transition-all font-semibold flex items-center space-x-1 sm:space-x-2"
               >
-                <LogOut className="w-5 h-5" />
-                <span>Logout</span>
+                <LogOut className="w-4 h-4 sm:w-5 sm:h-5" />
+                <span className="hidden sm:inline">Logout</span>
               </button>
             </div>
           </div>
@@ -912,24 +912,30 @@ const Home = () => {
       </nav>
 
       {/* Stats Header */}
-      <div className="bg-secondary py-8">
+      <div className="bg-secondary py-5 sm:py-8">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="bg-white/20 backdrop-blur-sm rounded-2xl p-6 border border-white/30">
-              <p className="text-white/80 text-sm mb-2">Today's Earnings</p>
-              <p className="text-3xl font-bold text-white">
+          <div className="grid grid-cols-3 gap-3 sm:gap-6">
+            <div className="bg-white/20 backdrop-blur-sm rounded-xl sm:rounded-2xl p-3 sm:p-6 border border-white/30">
+              <p className="text-white/80 text-xs sm:text-sm mb-1 sm:mb-2">
+                Today's Earnings
+              </p>
+              <p className="text-xl sm:text-3xl font-bold text-white">
                 ৳{riderStats.todaysEarnings}
               </p>
             </div>
-            <div className="bg-white/20 backdrop-blur-sm rounded-2xl p-6 border border-white/30">
-              <p className="text-white/80 text-sm mb-2">Deliveries Completed</p>
-              <p className="text-3xl font-bold text-white">
+            <div className="bg-white/20 backdrop-blur-sm rounded-xl sm:rounded-2xl p-3 sm:p-6 border border-white/30">
+              <p className="text-white/80 text-xs sm:text-sm mb-1 sm:mb-2">
+                Deliveries
+              </p>
+              <p className="text-xl sm:text-3xl font-bold text-white">
                 {riderStats.deliveriesCompleted}
               </p>
             </div>
-            <div className="bg-white/20 backdrop-blur-sm rounded-2xl p-6 border border-white/30">
-              <p className="text-white/80 text-sm mb-2">Available Requests</p>
-              <p className="text-3xl font-bold text-white">
+            <div className="bg-white/20 backdrop-blur-sm rounded-xl sm:rounded-2xl p-3 sm:p-6 border border-white/30">
+              <p className="text-white/80 text-xs sm:text-sm mb-1 sm:mb-2">
+                Requests
+              </p>
+              <p className="text-xl sm:text-3xl font-bold text-white">
                 {riderStats.availableRequests}
               </p>
             </div>
@@ -938,52 +944,56 @@ const Home = () => {
       </div>
 
       {/* Tabs */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-6">
-        <div className="flex space-x-4">
+      <div className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-8 -mt-4 sm:-mt-6">
+        <div className="flex space-x-1 sm:space-x-4">
           <button
             onClick={() => setActiveTab("requests")}
-            className={`flex-1 py-4 px-6 rounded-t-2xl font-semibold transition-all ${
+            className={`flex-1 py-3 sm:py-4 px-2 sm:px-6 rounded-t-xl sm:rounded-t-2xl font-semibold transition-all text-sm sm:text-base ${
               activeTab === "requests"
                 ? "bg-surface text-primary shadow-lg"
                 : "bg-tertiary text-gray-600 hover:bg-surface/50"
             }`}
           >
-            <div className="flex items-center justify-center space-x-2">
-              <Package className="w-5 h-5" />
-              <span>Order Requests</span>
-              <span className="bg-primary text-white px-2 py-1 rounded-full text-xs">
+            <div className="flex items-center justify-center space-x-1 sm:space-x-2">
+              <Package className="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" />
+              <span className="hidden xs:inline sm:inline truncate">
+                Requests
+              </span>
+              <span className="bg-primary text-white px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-full text-xs">
                 {orderRequests.length}
               </span>
             </div>
           </button>
           <button
             onClick={() => setActiveTab("active")}
-            className={`flex-1 py-4 px-6 rounded-t-2xl font-semibold transition-all ${
+            className={`flex-1 py-3 sm:py-4 px-2 sm:px-6 rounded-t-xl sm:rounded-t-2xl font-semibold transition-all text-sm sm:text-base ${
               activeTab === "active"
                 ? "bg-surface text-primary shadow-lg"
                 : "bg-tertiary text-gray-600 hover:bg-surface/50"
             }`}
           >
-            <div className="flex items-center justify-center space-x-2">
-              <Bike className="w-5 h-5" />
-              <span>Active Orders</span>
-              <span className="bg-primary text-white px-2 py-1 rounded-full text-xs">
+            <div className="flex items-center justify-center space-x-1 sm:space-x-2">
+              <Bike className="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" />
+              <span className="hidden xs:inline sm:inline truncate">
+                Active
+              </span>
+              <span className="bg-primary text-white px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-full text-xs">
                 {activeOrders.length}
               </span>
             </div>
           </button>
           <button
             onClick={() => setActiveTab("completed")}
-            className={`flex-1 py-4 px-6 rounded-t-2xl font-semibold transition-all ${
+            className={`flex-1 py-3 sm:py-4 px-2 sm:px-6 rounded-t-xl sm:rounded-t-2xl font-semibold transition-all text-sm sm:text-base ${
               activeTab === "completed"
                 ? "bg-surface text-primary shadow-lg"
                 : "bg-tertiary text-gray-600 hover:bg-surface/50"
             }`}
           >
-            <div className="flex items-center justify-center space-x-2">
-              <CheckCircle className="w-5 h-5" />
-              <span>Completed</span>
-              <span className="bg-primary text-white px-2 py-1 rounded-full text-xs">
+            <div className="flex items-center justify-center space-x-1 sm:space-x-2">
+              <CheckCircle className="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" />
+              <span className="hidden xs:inline sm:inline truncate">Done</span>
+              <span className="bg-primary text-white px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-full text-xs">
                 {completedOrders.length}
               </span>
             </div>

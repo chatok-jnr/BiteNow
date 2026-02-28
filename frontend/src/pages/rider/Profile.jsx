@@ -566,12 +566,12 @@ const Profile = () => {
       <nav className="sticky top-0 z-50 bg-primary shadow-md">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
-            <div className="flex items-center space-x-3">
+            <div className="flex items-center space-x-2 min-w-0">
               {navbarProfile.image ? (
                 <img
                   src={navbarProfile.image}
                   alt="Rider profile"
-                  className="w-10 h-10 rounded-full object-cover border-2 border-white"
+                  className="w-9 h-9 sm:w-10 sm:h-10 rounded-full object-cover border-2 border-white flex-shrink-0"
                   onError={(e) => {
                     e.target.style.display = "none";
                     e.target.nextSibling.style.display = "flex";
@@ -579,26 +579,26 @@ const Profile = () => {
                 />
               ) : null}
               <div
-                className="w-10 h-10 bg-white rounded-full flex items-center justify-center"
+                className="w-9 h-9 sm:w-10 sm:h-10 bg-white rounded-full flex items-center justify-center flex-shrink-0"
                 style={{ display: navbarProfile.image ? "none" : "flex" }}
               >
                 {navbarProfile.gender?.toLowerCase() === "female" ? (
-                  <UserCircle className="w-6 h-6 text-primary" />
+                  <UserCircle className="w-5 h-5 sm:w-6 sm:h-6 text-primary" />
                 ) : (
-                  <User className="w-6 h-6 text-primary" />
+                  <User className="w-5 h-5 sm:w-6 sm:h-6 text-primary" />
                 )}
               </div>
-              <span className="text-2xl font-bold text-white">
+              <span className="text-lg sm:text-2xl font-bold text-white truncate max-w-[130px] sm:max-w-none">
                 {navbarProfile.name || "BiteNow Rider"}
               </span>
             </div>
-            <div className="flex items-center space-x-4">
+            <div className="flex items-center space-x-2 flex-shrink-0">
               <button
                 onClick={() => navigate("/rider/home")}
-                className="text-white hover:text-surface transition-colors font-medium flex items-center space-x-2"
+                className="text-white hover:text-surface transition-colors font-medium flex items-center space-x-1 sm:space-x-2"
               >
-                <ArrowLeft className="w-5 h-5" />
-                <span>Back to Dashboard</span>
+                <ArrowLeft className="w-4 h-4 sm:w-5 sm:h-5" />
+                <span className="hidden sm:inline">Back to Dashboard</span>
               </button>
             </div>
           </div>
@@ -606,12 +606,12 @@ const Profile = () => {
       </nav>
 
       {/* Page Header */}
-      <div className="bg-secondary py-12">
+      <div className="bg-secondary py-8 sm:py-12">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h1 className="text-4xl md:text-5xl font-bold text-white mb-3">
+          <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold text-white mb-2 sm:mb-3">
             My Profile
           </h1>
-          <p className="text-white/90 text-lg">
+          <p className="text-white/90 text-base sm:text-lg">
             Manage your account information and settings
           </p>
         </div>
@@ -620,54 +620,54 @@ const Profile = () => {
       {/* Main Content */}
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Stats Row - Horizontal Layout */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 mb-6 sm:mb-8">
           {/* Rating Card */}
-          <div className="bg-tertiary rounded-2xl p-6 shadow-lg">
+          <div className="bg-tertiary rounded-xl sm:rounded-2xl p-4 sm:p-6 shadow-lg">
             <div className="text-center">
-              <div className="w-16 h-16 mx-auto mb-3 bg-primary rounded-full flex items-center justify-center">
-                <Star className="w-8 h-8 fill-yellow-400 text-yellow-400" />
+              <div className="w-12 h-12 sm:w-16 sm:h-16 mx-auto mb-2 sm:mb-3 bg-primary rounded-full flex items-center justify-center">
+                <Star className="w-6 h-6 sm:w-8 sm:h-8 fill-yellow-400 text-yellow-400" />
               </div>
               <p className="text-xs text-gray-600 mb-1">Rating</p>
-              <p className="text-3xl font-bold text-primary">
+              <p className="text-2xl sm:text-3xl font-bold text-primary">
                 {profileData.stats?.average_rating?.toFixed(1) || "0.0"}
               </p>
             </div>
           </div>
 
           {/* Total Deliveries Card */}
-          <div className="bg-tertiary rounded-2xl p-6 shadow-lg">
+          <div className="bg-tertiary rounded-xl sm:rounded-2xl p-4 sm:p-6 shadow-lg">
             <div className="text-center">
-              <div className="w-16 h-16 mx-auto mb-3 bg-primary rounded-full flex items-center justify-center">
-                <Package className="w-8 h-8 text-white" />
+              <div className="w-12 h-12 sm:w-16 sm:h-16 mx-auto mb-2 sm:mb-3 bg-primary rounded-full flex items-center justify-center">
+                <Package className="w-6 h-6 sm:w-8 sm:h-8 text-white" />
               </div>
-              <p className="text-xs text-gray-600 mb-1">Total Deliveries</p>
-              <p className="text-3xl font-bold text-primary">
+              <p className="text-xs text-gray-600 mb-1">Deliveries</p>
+              <p className="text-2xl sm:text-3xl font-bold text-primary">
                 {profileData.stats?.total_deliveries || 0}
               </p>
             </div>
           </div>
 
           {/* Completed Orders Card */}
-          <div className="bg-tertiary rounded-2xl p-6 shadow-lg">
+          <div className="bg-tertiary rounded-xl sm:rounded-2xl p-4 sm:p-6 shadow-lg">
             <div className="text-center">
-              <div className="w-16 h-16 mx-auto mb-3 bg-primary rounded-full flex items-center justify-center">
-                <CheckCircle className="w-8 h-8 text-white" />
+              <div className="w-12 h-12 sm:w-16 sm:h-16 mx-auto mb-2 sm:mb-3 bg-primary rounded-full flex items-center justify-center">
+                <CheckCircle className="w-6 h-6 sm:w-8 sm:h-8 text-white" />
               </div>
               <p className="text-xs text-gray-600 mb-1">Completed</p>
-              <p className="text-3xl font-bold text-primary">
+              <p className="text-2xl sm:text-3xl font-bold text-primary">
                 {completedOrders.length}
               </p>
             </div>
           </div>
 
           {/* Account Status Card */}
-          <div className="bg-tertiary rounded-2xl p-6 shadow-lg">
+          <div className="bg-tertiary rounded-xl sm:rounded-2xl p-4 sm:p-6 shadow-lg">
             <div className="text-center">
-              <div className="w-16 h-16 mx-auto mb-3 bg-primary rounded-full flex items-center justify-center">
-                <Bike className="w-8 h-8 text-white" />
+              <div className="w-12 h-12 sm:w-16 sm:h-16 mx-auto mb-2 sm:mb-3 bg-primary rounded-full flex items-center justify-center">
+                <Bike className="w-6 h-6 sm:w-8 sm:h-8 text-white" />
               </div>
               <p className="text-xs text-gray-600 mb-1">Status</p>
-              <p className="text-lg font-bold text-primary capitalize">
+              <p className="text-sm sm:text-lg font-bold text-primary capitalize">
                 {profileData.account_status || "N/A"}
               </p>
             </div>
