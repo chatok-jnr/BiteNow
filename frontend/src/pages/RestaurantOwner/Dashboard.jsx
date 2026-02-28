@@ -93,10 +93,12 @@ const Dashboard = () => {
   const DashboardContent = () => {
     if (loading) {
       return (
-        <div className="flex items-center justify-center min-h-[400px]">
+        <div className="flex items-center justify-center min-h-[400px] px-4">
           <div className="text-center">
-            <div className="w-16 h-16 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-            <p className="text-gray-600">Loading dashboard...</p>
+            <div className="w-12 h-12 sm:w-16 sm:h-16 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+            <p className="text-sm sm:text-base text-gray-600">
+              Loading dashboard...
+            </p>
           </div>
         </div>
       );
@@ -104,13 +106,13 @@ const Dashboard = () => {
 
     if (restaurantData.length === 0) {
       return (
-        <div className="flex items-center justify-center min-h-[400px]">
+        <div className="flex items-center justify-center min-h-[400px] px-4">
           <div className="text-center max-w-md mx-auto">
-            <Store className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-            <h3 className="text-xl font-semibold text-gray-700 mb-2">
+            <Store className="w-12 h-12 sm:w-16 sm:h-16 text-gray-400 mx-auto mb-4" />
+            <h3 className="text-lg sm:text-xl font-semibold text-gray-700 mb-2">
               No Restaurants Yet
             </h3>
-            <p className="text-gray-600 mb-4">
+            <p className="text-sm sm:text-base text-gray-600 mb-4">
               {ownerStatus !== "Approved"
                 ? ownerStatus === "Pending"
                   ? "To get approved and add restaurants, you need to upload the required documents that prove you are eligible. Once you add your documents, our admin team will review them and approve your account."
@@ -125,91 +127,109 @@ const Dashboard = () => {
     return (
       <div className="space-y-6">
         {/* Stats Overview */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          <div className="bg-tertiary rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all">
-            <div className="flex items-center justify-between mb-4">
-              <div className="w-12 h-12 bg-primary rounded-full flex items-center justify-center">
-                <Store className="w-6 h-6 text-white" />
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+          <div className="bg-tertiary rounded-xl sm:rounded-2xl p-4 sm:p-6 shadow-lg hover:shadow-xl transition-all">
+            <div className="flex items-center justify-between mb-3 sm:mb-4">
+              <div className="w-10 h-10 sm:w-12 sm:h-12 bg-primary rounded-full flex items-center justify-center">
+                <Store className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
               </div>
-              <ChevronRight className="w-5 h-5 text-gray-400" />
+              <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5 text-gray-400" />
             </div>
-            <p className="text-sm text-gray-600 mb-1">Total Restaurants</p>
-            <p className="text-3xl font-bold text-primary">
+            <p className="text-xs sm:text-sm text-gray-600 mb-1">
+              Total Restaurants
+            </p>
+            <p className="text-2xl sm:text-3xl font-bold text-primary">
               {restaurantData.length}
             </p>
           </div>
 
-          <div className="bg-tertiary rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all">
-            <div className="flex items-center justify-between mb-4">
-              <div className="w-12 h-12 bg-primary rounded-full flex items-center justify-center">
-                <Coins className="w-6 h-6 text-white" />
+          <div className="bg-tertiary rounded-xl sm:rounded-2xl p-4 sm:p-6 shadow-lg hover:shadow-xl transition-all">
+            <div className="flex items-center justify-between mb-3 sm:mb-4">
+              <div className="w-10 h-10 sm:w-12 sm:h-12 bg-primary rounded-full flex items-center justify-center">
+                <Coins className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
               </div>
-              <ChevronRight className="w-5 h-5 text-gray-400" />
+              <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5 text-gray-400" />
             </div>
-            <p className="text-sm text-gray-600 mb-1">Total Earnings</p>
-            <p className="text-3xl font-bold text-primary">
+            <p className="text-xs sm:text-sm text-gray-600 mb-1">
+              Total Earnings
+            </p>
+            <p className="text-2xl sm:text-3xl font-bold text-primary">
               ৳{totalEarnings.toFixed(2)}
             </p>
           </div>
 
-          <div className="bg-tertiary rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all">
-            <div className="flex items-center justify-between mb-4">
-              <div className="w-12 h-12 bg-primary rounded-full flex items-center justify-center">
-                <TrendingUp className="w-6 h-6 text-white" />
+          <div className="bg-tertiary rounded-xl sm:rounded-2xl p-4 sm:p-6 shadow-lg hover:shadow-xl transition-all">
+            <div className="flex items-center justify-between mb-3 sm:mb-4">
+              <div className="w-10 h-10 sm:w-12 sm:h-12 bg-primary rounded-full flex items-center justify-center">
+                <TrendingUp className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
               </div>
-              <ChevronRight className="w-5 h-5 text-gray-400" />
+              <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5 text-gray-400" />
             </div>
-            <p className="text-sm text-gray-600 mb-1">Monthly Earnings</p>
-            <p className="text-3xl font-bold text-primary">
+            <p className="text-xs sm:text-sm text-gray-600 mb-1">
+              Monthly Earnings
+            </p>
+            <p className="text-2xl sm:text-3xl font-bold text-primary">
               ৳{monthlyEarnings.toFixed(2)}
             </p>
           </div>
 
-          <div className="bg-tertiary rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all">
-            <div className="flex items-center justify-between mb-4">
-              <div className="w-12 h-12 bg-primary rounded-full flex items-center justify-center">
-                <Package className="w-6 h-6 text-white" />
+          <div className="bg-tertiary rounded-xl sm:rounded-2xl p-4 sm:p-6 shadow-lg hover:shadow-xl transition-all">
+            <div className="flex items-center justify-between mb-3 sm:mb-4">
+              <div className="w-10 h-10 sm:w-12 sm:h-12 bg-primary rounded-full flex items-center justify-center">
+                <Package className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
               </div>
-              <ChevronRight className="w-5 h-5 text-gray-400" />
+              <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5 text-gray-400" />
             </div>
-            <p className="text-sm text-gray-600 mb-1">Total Orders</p>
-            <p className="text-3xl font-bold text-primary">{totalOrders}</p>
+            <p className="text-xs sm:text-sm text-gray-600 mb-1">
+              Total Orders
+            </p>
+            <p className="text-2xl sm:text-3xl font-bold text-primary">
+              {totalOrders}
+            </p>
           </div>
         </div>
 
         {/* Top Performer Highlight */}
         {topPerformer && (
-          <div className="bg-gradient-to-r from-primary to-secondary rounded-2xl p-6 shadow-lg text-white">
-            <div className="flex items-center space-x-3 mb-4">
-              <TrendingUp className="w-8 h-8" />
-              <h3 className="text-2xl font-bold">Top Performer This Month</h3>
+          <div className="bg-gradient-to-r from-primary to-secondary rounded-xl sm:rounded-2xl p-4 sm:p-6 shadow-lg text-white">
+            <div className="flex items-center space-x-2 sm:space-x-3 mb-4">
+              <TrendingUp className="w-6 h-6 sm:w-8 sm:h-8" />
+              <h3 className="text-lg sm:text-2xl font-bold">
+                Top Performer This Month
+              </h3>
             </div>
-            <div className="flex items-center space-x-6">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center space-y-4 sm:space-y-0 sm:space-x-6">
               <img
                 src={topPerformer.image}
                 alt={topPerformer.name}
-                className="w-24 h-24 rounded-xl object-cover"
+                className="w-20 h-20 sm:w-24 sm:h-24 rounded-xl object-cover"
               />
-              <div className="flex-1">
-                <h4 className="text-xl font-bold mb-2">{topPerformer.name}</h4>
-                <div className="grid grid-cols-3 gap-4">
+              <div className="flex-1 w-full">
+                <h4 className="text-lg sm:text-xl font-bold mb-2">
+                  {topPerformer.name}
+                </h4>
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4">
                   <div>
-                    <p className="text-white/80 text-sm">Monthly Orders</p>
-                    <p className="text-2xl font-bold">
+                    <p className="text-white/80 text-xs sm:text-sm">
+                      Monthly Orders
+                    </p>
+                    <p className="text-xl sm:text-2xl font-bold">
                       {topPerformer.monthlyOrders}
                     </p>
                   </div>
                   <div>
-                    <p className="text-white/80 text-sm">Monthly Revenue</p>
-                    <p className="text-2xl font-bold">
+                    <p className="text-white/80 text-xs sm:text-sm">
+                      Monthly Revenue
+                    </p>
+                    <p className="text-xl sm:text-2xl font-bold">
                       ৳{topPerformer.monthlyEarnings.toFixed(0)}
                     </p>
                   </div>
                   <div>
-                    <p className="text-white/80 text-sm">Rating</p>
+                    <p className="text-white/80 text-xs sm:text-sm">Rating</p>
                     <div className="flex items-center space-x-1">
-                      <Star className="w-5 h-5 fill-yellow-400 text-yellow-400" />
-                      <p className="text-2xl font-bold">
+                      <Star className="w-4 h-4 sm:w-5 sm:h-5 fill-yellow-400 text-yellow-400" />
+                      <p className="text-xl sm:text-2xl font-bold">
                         {topPerformer.rating.toFixed(1)}
                       </p>
                     </div>
@@ -222,29 +242,29 @@ const Dashboard = () => {
 
         {/* Restaurant Performance Cards */}
         <div>
-          <h3 className="text-2xl font-bold text-gray-800 mb-4">
+          <h3 className="text-xl sm:text-2xl font-bold text-gray-800 mb-4">
             Restaurant Performance
           </h3>
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
             {restaurantData.map((restaurant) => (
               <div
                 key={restaurant.id}
-                className="bg-tertiary rounded-2xl overflow-hidden shadow-lg hover:shadow-xl transition-all"
+                className="bg-tertiary rounded-xl sm:rounded-2xl overflow-hidden shadow-lg hover:shadow-xl transition-all"
               >
-                <div className="flex items-start p-6">
+                <div className="flex flex-col sm:flex-row items-start p-4 sm:p-6">
                   <img
                     src={restaurant.image}
                     alt={restaurant.name}
-                    className="w-24 h-24 rounded-xl object-cover flex-shrink-0"
+                    className="w-full sm:w-24 h-48 sm:h-24 rounded-xl object-cover flex-shrink-0 mb-4 sm:mb-0"
                   />
-                  <div className="ml-4 flex-1">
+                  <div className="sm:ml-4 flex-1 w-full">
                     <div className="flex items-start justify-between mb-2">
-                      <h4 className="text-xl font-bold text-gray-800">
+                      <h4 className="text-lg sm:text-xl font-bold text-gray-800">
                         {restaurant.name}
                       </h4>
-                      <div className="flex items-center space-x-1 bg-surface px-2 py-1 rounded-full">
-                        <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
-                        <span className="text-sm font-semibold text-gray-700">
+                      <div className="flex items-center space-x-1 bg-surface px-2 py-1 rounded-full flex-shrink-0">
+                        <Star className="w-3 h-3 sm:w-4 sm:h-4 fill-yellow-400 text-yellow-400" />
+                        <span className="text-xs sm:text-sm font-semibold text-gray-700">
                           {restaurant.rating.toFixed(1)}
                         </span>
                       </div>
@@ -266,31 +286,31 @@ const Dashboard = () => {
                       </span>
                     </div>
 
-                    <div className="grid grid-cols-2 gap-3 mb-3">
+                    <div className="grid grid-cols-2 gap-2 sm:gap-3 mb-3">
                       <div className="bg-surface p-2 rounded-lg">
                         <p className="text-xs text-gray-600">Total Earnings</p>
-                        <p className="text-lg font-bold text-primary">
+                        <p className="text-base sm:text-lg font-bold text-primary">
                           ৳{restaurant.totalEarnings.toFixed(2)}
                         </p>
                       </div>
                       <div className="bg-surface p-2 rounded-lg">
                         <p className="text-xs text-gray-600">This Month</p>
-                        <p className="text-lg font-bold text-primary">
+                        <p className="text-base sm:text-lg font-bold text-primary">
                           ৳{restaurant.monthlyEarnings.toFixed(2)}
                         </p>
                       </div>
                     </div>
 
-                    <div className="grid grid-cols-2 gap-3 mb-3">
+                    <div className="grid grid-cols-2 gap-2 sm:gap-3 mb-3">
                       <div className="bg-surface p-2 rounded-lg">
                         <p className="text-xs text-gray-600">Total Orders</p>
-                        <p className="text-lg font-bold text-gray-800">
+                        <p className="text-base sm:text-lg font-bold text-gray-800">
                           {restaurant.totalOrders}
                         </p>
                       </div>
                       <div className="bg-surface p-2 rounded-lg">
                         <p className="text-xs text-gray-600">Monthly Orders</p>
-                        <p className="text-lg font-bold text-gray-800">
+                        <p className="text-base sm:text-lg font-bold text-gray-800">
                           {restaurant.monthlyOrders}
                         </p>
                       </div>
@@ -319,7 +339,7 @@ const Dashboard = () => {
       <OwnerNavbar />
 
       {/* Content Area */}
-      <main className="flex-1 p-4 lg:p-8">
+      <main className="flex-1 p-4 sm:p-6 lg:p-8 pt-20 sm:pt-24 lg:pt-24">
         <div className="max-w-7xl mx-auto">
           {/* Show approval message if not approved */}
           {ownerStatus && ownerStatus !== "Approved" && (

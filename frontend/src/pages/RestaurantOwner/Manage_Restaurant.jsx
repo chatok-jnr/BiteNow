@@ -435,7 +435,7 @@ const Manage_Restaurant = () => {
       setShowPinModal(false);
       setRiderPin("");
       showSuccess("Rider verified! Order is now out for delivery.");
-      
+
       // Refresh orders after successful verification
       await fetchOrders();
     } catch (err) {
@@ -592,9 +592,7 @@ const Manage_Restaurant = () => {
           </div>
           <div className="flex justify-between text-lg pt-2 border-t border-secondary/30">
             <span className="font-bold">Total</span>
-            <span className="font-bold text-primary">
-              ৳{total.toFixed(2)}
-            </span>
+            <span className="font-bold text-primary">৳{total.toFixed(2)}</span>
           </div>
         </div>
 
@@ -683,22 +681,22 @@ const Manage_Restaurant = () => {
   return (
     <div className="min-h-screen bg-bgPrimary">
       {/* Header */}
-      <div className="bg-secondary py-8 shadow-md">
+      <div className="bg-secondary py-4 sm:py-8 shadow-md">
         <div className="max-w-7xl mx-auto px-4">
-          <div className="flex items-center space-x-6">
+          <div className="flex items-center space-x-3 sm:space-x-6">
             <button
               onClick={() => navigate("/restaurant_owner/restaurants")}
-              className="bg-white/20 hover:bg-white/30 p-3 rounded-full transition-all duration-200 flex items-center justify-center backdrop-blur-sm"
+              className="bg-white/20 hover:bg-white/30 p-2 sm:p-3 rounded-full transition-all duration-200 flex items-center justify-center backdrop-blur-sm flex-shrink-0"
               title="Back to All Restaurants"
             >
-              <ArrowLeft className="w-6 h-6 text-white" />
+              <ArrowLeft className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
             </button>
-            <Store className="w-24 h-24 text-white" />
-            <div>
-              <h1 className="text-4xl font-bold text-white mb-2">
+            <Store className="w-10 h-10 sm:w-16 sm:h-16 text-white flex-shrink-0" />
+            <div className="min-w-0">
+              <h1 className="text-lg sm:text-3xl font-bold text-white mb-1 truncate">
                 {restaurant?.restaurant_name || "Manage Restaurant"}
               </h1>
-              <p className="text-white/90">Food & Order Management</p>
+              <p className="text-white/90 text-sm">Food & Order Management</p>
             </div>
           </div>
         </div>
@@ -727,29 +725,29 @@ const Manage_Restaurant = () => {
       ) : null}
 
       {/* Mode Switcher */}
-      <div className="max-w-7xl mx-auto px-4 py-6">
-        <div className="flex space-x-4 mb-6">
+      <div className="max-w-7xl mx-auto px-3 sm:px-4 py-4 sm:py-6">
+        <div className="flex space-x-2 sm:space-x-4 mb-4 sm:mb-6">
           <button
             onClick={() => setActiveMode("food")}
-            className={`flex-1 py-3 px-6 rounded-full font-semibold transition-all ${activeMode === "food" ? "bg-primary text-white shadow-lg" : "bg-tertiary text-gray-700"}`}
+            className={`flex-1 py-2.5 sm:py-3 px-3 sm:px-6 rounded-full font-semibold transition-all text-sm sm:text-base ${activeMode === "food" ? "bg-primary text-white shadow-lg" : "bg-tertiary text-gray-700"}`}
           >
-            <ShoppingCart className="w-5 h-5 inline mr-2" />
-            Manage Food
+            <ShoppingCart className="w-4 h-4 sm:w-5 sm:h-5 inline mr-1 sm:mr-2" />
+            <span className="hidden xs:inline">Manage </span>Food
           </button>
           <button
             onClick={() => setActiveMode("order")}
-            className={`flex-1 py-3 px-6 rounded-full font-semibold transition-all ${activeMode === "order" ? "bg-primary text-white shadow-lg" : "bg-tertiary text-gray-700"}`}
+            className={`flex-1 py-2.5 sm:py-3 px-3 sm:px-6 rounded-full font-semibold transition-all text-sm sm:text-base ${activeMode === "order" ? "bg-primary text-white shadow-lg" : "bg-tertiary text-gray-700"}`}
           >
-            <Package className="w-5 h-5 inline mr-2" />
-            Manage Orders
+            <Package className="w-4 h-4 sm:w-5 sm:h-5 inline mr-1 sm:mr-2" />
+            <span className="hidden xs:inline">Manage </span>Orders
           </button>
         </div>
 
         {/* FOOD MANAGEMENT */}
         {activeMode === "food" && (
           <div>
-            <div className="flex items-center justify-between mb-6">
-              <div className="flex-1 max-w-md relative">
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 mb-4 sm:mb-6">
+              <div className="w-full sm:max-w-md relative">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
                 <input
                   type="text"
@@ -778,7 +776,7 @@ const Manage_Restaurant = () => {
                 disabled={
                   ownerStatus !== "Approved" || restaurantStatus !== "Accepted"
                 }
-                className="bg-primary text-white px-6 py-3 rounded-full hover:bg-accent-dark font-semibold flex items-center space-x-2 shadow-lg ml-4 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="bg-primary text-white px-6 py-3 rounded-full hover:bg-accent-dark font-semibold flex items-center justify-center space-x-2 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed sm:w-auto w-full"
               >
                 <Plus className="w-5 h-5" />
                 <span>Add Food</span>
@@ -889,8 +887,8 @@ const Manage_Restaurant = () => {
         {/* ORDER MANAGEMENT */}
         {activeMode === "order" && (
           <div>
-            <div className="mb-6">
-              <div className="relative max-w-md mb-4">
+            <div className="mb-4 sm:mb-6">
+              <div className="relative max-w-full sm:max-w-md mb-4">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
                 <input
                   type="text"
@@ -901,7 +899,7 @@ const Manage_Restaurant = () => {
                 />
               </div>
 
-              <div className="flex flex-wrap gap-2">
+              <div className="flex overflow-x-auto gap-2 pb-2 -mx-1 px-1 scrollbar-hide">
                 {[
                   "pending",
                   "look_rider",
@@ -914,7 +912,7 @@ const Manage_Restaurant = () => {
                   <button
                     key={status}
                     onClick={() => setOrderStatus(status)}
-                    className={`px-4 py-2 rounded-full font-semibold transition-all ${orderStatus === status ? "bg-primary text-white" : "bg-tertiary text-gray-700"}`}
+                    className={`px-3 sm:px-4 py-1.5 sm:py-2 rounded-full font-semibold transition-all text-xs sm:text-sm whitespace-nowrap flex-shrink-0 ${orderStatus === status ? "bg-primary text-white" : "bg-tertiary text-gray-700"}`}
                   >
                     {status
                       .split("_")
@@ -922,7 +920,7 @@ const Manage_Restaurant = () => {
                         (word) => word.charAt(0).toUpperCase() + word.slice(1),
                       )
                       .join(" ")}
-                    <span className="ml-2 bg-white text-primary px-2 py-0.5 rounded-full text-xs">
+                    <span className="ml-1.5 bg-white text-primary px-1.5 py-0.5 rounded-full text-xs">
                       {categorizedOrders[status]?.length || 0}
                     </span>
                   </button>
@@ -942,7 +940,7 @@ const Manage_Restaurant = () => {
               ))}
 
               {!loading && filteredOrders.length === 0 && (
-                <div className="col-span-3 text-center py-16">
+                <div className="col-span-1 md:col-span-3 text-center py-16">
                   <Package className="w-20 h-20 text-gray-400 mx-auto mb-4" />
                   <h3 className="text-2xl font-bold text-gray-600">
                     No Orders
@@ -959,7 +957,7 @@ const Manage_Restaurant = () => {
 
       {showAddFoodModal && (
         <div
-          className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+          className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-3 sm:p-4"
           onClick={(e) => {
             if (e.target === e.currentTarget) {
               setShowAddFoodModal(false);
@@ -968,9 +966,9 @@ const Manage_Restaurant = () => {
             }
           }}
         >
-          <div className="bg-surface rounded-2xl max-w-2xl w-full p-6 max-h-[90vh] overflow-y-auto">
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-2xl font-bold">Add New Food</h2>
+          <div className="bg-surface rounded-2xl max-w-2xl w-full p-4 sm:p-6 max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between mb-4 sm:mb-6">
+              <h2 className="text-xl sm:text-2xl font-bold">Add New Food</h2>
               <button
                 onClick={() => {
                   setShowAddFoodModal(false);
@@ -1008,18 +1006,18 @@ const Manage_Restaurant = () => {
                 <label className="block text-sm font-semibold mb-2">
                   Food Image
                 </label>
-                <div className="flex items-center space-x-4">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:space-x-4">
                   <input
                     type="file"
                     accept="image/*"
                     onChange={handleFoodImageUpload}
-                    className="w-full px-4 py-3 rounded-lg border-2 border-secondary focus:border-primary focus:outline-none bg-white"
+                    className="w-full px-3 sm:px-4 py-2 sm:py-3 rounded-lg border-2 border-secondary focus:border-primary focus:outline-none bg-white text-sm"
                   />
                   {imagePreview && (
                     <img
                       src={imagePreview}
                       alt="Preview"
-                      className="w-20 h-20 object-cover rounded-lg border-2 border-secondary"
+                      className="w-16 h-16 sm:w-20 sm:h-20 object-cover rounded-lg border-2 border-secondary"
                     />
                   )}
                 </div>
@@ -1132,7 +1130,7 @@ const Manage_Restaurant = () => {
 
       {showEditFoodModal && selectedFood && (
         <div
-          className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+          className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-3 sm:p-4"
           onClick={(e) => {
             if (e.target === e.currentTarget) {
               setShowEditFoodModal(false);
@@ -1140,9 +1138,9 @@ const Manage_Restaurant = () => {
             }
           }}
         >
-          <div className="bg-surface rounded-2xl max-w-2xl w-full p-6 max-h-[90vh] overflow-y-auto">
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-2xl font-bold">Edit Food</h2>
+          <div className="bg-surface rounded-2xl max-w-2xl w-full p-4 sm:p-6 max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between mb-4 sm:mb-6">
+              <h2 className="text-xl sm:text-2xl font-bold">Edit Food</h2>
               <button
                 onClick={() => {
                   setShowEditFoodModal(false);
@@ -1428,7 +1426,7 @@ const Manage_Restaurant = () => {
 
       {showOrderDetailsModal && selectedOrder && (
         <div
-          className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+          className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-3 sm:p-4"
           onClick={(e) => {
             if (e.target === e.currentTarget) {
               setShowOrderDetailsModal(false);
@@ -1436,7 +1434,7 @@ const Manage_Restaurant = () => {
             }
           }}
         >
-          <div className="bg-surface rounded-2xl max-w-2xl w-full p-6 max-h-[90vh] overflow-y-auto">
+          <div className="bg-surface rounded-2xl max-w-2xl w-full p-4 sm:p-6 max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-2xl font-bold">
                 Order Details - #{selectedOrder.id}
