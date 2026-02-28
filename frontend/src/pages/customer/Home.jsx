@@ -32,7 +32,6 @@ const Home = () => {
   const [cartItems, setCartItems] = useState([]);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [sortBy, setSortBy] = useState("date");
-  const [showClearCartModal, setShowClearCartModal] = useState(false);
 
   // API data states
   const [restaurants, setRestaurants] = useState([]);
@@ -251,10 +250,6 @@ const Home = () => {
     }
   };
 
-  const handleClearCart = () => {
-    setShowClearCartModal(true);
-  };
-
   const confirmClearCart = async () => {
     try {
       // Call API to clear entire cart
@@ -268,7 +263,6 @@ const Home = () => {
       console.error("Error clearing cart:", err);
       showError(err.response?.data?.message || "Failed to clear cart");
     } finally {
-      setShowClearCartModal(false);
     }
   };
 
@@ -586,46 +580,14 @@ const Home = () => {
         {/* Premium Footer */}
         <Footer />
       </div>
-      {/* Premium Clear Cart Confirmation Modal */}
-      {showClearCartModal && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-fade-in">
-          <div className="bg-white rounded-2xl sm:rounded-3xl max-w-md w-full p-6 sm:p-8 shadow-large transform animate-scale-in">
-            <div className="text-center">
-              <div className="w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-red-100 to-red-50 rounded-full flex items-center justify-center mx-auto mb-4 sm:mb-6 shadow-soft">
-                <ShoppingCart className="w-8 h-8 sm:w-10 sm:h-10 text-primary" />
-              </div>
-              <h3 className="text-2xl sm:text-3xl font-bold text-textPrimary mb-2 sm:mb-3 font-display">
-                Clear Cart?
-              </h3>
-              <p className="text-sm sm:text-base text-gray-600 mb-6 sm:mb-8 leading-relaxed">
-                Are you sure you want to clear your entire cart? This action
-                cannot be undone.
-              </p>
-              <div className="space-y-3">
-                <button
-                  onClick={confirmClearCart}
-                  className="w-full bg-gradient-primary text-white py-3 sm:py-4 rounded-xl hover:shadow-xl-red transition-all font-bold text-base sm:text-lg transform hover:-translate-y-0.5 duration-300"
-                >
-                  Yes, Clear Cart
-                </button>
-                <button
-                  onClick={() => setShowClearCartModal(false)}
-                  className="w-full bg-gray-100 text-gray-700 py-3 sm:py-4 rounded-xl hover:bg-gray-200 transition-all font-semibold text-base sm:text-lg"
-                >
-                  Cancel
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
+
       <CartSidebar
         isOpen={isCartOpen}
         onClose={() => setIsCartOpen(false)}
         cartItems={cartItems}
         onUpdateQuantity={handleUpdateQuantity}
         onRemoveItem={handleRemoveItem}
-        onClearCart={handleClearCart}
+        onClearCart={confirmClearCart}
         onCheckout={() => navigate("/checkout")}
       />
     </div>

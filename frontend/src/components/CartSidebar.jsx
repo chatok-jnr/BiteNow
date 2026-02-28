@@ -1,5 +1,13 @@
-import React from "react";
-import { X, Minus, Plus, Trash2, ShoppingCart, ArrowRight } from "lucide-react";
+import React, { useState } from "react";
+import {
+  X,
+  Minus,
+  Plus,
+  Trash2,
+  ShoppingCart,
+  ArrowRight,
+  AlertTriangle,
+} from "lucide-react";
 
 const CartSidebar = ({
   isOpen,
@@ -10,13 +18,68 @@ const CartSidebar = ({
   onClearCart,
   onCheckout,
 }) => {
+  const [showConfirmClear, setShowConfirmClear] = useState(false);
+
   const totalPrice = cartItems.reduce(
     (sum, item) => sum + item.price * item.quantity,
     0,
   );
 
+  const handleClearClick = () => {
+    setShowConfirmClear(true);
+  };
+
+  const handleConfirmClear = () => {
+    setShowConfirmClear(false);
+    onClearCart?.();
+  };
+
+  const handleCancelClear = () => {
+    setShowConfirmClear(false);
+  };
+
   return (
     <>
+      {/* Clear Cart Confirmation Modal — z-[110] keeps it above the sidebar (z-50) */}
+      {showConfirmClear && (
+        <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 animate-fade-in">
+          {/* Overlay */}
+          <div
+            className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+            onClick={handleCancelClear}
+          />
+          {/* Dialog */}
+          <div className="relative bg-white rounded-2xl sm:rounded-3xl max-w-sm w-full p-6 sm:p-8 shadow-2xl transform animate-scale-in mx-4">
+            <div className="text-center">
+              <div className="w-16 h-16 sm:w-20 sm:h-20 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-4 sm:mb-5">
+                <AlertTriangle className="w-8 h-8 sm:w-10 sm:h-10 text-red-500" />
+              </div>
+              <h3 className="text-xl sm:text-2xl font-bold text-gray-800 mb-2 sm:mb-3 font-display">
+                Clear Cart?
+              </h3>
+              <p className="text-sm sm:text-base text-gray-500 mb-6 sm:mb-8 leading-relaxed">
+                Are you sure you want to remove all items from your cart? This
+                action cannot be undone.
+              </p>
+              <div className="space-y-3">
+                <button
+                  onClick={handleConfirmClear}
+                  className="w-full bg-red-500 hover:bg-red-600 text-white py-3 sm:py-3.5 rounded-xl font-bold text-base transition-all duration-200 transform hover:-translate-y-0.5 shadow-md hover:shadow-lg"
+                >
+                  Yes, Clear Cart
+                </button>
+                <button
+                  onClick={handleCancelClear}
+                  className="w-full bg-gray-100 hover:bg-gray-200 text-gray-700 py-3 sm:py-3.5 rounded-xl font-semibold text-base transition-all duration-200"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Backdrop with blur */}
       {isOpen && (
         <div
@@ -52,7 +115,7 @@ const CartSidebar = ({
             <div className="flex items-center gap-2">
               {cartItems.length > 0 && onClearCart && (
                 <button
-                  onClick={onClearCart}
+                  onClick={handleClearClick}
                   className="text-xs bg-red-500/90 hover:bg-red-600 text-white px-2 sm:px-3 py-1.5 rounded-lg transition-all shadow-soft hover:shadow-medium font-medium"
                   title="Clear entire cart"
                 >

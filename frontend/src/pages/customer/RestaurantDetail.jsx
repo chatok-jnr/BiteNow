@@ -33,7 +33,6 @@ const RestaurantDetail = () => {
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [cartItems, setCartItems] = useState([]);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [showClearModal, setShowClearModal] = useState(false);
 
   // API data states
   const [restaurant, setRestaurant] = useState(null);
@@ -174,10 +173,6 @@ const RestaurantDetail = () => {
     }
   };
 
-  const handleClearCart = () => {
-    setShowClearModal(true);
-  };
-
   const confirmClearCart = async () => {
     try {
       // Call API to clear entire cart
@@ -185,13 +180,11 @@ const RestaurantDetail = () => {
 
       // Clear local state
       setCartItems([]);
-      setShowClearModal(false);
 
       console.log("✅ Cart cleared successfully");
       showSuccess("Cart cleared successfully!");
     } catch (err) {
       console.error("Error clearing cart:", err);
-      setShowClearModal(false);
       showError(err.response?.data?.message || "Failed to clear cart");
     }
   };
@@ -256,35 +249,6 @@ const RestaurantDetail = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Clear Cart Confirmation Modal */}
-      {showClearModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4">
-          <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-5 sm:p-8 mx-4 animate-fade-in-down">
-            <h3 className="text-xl sm:text-2xl font-bold text-gray-800 mb-3 sm:mb-4">
-              Clear Cart?
-            </h3>
-            <p className="text-sm sm:text-base text-gray-600 mb-4 sm:mb-6">
-              Are you sure you want to remove all items from your cart? This
-              action cannot be undone.
-            </p>
-            <div className="flex flex-col sm:flex-row space-y-3 sm:space-y-0 sm:space-x-4">
-              <button
-                onClick={() => setShowClearModal(false)}
-                className="flex-1 bg-gray-200 text-gray-800 px-6 py-2.5 sm:py-3 rounded-full font-semibold hover:bg-gray-300 transition-all"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={confirmClearCart}
-                className="flex-1 bg-red-500 text-white px-6 py-2.5 sm:py-3 rounded-full font-semibold hover:bg-red-600 transition-all"
-              >
-                Clear Cart
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
       <div
         className={`transition-all duration-300 ${
           isCartOpen && cartItems.length > 0 ? "sm:mr-96" : "mr-0"
@@ -509,7 +473,7 @@ const RestaurantDetail = () => {
         cartItems={cartItems}
         onUpdateQuantity={handleUpdateQuantity}
         onRemoveItem={handleRemoveItem}
-        onClearCart={handleClearCart}
+        onClearCart={confirmClearCart}
         onCheckout={() => navigate("/checkout")}
       />
     </div>
