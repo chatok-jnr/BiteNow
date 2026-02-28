@@ -1,6 +1,9 @@
 import { Link } from "react-router-dom";
+import { getCurrentUserRole, getHomeRouteByRole } from "../utils/roleRoutes";
 
 const Footer = () => {
+  const homeRoute = getHomeRouteByRole(getCurrentUserRole());
+
   return (
     <footer className="bg-gradient-secondary text-white relative overflow-hidden">
       {/* Decorative background */}
@@ -17,7 +20,7 @@ const Footer = () => {
               <ul className="flex flex-wrap justify-center gap-4 sm:gap-6">
                 <li>
                   <Link
-                    to="/"
+                    to={homeRoute}
                     className="text-white/80 hover:text-accent-light transition-all flex items-center space-x-2 group text-sm sm:text-base"
                   >
                     <span className="w-1.5 h-1.5 bg-accent-light rounded-full group-hover:w-3 transition-all"></span>

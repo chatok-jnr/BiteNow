@@ -2,8 +2,11 @@ import React from "react";
 import { Link } from "react-router-dom";
 import { ArrowLeft, Users, Target, Award, Heart } from "lucide-react";
 import Footer from "../components/Footer";
+import { getCurrentUserRole, getHomeRouteByRole } from "../utils/roleRoutes";
 
 const About = () => {
+  const homeRoute = getHomeRouteByRole(getCurrentUserRole());
+
   return (
     <div className="min-h-screen bg-tertiary flex flex-col">
       {/* Header */}
@@ -11,7 +14,7 @@ const About = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex items-center justify-between">
             <Link
-              to="/"
+              to={homeRoute}
               className="flex items-center space-x-2 text-white hover:text-accent-light transition-all"
             >
               <ArrowLeft className="w-5 h-5" />

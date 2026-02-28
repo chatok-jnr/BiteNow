@@ -2,8 +2,10 @@ import React from "react";
 import { Link } from "react-router-dom";
 import { ArrowLeft, Mail, Linkedin, Code2, User } from "lucide-react";
 import Footer from "../components/Footer";
+import { getCurrentUserRole, getHomeRouteByRole } from "../utils/roleRoutes";
 
 const Contact = () => {
+  const homeRoute = getHomeRouteByRole(getCurrentUserRole());
   const developers = [
     {
       name: "Suraia Mim",
@@ -38,7 +40,7 @@ const Contact = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex items-center justify-between">
             <Link
-              to="/"
+              to={homeRoute}
               className="flex items-center space-x-2 text-white hover:text-accent-light transition-all"
             >
               <ArrowLeft className="w-5 h-5" />
