@@ -514,14 +514,15 @@ const Manage_Restaurant = () => {
   };
 
   const categorizedOrders = categorizeOrders();
-  const filteredOrders =
+  const filteredOrders = (
     categorizedOrders[orderStatus]?.filter(
       (o) =>
         o.customer_id?.customer_name
           ?.toLowerCase()
           .includes(searchQuery.toLowerCase()) ||
         o.order_id?.toLowerCase().includes(searchQuery.toLowerCase()),
-    ) || [];
+    ) || []
+  ).sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
 
   const calculateOrderTotal = (items) => {
     return items.reduce((sum, item) => sum + (item.total_price || 0), 0);
@@ -560,10 +561,12 @@ const Manage_Restaurant = () => {
           setShowOrderDetailsModal(true);
         }}
       >
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="text-xl font-bold text-gray-800">#{order.order_id}</h3>
+        <div className="flex items-center justify-between mb-4 gap-2">
+          <h3 className="text-xl font-bold text-gray-800 truncate">
+            #{order.order_id}
+          </h3>
           <div
-            className={`px-3 py-1 rounded-full text-sm font-semibold text-white ${statusColors[order.order_status]}`}
+            className={`px-3 py-1 rounded-full text-xs font-semibold text-white whitespace-nowrap flex-shrink-0 ${statusColors[order.order_status]}`}
           >
             {statusLabels[order.order_status]}
           </div>
@@ -571,13 +574,18 @@ const Manage_Restaurant = () => {
 
         <div className="bg-surface p-4 rounded-xl mb-4">
           <p className="text-xs font-semibold text-gray-700 mb-2">Customer</p>
-          <div className="space-y-1">
-            <div className="flex items-center space-x-2">
-              <User className="w-4 h-4 text-primary" />
-              <span className="text-sm">
-                {order.customer_id?.customer_name || "N/A"}
-              </span>
-            </div>
+          <div className="flex items-center space-x-2">
+            <User className="w-4 h-4 text-primary" />
+            <span className="text-sm font-medium">
+              {typeof order.customer_id === "object" &&
+              order.customer_id !== null
+                ? order.customer_id.customer_name || "Unknown Customer"
+                : `Customer #${
+                    String(order.customer_id || "")
+                      .slice(-6)
+                      .toUpperCase() || "—"
+                  }`}
+            </span>
           </div>
         </div>
 
@@ -603,7 +611,7 @@ const Manage_Restaurant = () => {
                 e.stopPropagation();
                 handleUpdateOrderStatus(order._id, "cancelled");
               }}
-              className="bg-red-500 text-white py-2 rounded-full hover:bg-red-600 font-semibold"
+              className="bg-red-500 text-white py-2 rounded-full hover:bg-red-600 font-semibold whitespace-nowrap text-sm"
             >
               Reject
             </button>
@@ -612,25 +620,39 @@ const Manage_Restaurant = () => {
                 e.stopPropagation();
                 handleUpdateOrderStatus(order._id, "look_rider");
               }}
-              className="bg-primary text-white py-2 rounded-full hover:bg-accent-dark font-semibold"
+              className="bg-primary text-white py-2 rounded-full hover:bg-accent-dark font-semibold whitespace-nowrap text-sm"
             >
               Accept
             </button>
           </div>
         )}
 
-        {order.order_status === "look_rider" && (
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              handleUpdateOrderStatus(order._id, "preparing");
-            }}
-            className="w-full bg-primary text-white py-3 rounded-full hover:bg-accent-dark font-semibold flex items-center justify-center space-x-2"
-          >
-            <ChefHat className="w-5 h-5" />
-            <span>Start Preparing</span>
-          </button>
-        )}
+        {order.order_status === "look_rider" &&
+          (order.rider_id ? (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                handleUpdateOrderStatus(order._id, "preparing");
+              }}
+              className="w-full bg-green-500 text-white py-3 rounded-full hover:bg-green-600 font-semibold flex items-center justify-center gap-2"
+            >
+              <ChefHat className="w-5 h-5 flex-shrink-0" />
+              <span className="whitespace-nowrap">Start Preparing</span>
+            </button>
+          ) : (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                showWarning(
+                  "Rider not found yet. Please wait until a rider accepts the order.",
+                );
+              }}
+              className="w-full bg-gray-300 text-gray-500 py-3 rounded-full font-semibold flex items-center justify-center gap-2 cursor-not-allowed"
+            >
+              <ChefHat className="w-5 h-5 flex-shrink-0" />
+              <span className="whitespace-nowrap">Waiting for Rider...</span>
+            </button>
+          ))}
 
         {order.order_status === "preparing" && (
           <button
@@ -638,10 +660,10 @@ const Manage_Restaurant = () => {
               e.stopPropagation();
               handleUpdateOrderStatus(order._id, "ready_for_pickup");
             }}
-            className="w-full bg-primary text-white py-3 rounded-full hover:bg-accent-dark font-semibold flex items-center justify-center space-x-2"
+            className="w-full bg-primary text-white py-3 rounded-full hover:bg-accent-dark font-semibold flex items-center justify-center gap-2"
           >
-            <Package className="w-5 h-5" />
-            <span>Mark Ready for Pickup</span>
+            <Package className="w-5 h-5 flex-shrink-0" />
+            <span className="whitespace-nowrap">Mark Ready for Pickup</span>
           </button>
         )}
 
@@ -652,10 +674,10 @@ const Manage_Restaurant = () => {
               setSelectedOrder(order);
               setShowPinModal(true);
             }}
-            className="w-full bg-primary text-white py-3 rounded-full hover:bg-accent-dark font-semibold flex items-center justify-center space-x-2"
+            className="w-full bg-primary text-white py-3 rounded-full hover:bg-accent-dark font-semibold flex items-center justify-center gap-2"
           >
-            <Bike className="w-5 h-5" />
-            <span>Hand to Rider</span>
+            <Bike className="w-5 h-5 flex-shrink-0" />
+            <span className="whitespace-nowrap">Hand to Rider</span>
           </button>
         )}
       </div>
@@ -899,7 +921,7 @@ const Manage_Restaurant = () => {
                 />
               </div>
 
-              <div className="flex overflow-x-auto gap-2 pb-2 -mx-1 px-1 scrollbar-hide">
+              <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-2">
                 {[
                   "pending",
                   "look_rider",
@@ -912,15 +934,28 @@ const Manage_Restaurant = () => {
                   <button
                     key={status}
                     onClick={() => setOrderStatus(status)}
-                    className={`px-3 sm:px-4 py-1.5 sm:py-2 rounded-full font-semibold transition-all text-xs sm:text-sm whitespace-nowrap flex-shrink-0 ${orderStatus === status ? "bg-primary text-white" : "bg-tertiary text-gray-700"}`}
+                    className={`flex flex-col items-center justify-center gap-1 px-3 py-2.5 rounded-xl font-semibold transition-all text-xs text-center w-full ${
+                      orderStatus === status
+                        ? "bg-primary text-white shadow-md"
+                        : "bg-tertiary text-gray-700 hover:bg-secondary/20"
+                    }`}
                   >
-                    {status
-                      .split("_")
-                      .map(
-                        (word) => word.charAt(0).toUpperCase() + word.slice(1),
-                      )
-                      .join(" ")}
-                    <span className="ml-1.5 bg-white text-primary px-1.5 py-0.5 rounded-full text-xs">
+                    <span className="leading-tight">
+                      {status
+                        .split("_")
+                        .map(
+                          (word) =>
+                            word.charAt(0).toUpperCase() + word.slice(1),
+                        )
+                        .join(" ")}
+                    </span>
+                    <span
+                      className={`px-2 py-0.5 rounded-full text-xs font-bold ${
+                        orderStatus === status
+                          ? "bg-white/20 text-white"
+                          : "bg-primary/10 text-primary"
+                      }`}
+                    >
                       {categorizedOrders[status]?.length || 0}
                     </span>
                   </button>
@@ -1437,7 +1472,7 @@ const Manage_Restaurant = () => {
           <div className="bg-surface rounded-2xl max-w-2xl w-full p-4 sm:p-6 max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-2xl font-bold">
-                Order Details - #{selectedOrder.id}
+                Order Details - #{selectedOrder.order_id}
               </h2>
               <button
                 onClick={() => {
@@ -1487,59 +1522,83 @@ const Manage_Restaurant = () => {
                 <p className="text-sm font-semibold text-gray-700 mb-3">
                   Customer Information
                 </p>
-                <div className="space-y-2">
-                  <div className="flex items-center space-x-2">
-                    <User className="w-5 h-5 text-primary" />
-                    <span className="font-semibold">
-                      {selectedOrder.customer.name}
+                {typeof selectedOrder.customer_id === "object" &&
+                selectedOrder.customer_id !== null ? (
+                  <div className="space-y-2">
+                    {selectedOrder.customer_id.customer_name && (
+                      <div className="flex items-center space-x-2">
+                        <User className="w-5 h-5 text-primary flex-shrink-0" />
+                        <span className="font-semibold">
+                          {selectedOrder.customer_id.customer_name}
+                        </span>
+                      </div>
+                    )}
+                    {selectedOrder.customer_id.customer_phone && (
+                      <div className="flex items-center space-x-2">
+                        <Phone className="w-5 h-5 text-primary flex-shrink-0" />
+                        <span>{selectedOrder.customer_id.customer_phone}</span>
+                      </div>
+                    )}
+                    {selectedOrder.customer_id.customer_email && (
+                      <div className="flex items-center space-x-2">
+                        <Mail className="w-5 h-5 text-primary flex-shrink-0" />
+                        <span>{selectedOrder.customer_id.customer_email}</span>
+                      </div>
+                    )}
+                    {selectedOrder.special_instruction && (
+                      <div className="flex items-start space-x-2">
+                        <MessageSquare className="w-5 h-5 text-primary mt-0.5 flex-shrink-0" />
+                        <span className="italic">
+                          {selectedOrder.special_instruction}
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <div className="flex items-center space-x-2 text-gray-500">
+                    <User className="w-5 h-5" />
+                    <span className="text-sm">
+                      Customer #
+                      {String(selectedOrder.customer_id)
+                        .slice(-6)
+                        .toUpperCase()}
                     </span>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <Phone className="w-5 h-5 text-primary" />
-                    <span>{selectedOrder.customer.phone}</span>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <Mail className="w-5 h-5 text-primary" />
-                    <span>{selectedOrder.customer.email}</span>
-                  </div>
-                  <div className="flex items-start space-x-2">
-                    <MapPin className="w-5 h-5 text-primary mt-0.5" />
-                    <span>{selectedOrder.customer.address}</span>
-                  </div>
-                  {selectedOrder.customer.message && (
-                    <div className="flex items-start space-x-2">
-                      <MessageSquare className="w-5 h-5 text-primary mt-0.5" />
-                      <span className="italic">
-                        {selectedOrder.customer.message}
+                    {selectedOrder.special_instruction && (
+                      <span className="ml-2 text-xs italic text-gray-400">
+                        — {selectedOrder.special_instruction}
                       </span>
-                    </div>
-                  )}
-                </div>
+                    )}
+                  </div>
+                )}
               </div>
               <div className="bg-tertiary p-4 rounded-xl">
                 <p className="text-sm font-semibold text-gray-700 mb-3">
                   Order Items
                 </p>
                 <div className="space-y-2">
-                  {selectedOrder.items.map((item, idx) => (
+                  {(selectedOrder.items || []).map((item, idx) => (
                     <div
                       key={idx}
                       className="flex justify-between items-center py-2 border-b border-secondary/30 last:border-0"
                     >
                       <div>
-                        <p className="font-semibold">{item.food}</p>
+                        <p className="font-semibold">{item.food_name}</p>
                         <p className="text-sm text-gray-600">
                           Quantity: {item.quantity}
                         </p>
                       </div>
                       <p className="font-bold text-primary">
-                        ৳{(item.price * item.quantity).toFixed(2)}
+                        ৳
+                        {(
+                          item.total_price ||
+                          (item.unit_price || 0) * (item.quantity || 1)
+                        ).toFixed(2)}
                       </p>
                     </div>
                   ))}
                 </div>
               </div>
-              {selectedOrder.rider && (
+              {selectedOrder.rider_id && (
                 <div className="bg-primary p-4 rounded-xl text-white">
                   <p className="text-sm font-semibold mb-3">
                     Rider Information
@@ -1547,20 +1606,19 @@ const Manage_Restaurant = () => {
                   <div className="flex items-center justify-between">
                     <div>
                       <p className="font-semibold text-lg">
-                        {selectedOrder.rider.name}
+                        {typeof selectedOrder.rider_id === "object"
+                          ? selectedOrder.rider_id?.rider_name ||
+                            "Assigned Rider"
+                          : "Assigned Rider"}
                       </p>
-                      <p className="text-sm">{selectedOrder.rider.phone}</p>
+                      <p className="text-sm opacity-80">
+                        {typeof selectedOrder.rider_id === "object"
+                          ? selectedOrder.rider_id?.rider_email || ""
+                          : ""}
+                      </p>
                     </div>
                     <Bike className="w-8 h-8" />
                   </div>
-                  {selectedOrder.confirmationPin && (
-                    <div className="mt-3 pt-3 border-t border-white/20">
-                      <p className="text-sm mb-1">Confirmation PIN</p>
-                      <p className="text-3xl font-bold">
-                        {selectedOrder.confirmationPin}
-                      </p>
-                    </div>
-                  )}
                 </div>
               )}
               <div className="bg-tertiary p-4 rounded-xl">
@@ -1569,25 +1627,21 @@ const Manage_Restaurant = () => {
                 </p>
                 <div className="space-y-2">
                   <div className="flex justify-between">
-                    <span>Food Total</span>
+                    <span>Food Subtotal</span>
                     <span className="font-semibold">
-                      ৳{calculateTotal(selectedOrder.items).toFixed(2)}
+                      ৳{(selectedOrder.subtotal || 0).toFixed(2)}
                     </span>
                   </div>
                   <div className="flex justify-between">
-                    <span>Delivery Cost</span>
+                    <span>Delivery Charge</span>
                     <span className="font-semibold">
-                      ৳{selectedOrder.deliveryCost.toFixed(2)}
+                      ৳{(selectedOrder.delivery_charge || 0).toFixed(2)}
                     </span>
                   </div>
                   <div className="flex justify-between text-xl pt-2 border-t border-secondary/30">
                     <span className="font-bold">Total</span>
                     <span className="font-bold text-primary">
-                      ৳
-                      {(
-                        calculateTotal(selectedOrder.items) +
-                        selectedOrder.deliveryCost
-                      ).toFixed(2)}
+                      ৳{(selectedOrder.total_amount || 0).toFixed(2)}
                     </span>
                   </div>
                 </div>
