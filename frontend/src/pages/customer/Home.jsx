@@ -281,23 +281,25 @@ const Home = () => {
       >
         {/* Premium Navbar */}
         <nav className="fixed top-0 left-0 right-0 z-50 bg-primary shadow-large transition-all duration-400">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="flex justify-between items-center h-18 py-3">
+          <div className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-8">
+            <div className="flex justify-between items-center h-16 sm:h-20">
               <div
                 onClick={() => navigate("/")}
-                className="group flex items-center space-x-3 cursor-pointer"
+                className="group flex items-center space-x-2 sm:space-x-3 cursor-pointer"
               >
-                <div className="w-12 h-12 bg-gradient-accent rounded-xl flex items-center justify-center shadow-glow-yellow transform group-hover:rotate-12 transition-all duration-300">
-                  <span className="text-2xl">🍔</span>
+                <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-accent rounded-lg sm:rounded-xl flex items-center justify-center shadow-glow-yellow transform group-hover:rotate-12 transition-all duration-300">
+                  <span className="text-xl sm:text-2xl">🍔</span>
                 </div>
-                <span className="text-2xl font-bold text-white font-display tracking-tight">BiteNow</span>
+                <span className="text-lg sm:text-2xl font-bold text-white font-display tracking-tight">
+                  BiteNow
+                </span>
               </div>
-              <div className="flex items-center space-x-3">
+              <div className="flex items-center space-x-1 sm:space-x-2 md:space-x-3">
                 <button
                   onClick={() => setIsCartOpen(true)}
-                  className="relative p-2.5 text-white hover:text-accent-light transition-all duration-300 hover:scale-110"
+                  className="relative p-2 sm:p-2.5 text-white hover:text-accent-light transition-all duration-300 hover:scale-110"
                 >
-                  <ShoppingCart className="w-6 h-6" />
+                  <ShoppingCart className="w-5 h-5 sm:w-6 sm:h-6" />
                   {cartItems.length > 0 && (
                     <span className="absolute -top-1 -right-1 bg-gradient-primary text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center shadow-glow-red animate-pulse-slow">
                       {cartItems.length}
@@ -307,32 +309,33 @@ const Home = () => {
                 {!isLoggedIn ? (
                   <button
                     onClick={() => navigate("/login")}
-                    className="bg-gradient-accent text-textPrimary px-6 py-2.5 rounded-xl hover:shadow-xl-yellow transition-all transform hover:-translate-y-0.5 font-semibold text-sm"
+                    className="bg-gradient-accent text-textPrimary px-3 py-2 sm:px-6 sm:py-2.5 rounded-lg sm:rounded-xl hover:shadow-xl-yellow transition-all transform hover:-translate-y-0.5 font-semibold text-xs sm:text-sm whitespace-nowrap"
                   >
-                    Login / Sign Up
+                    <span className="hidden xs:inline">Login / Sign Up</span>
+                    <span className="xs:hidden">Login</span>
                   </button>
                 ) : (
                   <>
                     <button
                       onClick={() => navigate("/")}
-                      className="glass-card text-textPrimary px-4 py-2 rounded-xl font-semibold flex items-center gap-2 hover:shadow-soft transition-all text-sm"
+                      className="glass-card text-textPrimary px-2 py-2 sm:px-4 sm:py-2 rounded-lg sm:rounded-xl font-semibold flex items-center gap-1 sm:gap-2 hover:shadow-soft transition-all text-xs sm:text-sm"
                     >
                       <HomeIcon className="w-4 h-4" />
-                      <span className="hidden md:inline">Home</span>
+                      <span className="hidden lg:inline">Home</span>
                     </button>
                     <button
                       onClick={() => navigate("/orderStatus")}
-                      className="text-white hover:text-accent-light transition-all font-medium px-3 py-2 flex items-center gap-2 hover:scale-105 text-sm"
+                      className="text-white hover:text-accent-light transition-all font-medium px-2 py-2 sm:px-3 sm:py-2 flex items-center gap-1 sm:gap-2 hover:scale-105 text-xs sm:text-sm"
                     >
                       <Package className="w-4 h-4" />
-                      <span className="hidden md:inline">Orders</span>
+                      <span className="hidden lg:inline">Orders</span>
                     </button>
                     <button
                       onClick={() => navigate("/profile")}
-                      className="text-white hover:text-accent-light transition-all font-medium px-3 py-2 flex items-center gap-2 hover:scale-105 text-sm"
+                      className="text-white hover:text-accent-light transition-all font-medium px-2 py-2 sm:px-3 sm:py-2 flex items-center gap-1 sm:gap-2 hover:scale-105 text-xs sm:text-sm"
                     >
                       <User className="w-4 h-4" />
-                      <span className="hidden md:inline">Profile</span>
+                      <span className="hidden lg:inline">Profile</span>
                     </button>
                     <button
                       onClick={() => {
@@ -342,10 +345,10 @@ const Home = () => {
                         setIsLoggedIn(false);
                         navigate("/login");
                       }}
-                      className="text-white hover:text-red-300 transition-all font-medium px-3 py-2 flex items-center gap-2 hover:scale-105 text-sm"
+                      className="text-white hover:text-red-300 transition-all font-medium px-2 py-2 sm:px-3 sm:py-2 flex items-center gap-1 sm:gap-2 hover:scale-105 text-xs sm:text-sm"
                     >
                       <LogOut className="w-4 h-4" />
-                      <span className="hidden md:inline">Logout</span>
+                      <span className="hidden lg:inline">Logout</span>
                     </button>
                   </>
                 )}
@@ -354,12 +357,14 @@ const Home = () => {
           </div>
         </nav>
         {/* Premium Hero Slider */}
-        <div className="relative h-screen overflow-hidden mt-18">
+        <div className="relative h-screen overflow-hidden mt-16 sm:mt-20">
           {heroSlides.map((slide, index) => (
             <div
               key={index}
               className={`absolute inset-0 transition-all duration-1000 ${
-                index === currentSlide ? "opacity-100 scale-100" : "opacity-0 scale-105"
+                index === currentSlide
+                  ? "opacity-100 scale-100"
+                  : "opacity-0 scale-105"
               }`}
             >
               <img
@@ -370,7 +375,7 @@ const Home = () => {
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-black/10" />
               <div className="absolute inset-0 bg-mesh-gradient opacity-20" />
-              
+
               <div className="absolute bottom-0 left-0 right-0 p-6 md:p-20">
                 <div className="max-w-5xl mx-auto">
                   <div className="bg-secondary/80 backdrop-blur-lg rounded-3xl p-8 md:p-14 border border-white/20 shadow-glass animate-fade-in-up">
@@ -380,9 +385,9 @@ const Home = () => {
                     <p className="text-lg md:text-2xl text-white/95 leading-relaxed max-w-3xl">
                       {slide.description}
                     </p>
-                    <button 
+                    <button
                       className="mt-8 font-bold px-8 py-4 rounded-xl shadow-xl-red hover:shadow-glow-red transform hover:-translate-y-1 transition-all duration-300 text-lg"
-                      style={{ backgroundColor: '#E63946', color: 'white' }}
+                      style={{ backgroundColor: "#E63946", color: "white" }}
                     >
                       Order Now
                     </button>
@@ -394,41 +399,42 @@ const Home = () => {
 
           <button
             onClick={prevSlide}
-            className="absolute left-6 top-1/2 -translate-y-1/2 w-14 h-14 bg-primary/90 backdrop-blur-sm rounded-full flex items-center justify-center hover:bg-primary hover:shadow-glow-red transition-all duration-300 hover:scale-110 group"
+            className="absolute left-3 sm:left-6 top-1/2 -translate-y-1/2 w-12 h-12 sm:w-14 sm:h-14 bg-primary/90 backdrop-blur-sm rounded-full flex items-center justify-center hover:bg-primary hover:shadow-glow-red transition-all duration-300 hover:scale-110 group"
           >
-            <ChevronLeft className="w-7 h-7 text-white group-hover:-translate-x-1 transition-transform" />
+            <ChevronLeft className="w-6 h-6 sm:w-7 sm:h-7 text-white group-hover:-translate-x-1 transition-transform" />
           </button>
           <button
             onClick={nextSlide}
-            className="absolute right-6 top-1/2 -translate-y-1/2 w-14 h-14 bg-primary/90 backdrop-blur-sm rounded-full flex items-center justify-center hover:bg-primary hover:shadow-glow-red transition-all duration-300 hover:scale-110 group"
+            className="absolute right-3 sm:right-6 top-1/2 -translate-y-1/2 w-12 h-12 sm:w-14 sm:h-14 bg-primary/90 backdrop-blur-sm rounded-full flex items-center justify-center hover:bg-primary hover:shadow-glow-red transition-all duration-300 hover:scale-110 group"
           >
-            <ChevronRight className="w-7 h-7 text-white group-hover:translate-x-1 transition-transform" />
+            <ChevronRight className="w-6 h-6 sm:w-7 sm:h-7 text-white group-hover:translate-x-1 transition-transform" />
           </button>
 
-          <div className="absolute bottom-10 left-1/2 -translate-x-1/2 flex space-x-3">
+          <div className="absolute bottom-6 sm:bottom-10 left-1/2 -translate-x-1/2 flex space-x-2 sm:space-x-3">
             {heroSlides.map((_, index) => (
               <button
                 key={index}
                 onClick={() => setCurrentSlide(index)}
                 className={`h-1.5 rounded-full transition-all duration-400 ${
-                  index === currentSlide 
-                    ? "bg-white w-12 shadow-glow-yellow" 
-                    : "bg-white/50 w-8 hover:bg-white/70"
+                  index === currentSlide
+                    ? "bg-white w-10 sm:w-12 shadow-glow-yellow"
+                    : "bg-white/50 w-6 sm:w-8 hover:bg-white/70"
                 }`}
               />
             ))}
           </div>
         </div>
         {/* Top 4 Most Sold Foods */}
-        <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
-          <div className="text-center mb-16 animate-fade-in-up">
-            <h2 className="text-5xl md:text-6xl font-display font-bold mb-4">
+        <section className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-8 py-12 sm:py-16 lg:py-20">
+          <div className="text-center mb-10 sm:mb-12 lg:mb-16 animate-fade-in-up">
+            <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-display font-bold mb-3 sm:mb-4">
               <span className="gradient-text">Most Popular</span> Dishes
             </h2>
-            <p className="text-gray-600 text-lg max-w-2xl mx-auto mb-6">
-              Discover what everyone's craving. Our most-loved dishes delivered fresh to your door.
+            <p className="text-sm sm:text-base lg:text-lg text-gray-600 max-w-2xl mx-auto mb-4 sm:mb-6 px-4">
+              Discover what everyone's craving. Our most-loved dishes delivered
+              fresh to your door.
             </p>
-            <div className="w-24 h-1.5 bg-gradient-primary mx-auto rounded-full shadow-glow-red"></div>
+            <div className="w-20 sm:w-24 h-1.5 bg-gradient-primary mx-auto rounded-full shadow-glow-red"></div>
           </div>
 
           {loading ? (
@@ -498,23 +504,25 @@ const Home = () => {
         </div>
       </section> */}
         {/* Restaurants List */}
-        <section className="bg-white py-20">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="mb-12">
-              <div className="text-center mb-8 animate-fade-in-up">
-                <h2 className="text-5xl md:text-6xl font-display font-bold mb-4">
-                  Explore <span className="gradient-text-accent">Restaurants</span>
+        <section className="bg-white py-12 sm:py-16 lg:py-20">
+          <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-8">
+            <div className="mb-8 sm:mb-12">
+              <div className="text-center mb-6 sm:mb-8 animate-fade-in-up">
+                <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-display font-bold mb-3 sm:mb-4">
+                  Explore{" "}
+                  <span className="gradient-text-accent">Restaurants</span>
                 </h2>
-                <p className="text-gray-600 text-lg max-w-2xl mx-auto mb-6">
-                  Browse through our curated selection of top-rated restaurants near you.
+                <p className="text-sm sm:text-base lg:text-lg text-gray-600 max-w-2xl mx-auto mb-4 sm:mb-6 px-4">
+                  Browse through our curated selection of top-rated restaurants
+                  near you.
                 </p>
-                <div className="w-24 h-1.5 bg-gradient-accent mx-auto rounded-full shadow-glow-yellow"></div>
+                <div className="w-20 sm:w-24 h-1.5 bg-gradient-accent mx-auto rounded-full shadow-glow-yellow"></div>
               </div>
-              <div className="flex justify-end mt-8">
+              <div className="flex justify-end mt-6 sm:mt-8">
                 <select
                   value={sortBy}
                   onChange={(e) => setSortBy(e.target.value)}
-                  className="px-6 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary bg-white text-gray-700 font-semibold cursor-pointer hover:border-accent transition-all shadow-soft hover:shadow-medium"
+                  className="px-4 py-2 sm:px-6 sm:py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary bg-white text-gray-700 font-semibold cursor-pointer hover:border-accent transition-all shadow-soft hover:shadow-medium text-sm sm:text-base"
                 >
                   <option value="date">Sort by Date</option>
                   <option value="price-low">Sort by Price: Low to High</option>
@@ -523,83 +531,86 @@ const Home = () => {
               </div>
             </div>
 
-          {loading ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-              {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
-                <div key={i} className="bg-white rounded-2xl overflow-hidden shadow-soft animate-pulse">
-                  <div className="aspect-video bg-gray-200" />
-                  <div className="p-4 space-y-3">
-                    <div className="h-6 bg-gray-200 rounded w-3/4" />
-                    <div className="h-4 bg-gray-200 rounded w-1/2" />
-                    <div className="h-10 bg-gray-200 rounded" />
-                  </div>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <>
+            {loading ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-                {currentRestaurants.map((restaurant) => (
-                  <RestaurantCard
-                    key={restaurant._id}
-                    restaurant={{
-                      ...restaurant,
-                      id: restaurant._id,
-                      name: restaurant.restaurant_name,
-                      image: restaurant.restaurant_image?.url,
-                      location: restaurant.restaurant_address,
-                      rating: restaurant.rating || 4.5,
-                      cuisine: restaurant.cuisine_type || "Restaurant",
-                      deliveryTime: "20-30 min",
-                    }}
-                  />
+                {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
+                  <div
+                    key={i}
+                    className="bg-white rounded-2xl overflow-hidden shadow-soft animate-pulse"
+                  >
+                    <div className="aspect-video bg-gray-200" />
+                    <div className="p-4 space-y-3">
+                      <div className="h-6 bg-gray-200 rounded w-3/4" />
+                      <div className="h-4 bg-gray-200 rounded w-1/2" />
+                      <div className="h-10 bg-gray-200 rounded" />
+                    </div>
+                  </div>
                 ))}
               </div>
-
-              {(restaurantPage + 1) * restaurantsPerPage <
-                sortedRestaurants.length && (
-                <div className="text-center mt-16">
-                  <button
-                    onClick={() => setRestaurantPage(restaurantPage + 1)}
-                    className="bg-gradient-accent text-textPrimary px-12 py-4 rounded-xl hover:shadow-xl-yellow transition-all font-bold text-lg transform hover:-translate-y-1 duration-300"
-                  >
-                    Load More Restaurants
-                  </button>
+            ) : (
+              <>
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                  {currentRestaurants.map((restaurant) => (
+                    <RestaurantCard
+                      key={restaurant._id}
+                      restaurant={{
+                        ...restaurant,
+                        id: restaurant._id,
+                        name: restaurant.restaurant_name,
+                        image: restaurant.restaurant_image?.url,
+                        location: restaurant.restaurant_address,
+                        rating: restaurant.rating || 4.5,
+                        cuisine: restaurant.cuisine_type || "Restaurant",
+                        deliveryTime: "20-30 min",
+                      }}
+                    />
+                  ))}
                 </div>
-              )}
-            </>
-          )}
+
+                {(restaurantPage + 1) * restaurantsPerPage <
+                  sortedRestaurants.length && (
+                  <div className="text-center mt-12 sm:mt-16">
+                    <button
+                      onClick={() => setRestaurantPage(restaurantPage + 1)}
+                      className="bg-gradient-accent text-textPrimary px-8 py-3 sm:px-12 sm:py-4 rounded-xl hover:shadow-xl-yellow transition-all font-bold text-base sm:text-lg transform hover:-translate-y-1 duration-300"
+                    >
+                      Load More Restaurants
+                    </button>
+                  </div>
+                )}
+              </>
+            )}
           </div>
         </section>
-        
+
         {/* Premium Footer */}
         <Footer />
       </div>
       {/* Premium Clear Cart Confirmation Modal */}
       {showClearCartModal && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-fade-in">
-          <div className="bg-white rounded-3xl max-w-md w-full p-8 shadow-large transform animate-scale-in">
+          <div className="bg-white rounded-2xl sm:rounded-3xl max-w-md w-full p-6 sm:p-8 shadow-large transform animate-scale-in">
             <div className="text-center">
-              <div className="w-20 h-20 bg-gradient-to-br from-red-100 to-red-50 rounded-full flex items-center justify-center mx-auto mb-6 shadow-soft">
-                <ShoppingCart className="w-10 h-10 text-primary" />
+              <div className="w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-red-100 to-red-50 rounded-full flex items-center justify-center mx-auto mb-4 sm:mb-6 shadow-soft">
+                <ShoppingCart className="w-8 h-8 sm:w-10 sm:h-10 text-primary" />
               </div>
-              <h3 className="text-3xl font-bold text-textPrimary mb-3 font-display">
+              <h3 className="text-2xl sm:text-3xl font-bold text-textPrimary mb-2 sm:mb-3 font-display">
                 Clear Cart?
               </h3>
-              <p className="text-gray-600 mb-8 leading-relaxed">
+              <p className="text-sm sm:text-base text-gray-600 mb-6 sm:mb-8 leading-relaxed">
                 Are you sure you want to clear your entire cart? This action
                 cannot be undone.
               </p>
               <div className="space-y-3">
                 <button
                   onClick={confirmClearCart}
-                  className="w-full bg-gradient-primary text-white py-4 rounded-xl hover:shadow-xl-red transition-all font-bold text-lg transform hover:-translate-y-0.5 duration-300"
+                  className="w-full bg-gradient-primary text-white py-3 sm:py-4 rounded-xl hover:shadow-xl-red transition-all font-bold text-base sm:text-lg transform hover:-translate-y-0.5 duration-300"
                 >
                   Yes, Clear Cart
                 </button>
                 <button
                   onClick={() => setShowClearCartModal(false)}
-                  className="w-full bg-gray-100 text-gray-700 py-4 rounded-xl hover:bg-gray-200 transition-all font-semibold text-lg"
+                  className="w-full bg-gray-100 text-gray-700 py-3 sm:py-4 rounded-xl hover:bg-gray-200 transition-all font-semibold text-base sm:text-lg"
                 >
                   Cancel
                 </button>

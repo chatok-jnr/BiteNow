@@ -258,25 +258,25 @@ const RestaurantDetail = () => {
     <div className="min-h-screen bg-background">
       {/* Clear Cart Confirmation Modal */}
       {showClearModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-          <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-8 mx-4 animate-fade-in-down">
-            <h3 className="text-2xl font-bold text-gray-800 mb-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-5 sm:p-8 mx-4 animate-fade-in-down">
+            <h3 className="text-xl sm:text-2xl font-bold text-gray-800 mb-3 sm:mb-4">
               Clear Cart?
             </h3>
-            <p className="text-gray-600 mb-6">
+            <p className="text-sm sm:text-base text-gray-600 mb-4 sm:mb-6">
               Are you sure you want to remove all items from your cart? This
               action cannot be undone.
             </p>
-            <div className="flex space-x-4">
+            <div className="flex flex-col sm:flex-row space-y-3 sm:space-y-0 sm:space-x-4">
               <button
                 onClick={() => setShowClearModal(false)}
-                className="flex-1 bg-gray-200 text-gray-800 px-6 py-3 rounded-full font-semibold hover:bg-gray-300 transition-all"
+                className="flex-1 bg-gray-200 text-gray-800 px-6 py-2.5 sm:py-3 rounded-full font-semibold hover:bg-gray-300 transition-all"
               >
                 Cancel
               </button>
               <button
                 onClick={confirmClearCart}
-                className="flex-1 bg-red-500 text-white px-6 py-3 rounded-full font-semibold hover:bg-red-600 transition-all"
+                className="flex-1 bg-red-500 text-white px-6 py-2.5 sm:py-3 rounded-full font-semibold hover:bg-red-600 transition-all"
               >
                 Clear Cart
               </button>
@@ -296,19 +296,21 @@ const RestaurantDetail = () => {
             <div className="flex justify-between items-center h-16">
               <a
                 href="/"
-                className="flex items-center space-x-3 cursor-pointer"
+                className="flex items-center space-x-2 sm:space-x-3 cursor-pointer"
               >
-                <div className="w-10 h-10 bg-primary rounded-full flex items-center justify-center">
-                  <ShoppingCart className="w-6 h-6 text-white" />
+                <div className="w-8 h-8 sm:w-10 sm:h-10 bg-primary rounded-full flex items-center justify-center">
+                  <ShoppingCart className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
                 </div>
-                <span className="text-2xl font-bold text-white">BiteNow</span>
+                <span className="text-xl sm:text-2xl font-bold text-white">
+                  BiteNow
+                </span>
               </a>
-              <div className="flex items-center space-x-4">
+              <div className="flex items-center space-x-2 sm:space-x-4">
                 <button
                   onClick={() => setIsCartOpen(true)}
                   className="relative p-2 text-white hover:text-accent-light transition-colors"
                 >
-                  <ShoppingCart className="w-6 h-6" />
+                  <ShoppingCart className="w-5 h-5 sm:w-6 sm:h-6" />
                   {cartItems.length > 0 && (
                     <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
                       {cartItems.length}
@@ -318,32 +320,36 @@ const RestaurantDetail = () => {
                 {!isLoggedIn ? (
                   <button
                     onClick={() => navigate("/login")}
-                    className="bg-primary text-white px-6 py-2 rounded-full hover:bg-accent transition-all hover:shadow-lg transform hover:-translate-y-0.5 font-semibold"
+                    className="bg-primary text-white px-3 py-1.5 sm:px-6 sm:py-2 rounded-full hover:bg-accent transition-all hover:shadow-lg transform hover:-translate-y-0.5 font-semibold text-sm sm:text-base"
                   >
-                    Login / Sign Up
+                    <span className="hidden sm:inline">Login / Sign Up</span>
+                    <span className="sm:hidden">Login</span>
                   </button>
                 ) : (
                   <>
                     <button
                       onClick={() => navigate("/")}
-                      className="text-white hover:text-accent-light transition-colors font-medium px-4 py-2 flex items-center gap-2"
+                      className="text-white hover:text-accent-light transition-colors font-medium p-2 flex items-center gap-1 sm:gap-2"
+                      title="Home"
                     >
                       <HomeIcon className="w-5 h-5" />
-                      Home
+                      <span className="hidden md:inline">Home</span>
                     </button>
                     <button
                       onClick={() => navigate("/orderStatus")}
-                      className="text-white hover:text-accent-light transition-colors font-medium px-4 py-2 flex items-center gap-2"
+                      className="text-white hover:text-accent-light transition-colors font-medium p-2 flex items-center gap-1 sm:gap-2"
+                      title="Orders"
                     >
                       <Package className="w-5 h-5" />
-                      Orders
+                      <span className="hidden md:inline">Orders</span>
                     </button>
                     <button
                       onClick={() => navigate("/profile")}
-                      className="text-white hover:text-accent-light transition-colors font-medium px-4 py-2 flex items-center gap-2"
+                      className="text-white hover:text-accent-light transition-colors font-medium p-2 flex items-center gap-1 sm:gap-2"
+                      title="Profile"
                     >
                       <User className="w-5 h-5" />
-                      Profile
+                      <span className="hidden md:inline">Profile</span>
                     </button>
                     <button
                       onClick={() => {
@@ -353,10 +359,11 @@ const RestaurantDetail = () => {
                         setIsLoggedIn(false);
                         navigate("/login");
                       }}
-                      className="text-white hover:text-red-300 transition-colors font-medium px-4 py-2 flex items-center gap-2"
+                      className="text-white hover:text-red-300 transition-colors font-medium p-2 flex items-center gap-1 sm:gap-2"
+                      title="Logout"
                     >
                       <LogOut className="w-5 h-5" />
-                      Logout
+                      <span className="hidden md:inline">Logout</span>
                     </button>
                   </>
                 )}
@@ -366,7 +373,7 @@ const RestaurantDetail = () => {
         </nav>
 
         {/* Hero Section - Restaurant Details */}
-        <div className="relative h-[500px] overflow-hidden">
+        <div className="relative h-64 sm:h-80 md:h-96 lg:h-[500px] overflow-hidden">
           <img
             src={
               restaurant.restaurant_image?.url ||
@@ -377,46 +384,46 @@ const RestaurantDetail = () => {
           />
           <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
 
-          <div className="absolute bottom-0 left-0 right-0 p-8 md:p-16">
+          <div className="absolute bottom-0 left-0 right-0 p-4 sm:p-6 md:p-8 lg:p-16">
             <div className="max-w-7xl mx-auto">
-              <div className="backdrop-blur-sm bg-white/10 rounded-3xl p-8 md:p-12 border border-white/20">
-                <h1 className="text-4xl md:text-6xl font-bold text-white mb-4">
+              <div className="backdrop-blur-sm bg-white/10 rounded-2xl sm:rounded-3xl p-4 sm:p-6 md:p-8 lg:p-12 border border-white/20">
+                <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-6xl font-bold text-white mb-2 sm:mb-4">
                   {restaurant.restaurant_name}
                 </h1>
 
-                <div className="flex flex-wrap gap-6 text-white/90">
-                  <div className="flex items-center space-x-2">
-                    <Clock className="w-5 h-5" />
-                    <span className="text-lg">
+                <div className="flex flex-wrap gap-3 sm:gap-4 md:gap-6 text-white/90">
+                  <div className="flex items-center space-x-1.5 sm:space-x-2">
+                    <Clock className="w-4 h-4 sm:w-5 sm:h-5" />
+                    <span className="text-xs sm:text-sm md:text-base lg:text-lg">
                       {restaurant.opening_time || "10:00 AM"} -{" "}
                       {restaurant.closing_time || "11:00 PM"}
                     </span>
                   </div>
 
-                  <div className="flex items-center space-x-2">
-                    <MapPin className="w-5 h-5" />
-                    <span className="text-lg">
+                  <div className="flex items-center space-x-1.5 sm:space-x-2">
+                    <MapPin className="w-4 h-4 sm:w-5 sm:h-5" />
+                    <span className="text-xs sm:text-sm md:text-base lg:text-lg truncate max-w-xs sm:max-w-sm">
                       {restaurant.restaurant_address}
                     </span>
                   </div>
 
-                  <div className="flex items-center space-x-2">
-                    <Star className="w-5 h-5 fill-yellow-400 text-yellow-400" />
-                    <span className="text-lg font-semibold">
+                  <div className="flex items-center space-x-1.5 sm:space-x-2">
+                    <Star className="w-4 h-4 sm:w-5 sm:h-5 fill-yellow-400 text-yellow-400" />
+                    <span className="text-sm sm:text-base lg:text-lg font-semibold">
                       {restaurant.rating || 4.5}
                     </span>
                   </div>
 
-                  <span className="px-4 py-1 bg-primary rounded-full text-lg font-semibold">
+                  <span className="px-3 sm:px-4 py-1 bg-primary rounded-full text-sm sm:text-base lg:text-lg font-semibold">
                     {restaurant.cuisine_type || "Restaurant"}
                   </span>
 
                   {restaurant.is_open ? (
-                    <span className="px-4 py-1 bg-green-500 rounded-full text-lg font-semibold">
+                    <span className="px-3 sm:px-4 py-1 bg-green-500 rounded-full text-sm sm:text-base lg:text-lg font-semibold">
                       Open
                     </span>
                   ) : (
-                    <span className="px-4 py-1 bg-red-500 rounded-full text-lg font-semibold">
+                    <span className="px-3 sm:px-4 py-1 bg-red-500 rounded-full text-sm sm:text-base lg:text-lg font-semibold">
                       Closed
                     </span>
                   )}
@@ -427,20 +434,25 @@ const RestaurantDetail = () => {
         </div>
 
         {/* Food Items Section */}
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
           {/* Sorting Options */}
-          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
-            <h2 className="text-3xl font-bold text-gray-800">Our Menu</h2>
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 sm:mb-8 gap-3 sm:gap-4">
+            <h2 className="text-2xl sm:text-3xl font-bold text-gray-800">
+              Our Menu
+            </h2>
 
-            <div className="flex items-center space-x-3">
-              <label htmlFor="sort" className="text-gray-700 font-semibold">
+            <div className="flex items-center space-x-2 sm:space-x-3 w-full sm:w-auto">
+              <label
+                htmlFor="sort"
+                className="text-sm sm:text-base text-gray-700 font-semibold flex-shrink-0"
+              >
                 Sort by:
               </label>
               <select
                 id="sort"
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value)}
-                className="px-4 py-2 bg-white border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent font-medium text-gray-700 cursor-pointer hover:border-primary transition-colors"
+                className="flex-1 sm:flex-none px-3 sm:px-4 py-2 bg-white border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent font-medium text-gray-700 cursor-pointer hover:border-primary transition-colors text-sm sm:text-base"
               >
                 <option value="default">Default</option>
                 <option value="discount">Highest Discount</option>

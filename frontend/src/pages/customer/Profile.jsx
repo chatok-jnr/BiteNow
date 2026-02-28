@@ -331,14 +331,14 @@ const Profile = () => {
       <CustomerNavbar activeTab="profile" />
 
       {/* Profile Container with top padding for fixed navbar */}
-      <div className="flex-1 px-4 py-12 pt-28">
+      <div className="flex-1 px-4 sm:px-6 py-8 sm:py-12 pt-24 sm:pt-28">
         <div className="max-w-4xl mx-auto">
           {/* Profile Card */}
-          <div className="bg-tertiary rounded-3xl shadow-2xl overflow-hidden">
+          <div className="bg-tertiary rounded-2xl sm:rounded-3xl shadow-2xl overflow-hidden">
             {/* Header Section */}
-            <div className="bg-secondary h-32"></div>
+            <div className="bg-secondary h-24 sm:h-32"></div>
 
-            <div className="relative px-8 pb-8">
+            <div className="relative px-4 sm:px-6 md:px-8 pb-6 sm:pb-8">
               {/* Error Message */}
               {error && (
                 <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded-lg text-sm">
@@ -347,22 +347,22 @@ const Profile = () => {
               )}
 
               {/* Profile Image */}
-              <div className="flex justify-center -mt-16 mb-6">
+              <div className="flex justify-center -mt-12 sm:-mt-16 mb-4 sm:mb-6">
                 <div className="relative">
                   {(isEditing ? editForm.image : profileData.image) ? (
                     <img
                       src={isEditing ? editForm.image : profileData.image}
                       alt="Profile"
-                      className="w-32 h-32 rounded-full border-4 border-tertiary object-cover shadow-xl"
+                      className="w-24 h-24 sm:w-32 sm:h-32 rounded-full border-4 border-tertiary object-cover shadow-xl"
                     />
                   ) : (
-                    <div className="w-32 h-32 rounded-full border-4 border-tertiary bg-primary shadow-xl flex items-center justify-center">
-                      <User className="w-16 h-16 text-white" />
+                    <div className="w-24 h-24 sm:w-32 sm:h-32 rounded-full border-4 border-tertiary bg-primary shadow-xl flex items-center justify-center">
+                      <User className="w-12 h-12 sm:w-16 sm:h-16 text-white" />
                     </div>
                   )}
                   {isEditing && (
-                    <label className="absolute bottom-0 right-0 bg-primary w-10 h-10 rounded-full flex items-center justify-center cursor-pointer hover:bg-accent-dark transition-all shadow-lg">
-                      <Camera className="w-5 h-5 text-white" />
+                    <label className="absolute bottom-0 right-0 bg-primary w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center cursor-pointer hover:bg-accent-dark transition-all shadow-lg">
+                      <Camera className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
                       <input
                         type="file"
                         accept="image/*"
@@ -377,28 +377,30 @@ const Profile = () => {
               {/* Profile Info */}
               {!isEditing ? (
                 // View Mode
-                <div className="space-y-6">
+                <div className="space-y-4 sm:space-y-6">
                   {/* Name */}
                   <div className="text-center">
-                    <h2 className="text-3xl font-bold text-gray-800 mb-1">
+                    <h2 className="text-2xl sm:text-3xl font-bold text-gray-800 mb-1">
                       {profileData.name}
                     </h2>
-                    <p className="text-gray-600">BiteNow Member</p>
+                    <p className="text-sm sm:text-base text-gray-600">
+                      BiteNow Member
+                    </p>
                   </div>
 
                   {/* Stats Grid */}
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-8">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-6 mt-6 sm:mt-8">
                     {/* Email */}
-                    <div className="bg-white rounded-2xl p-5 shadow-md">
-                      <div className="flex items-center space-x-3 mb-2">
-                        <div className="w-10 h-10 bg-surface rounded-full flex items-center justify-center">
-                          <Mail className="w-5 h-5 text-primary" />
+                    <div className="bg-white rounded-xl sm:rounded-2xl p-3 sm:p-5 shadow-md">
+                      <div className="flex items-center space-x-2 sm:space-x-3 mb-2">
+                        <div className="w-8 h-8 sm:w-10 sm:h-10 bg-surface rounded-full flex items-center justify-center flex-shrink-0">
+                          <Mail className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
                         </div>
-                        <div>
-                          <p className="text-sm text-gray-500 font-semibold">
+                        <div className="min-w-0">
+                          <p className="text-xs sm:text-sm text-gray-500 font-semibold">
                             Email
                           </p>
-                          <p className="text-gray-800 font-medium">
+                          <p className="text-sm sm:text-base text-gray-800 font-medium truncate">
                             {profileData.email}
                           </p>
                         </div>
@@ -406,16 +408,16 @@ const Profile = () => {
                     </div>
 
                     {/* Phone */}
-                    <div className="bg-white rounded-2xl p-5 shadow-md">
-                      <div className="flex items-center space-x-3 mb-2">
-                        <div className="w-10 h-10 bg-surface rounded-full flex items-center justify-center">
-                          <Phone className="w-5 h-5 text-primary" />
+                    <div className="bg-white rounded-xl sm:rounded-2xl p-3 sm:p-5 shadow-md">
+                      <div className="flex items-center space-x-2 sm:space-x-3 mb-2">
+                        <div className="w-8 h-8 sm:w-10 sm:h-10 bg-surface rounded-full flex items-center justify-center flex-shrink-0">
+                          <Phone className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
                         </div>
-                        <div>
-                          <p className="text-sm text-gray-500 font-semibold">
+                        <div className="min-w-0">
+                          <p className="text-xs sm:text-sm text-gray-500 font-semibold">
                             Phone
                           </p>
-                          <p className="text-gray-800 font-medium">
+                          <p className="text-sm sm:text-base text-gray-800 font-medium truncate">
                             {profileData.phone || "Not provided"}
                           </p>
                         </div>
@@ -423,16 +425,16 @@ const Profile = () => {
                     </div>
 
                     {/* Default Address */}
-                    <div className="bg-white rounded-2xl p-5 shadow-md">
-                      <div className="flex items-center space-x-3 mb-2">
-                        <div className="w-10 h-10 bg-surface rounded-full flex items-center justify-center">
-                          <MapPin className="w-5 h-5 text-primary" />
+                    <div className="bg-white rounded-xl sm:rounded-2xl p-3 sm:p-5 shadow-md">
+                      <div className="flex items-center space-x-2 sm:space-x-3 mb-2">
+                        <div className="w-8 h-8 sm:w-10 sm:h-10 bg-surface rounded-full flex items-center justify-center flex-shrink-0">
+                          <MapPin className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
                         </div>
-                        <div className="flex-1">
-                          <p className="text-sm text-gray-500 font-semibold">
+                        <div className="flex-1 min-w-0">
+                          <p className="text-xs sm:text-sm text-gray-500 font-semibold">
                             Default Delivery Address
                           </p>
-                          <p className="text-gray-800 font-medium">
+                          <p className="text-sm sm:text-base text-gray-800 font-medium line-clamp-2">
                             {profileData.address || "No address saved"}
                           </p>
                         </div>
@@ -440,16 +442,16 @@ const Profile = () => {
                     </div>
 
                     {/* Birth Date */}
-                    <div className="bg-white rounded-2xl p-5 shadow-md">
-                      <div className="flex items-center space-x-3 mb-2">
-                        <div className="w-10 h-10 bg-surface rounded-full flex items-center justify-center">
-                          <Calendar className="w-5 h-5 text-primary" />
+                    <div className="bg-white rounded-xl sm:rounded-2xl p-3 sm:p-5 shadow-md">
+                      <div className="flex items-center space-x-2 sm:space-x-3 mb-2">
+                        <div className="w-8 h-8 sm:w-10 sm:h-10 bg-surface rounded-full flex items-center justify-center flex-shrink-0">
+                          <Calendar className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
                         </div>
-                        <div>
-                          <p className="text-sm text-gray-500 font-semibold">
+                        <div className="min-w-0">
+                          <p className="text-xs sm:text-sm text-gray-500 font-semibold">
                             Birth Date
                           </p>
-                          <p className="text-gray-800 font-medium">
+                          <p className="text-sm sm:text-base text-gray-800 font-medium">
                             {profileData.birthDate
                               ? new Date(
                                   profileData.birthDate,
@@ -465,16 +467,16 @@ const Profile = () => {
                     </div>
 
                     {/* Gender */}
-                    <div className="bg-white rounded-2xl p-5 shadow-md">
-                      <div className="flex items-center space-x-3 mb-2">
-                        <div className="w-10 h-10 bg-surface rounded-full flex items-center justify-center">
-                          <User className="w-5 h-5 text-primary" />
+                    <div className="bg-white rounded-xl sm:rounded-2xl p-3 sm:p-5 shadow-md">
+                      <div className="flex items-center space-x-2 sm:space-x-3 mb-2">
+                        <div className="w-8 h-8 sm:w-10 sm:h-10 bg-surface rounded-full flex items-center justify-center flex-shrink-0">
+                          <User className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
                         </div>
-                        <div>
-                          <p className="text-sm text-gray-500 font-semibold">
+                        <div className="min-w-0">
+                          <p className="text-xs sm:text-sm text-gray-500 font-semibold">
                             Gender
                           </p>
-                          <p className="text-gray-800 font-medium capitalize">
+                          <p className="text-sm sm:text-base text-gray-800 font-medium capitalize">
                             {profileData.gender || "Not provided"}
                           </p>
                         </div>
@@ -482,16 +484,16 @@ const Profile = () => {
                     </div>
 
                     {/* Member Since */}
-                    <div className="bg-white rounded-2xl p-5 shadow-md">
-                      <div className="flex items-center space-x-3 mb-2">
-                        <div className="w-10 h-10 bg-surface rounded-full flex items-center justify-center">
-                          <Calendar className="w-5 h-5 text-primary" />
+                    <div className="bg-white rounded-xl sm:rounded-2xl p-3 sm:p-5 shadow-md">
+                      <div className="flex items-center space-x-2 sm:space-x-3 mb-2">
+                        <div className="w-8 h-8 sm:w-10 sm:h-10 bg-surface rounded-full flex items-center justify-center flex-shrink-0">
+                          <Calendar className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
                         </div>
-                        <div>
-                          <p className="text-sm text-gray-500 font-semibold">
+                        <div className="min-w-0">
+                          <p className="text-xs sm:text-sm text-gray-500 font-semibold">
                             Member Since
                           </p>
-                          <p className="text-gray-800 font-medium">
+                          <p className="text-sm sm:text-base text-gray-800 font-medium">
                             {profileData.memberSince}
                           </p>
                         </div>
@@ -500,24 +502,24 @@ const Profile = () => {
                   </div>
 
                   {/* Address Management Section */}
-                  <div className="mt-8 bg-white rounded-2xl p-5 shadow-md">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center space-x-3">
-                        <div className="w-10 h-10 bg-surface rounded-full flex items-center justify-center">
-                          <MapPin className="w-5 h-5 text-primary" />
+                  <div className="mt-6 sm:mt-8 bg-white rounded-xl sm:rounded-2xl p-3 sm:p-5 shadow-md">
+                    <div className="flex items-center justify-between gap-3">
+                      <div className="flex items-center space-x-2 sm:space-x-3 min-w-0">
+                        <div className="w-8 h-8 sm:w-10 sm:h-10 bg-surface rounded-full flex items-center justify-center flex-shrink-0">
+                          <MapPin className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
                         </div>
-                        <div>
-                          <p className="text-sm text-gray-500 font-semibold">
+                        <div className="min-w-0">
+                          <p className="text-xs sm:text-sm text-gray-500 font-semibold">
                             Saved Addresses
                           </p>
-                          <p className="text-gray-800 font-medium">
+                          <p className="text-sm sm:text-base text-gray-800 font-medium hidden sm:block">
                             Manage your delivery addresses
                           </p>
                         </div>
                       </div>
                       <button
                         onClick={() => navigate("/addresses")}
-                        className="bg-primary text-white px-6 py-2 rounded-full font-semibold hover:bg-accent-dark transition-all"
+                        className="bg-primary text-white px-4 sm:px-6 py-2 rounded-full font-semibold hover:bg-accent-dark transition-all text-sm sm:text-base flex-shrink-0"
                       >
                         Manage
                       </button>
@@ -525,30 +527,32 @@ const Profile = () => {
                   </div>
 
                   {/* Update Profile Button */}
-                  <div className="flex justify-center gap-4 mt-8">
+                  <div className="flex flex-col sm:flex-row justify-center gap-3 sm:gap-4 mt-6 sm:mt-8">
                     <button
                       onClick={() => setIsEditing(true)}
-                      className="bg-primary text-white px-8 py-3 rounded-full font-bold text-lg hover:bg-accent-dark transition-all hover:shadow-lg transform hover:-translate-y-0.5"
+                      className="bg-primary text-white px-6 sm:px-8 py-2.5 sm:py-3 rounded-full font-bold text-base sm:text-lg hover:bg-accent-dark transition-all hover:shadow-lg transform hover:-translate-y-0.5"
                     >
                       Update Profile
                     </button>
                     <button
                       onClick={handleLogout}
-                      className="bg-red-500 text-white px-8 py-3 rounded-full font-bold text-lg hover:bg-red-600 transition-all hover:shadow-lg transform hover:-translate-y-0.5 flex items-center gap-2"
+                      className="bg-red-500 text-white px-6 sm:px-8 py-2.5 sm:py-3 rounded-full font-bold text-base sm:text-lg hover:bg-red-600 transition-all hover:shadow-lg transform hover:-translate-y-0.5 flex items-center justify-center gap-2"
                     >
-                      <LogOut className="w-5 h-5" />
+                      <LogOut className="w-4 h-4 sm:w-5 sm:h-5" />
                       Logout
                     </button>
                   </div>
                 </div>
               ) : (
                 // Edit Mode
-                <div className="space-y-6">
-                  <div className="text-center mb-6">
-                    <h2 className="text-3xl font-bold text-gray-800 mb-2">
+                <div className="space-y-4 sm:space-y-6">
+                  <div className="text-center mb-4 sm:mb-6">
+                    <h2 className="text-2xl sm:text-3xl font-bold text-gray-800 mb-2">
                       Edit Profile
                     </h2>
-                    <p className="text-gray-600">Update your information</p>
+                    <p className="text-sm sm:text-base text-gray-600">
+                      Update your information
+                    </p>
                   </div>
 
                   {/* Name Input */}
@@ -683,16 +687,16 @@ const Profile = () => {
                   </div>
 
                   {/* Action Buttons */}
-                  <div className="flex gap-4 mt-8">
+                  <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 mt-6 sm:mt-8">
                     <button
                       onClick={handleCancel}
-                      className="flex-1 bg-gray-400 text-white py-3 rounded-full font-bold text-lg hover:bg-gray-500 transition-all hover:shadow-lg"
+                      className="flex-1 bg-gray-400 text-white py-2.5 sm:py-3 rounded-full font-bold text-base sm:text-lg hover:bg-gray-500 transition-all hover:shadow-lg"
                     >
                       Cancel
                     </button>
                     <button
                       onClick={handleSave}
-                      className="flex-1 bg-primary text-white py-3 rounded-full font-bold text-lg hover:bg-accent-dark transition-all hover:shadow-lg transform hover:-translate-y-0.5"
+                      className="flex-1 bg-primary text-white py-2.5 sm:py-3 rounded-full font-bold text-base sm:text-lg hover:bg-accent-dark transition-all hover:shadow-lg transform hover:-translate-y-0.5"
                     >
                       Save Changes
                     </button>
