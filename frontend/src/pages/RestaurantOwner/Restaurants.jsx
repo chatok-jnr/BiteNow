@@ -832,27 +832,29 @@ const Restaurants = () => {
             </div>
           )}
 
-          {/* Add Restaurant Button */}
-          <div className="flex justify-center mt-8">
-            <button
-              onClick={() => {
-                console.log(`Debug = ${ownerStatus}`);
+          {/* Add Restaurant Button - only show when there are existing restaurants */}
+          {restaurants.length > 0 && (
+            <div className="flex justify-center mt-8">
+              <button
+                onClick={() => {
+                  console.log(`Debug = ${ownerStatus}`);
 
-                if (ownerStatus !== "Approved") {
-                  showError(
-                    "Your account must be approved before you can add restaurants",
-                  );
-                  return;
-                }
-                setShowAddModal(true);
-              }}
-              disabled={loading}
-              className="bg-primary text-white px-6 sm:px-8 py-3 sm:py-4 rounded-full hover:bg-accent-dark transition-all font-semibold flex items-center justify-center space-x-2 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed text-base sm:text-lg"
-            >
-              <Plus className="w-5 h-5 sm:w-6 sm:h-6" />
-              <span>Add Restaurant</span>
-            </button>
-          </div>
+                  if (ownerStatus !== "Approved") {
+                    showError(
+                      "Your account must be approved before you can add restaurants",
+                    );
+                    return;
+                  }
+                  setShowAddModal(true);
+                }}
+                disabled={loading}
+                className="bg-primary text-white px-6 sm:px-8 py-3 sm:py-4 rounded-full hover:bg-accent-dark transition-all font-semibold flex items-center justify-center space-x-2 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed text-base sm:text-lg"
+              >
+                <Plus className="w-5 h-5 sm:w-6 sm:h-6" />
+                <span>Add Restaurant</span>
+              </button>
+            </div>
+          )}
         </div>
       </main>
 

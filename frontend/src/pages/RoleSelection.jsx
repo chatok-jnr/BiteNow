@@ -1,6 +1,6 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
-import { Users, Bike, ChefHat, ArrowLeft, Utensils } from "lucide-react";
+import { Users, Bike, ChefHat, ArrowLeft, Utensils, Home } from "lucide-react";
 
 const RoleSelection = () => {
   const navigate = useNavigate();
@@ -49,8 +49,10 @@ const RoleSelection = () => {
             <p className="text-2xl text-white/95 font-semibold mb-2">
               Welcome!
             </p>
-            <p className="text-lg text-white/85 mt-4 leading-relaxed">
+            <p className="text-lg mt-4 leading-relaxed inline-flex items-center gap-2 bg-white/15 backdrop-blur-sm border border-white/30 rounded-full px-5 py-2 font-medium tracking-wide text-white shadow-lg">
+              <span className="w-2 h-2 rounded-full bg-white/80"></span>
               Choose your role to get started
+              <span className="w-2 h-2 rounded-full bg-white/80"></span>
             </p>
           </div>
         </div>
@@ -74,7 +76,7 @@ const RoleSelection = () => {
       </div>
 
       {/* Right Side - Role Selection Buttons */}
-      <div className="w-full lg:w-1/2 bg-secondary flex items-center justify-center p-8">
+      <div className="w-full lg:w-1/2 bg-secondary flex items-center justify-center px-4 py-8 sm:p-8">
         <div className="w-full max-w-md">
           {/* Logo for mobile */}
           <div className="lg:hidden text-center mb-8">
@@ -128,9 +130,27 @@ const RoleSelection = () => {
 
           {/* Footer Note */}
           <div className="text-center mt-8">
+            <p className="text-white/60 text-sm">Don't have an account?</p>
             <p className="text-white/60 text-sm">
-              Don't have an account? Sign up after selecting your role
+              Sign up after selecting your role
             </p>
+          </div>
+
+          {/* Back to Home - mobile only */}
+          <div className="lg:hidden text-center mt-6">
+            <button
+              onClick={() => {
+                const frontendUrl =
+                  import.meta.env.VITE_FRONTEND_URL || window.location.origin;
+                window.location.href = frontendUrl;
+              }}
+              className="inline-flex items-center gap-2 text-white/70 hover:text-white transition-all group"
+            >
+              <div className="bg-white/20 hover:bg-white/30 rounded-full p-2 transition-all group-hover:scale-110">
+                <Home className="w-4 h-4 text-white" />
+              </div>
+              <span className="text-sm font-medium">Back to Home</span>
+            </button>
           </div>
         </div>
       </div>

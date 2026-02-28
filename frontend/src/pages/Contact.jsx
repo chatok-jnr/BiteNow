@@ -16,7 +16,7 @@ const Contact = () => {
     {
       name: "A.O.M. Ramim Chowdhury",
       role: "Frontend Developer",
-      email: "0432220005101146@uits.edu.bd",
+      email: "ramim.c26@gmail.com",
       linkedin: "https://www.linkedin.com/in/a-o-m-ramim-chowdhury/",
     },
     {
@@ -26,9 +26,9 @@ const Contact = () => {
       linkedin: "https://www.linkedin.com/in/chatok-junior/",
     },
     {
-      name: "Atik Shahriar Opu",
+      name: "Atik Shahria Opu",
       role: "Backend Developer",
-      email: "0432220005101079@uits.edu.bd",
+      email: "atikshariaropu@gmail.com",
       linkedin: "https://www.linkedin.com/in/atikshahriaopu/",
     },
   ];
