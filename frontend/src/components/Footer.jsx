@@ -50,7 +50,7 @@ const Footer = () => {
 
             {/* Bottom Bar */}
             <div className="border-t border-white/10 pt-4 sm:pt-6 w-full">
-              <div className="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
+              <div className="flex flex-col md:flex-row justify-center items-center space-y-4 md:space-y-0">
                 <p className="text-white/70 text-xs sm:text-sm text-center">
                   © 2025 - 2026 BiteNow. All rights reserved.
                 </p>
