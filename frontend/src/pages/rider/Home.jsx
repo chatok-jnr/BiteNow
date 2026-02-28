@@ -453,7 +453,7 @@ const Home = () => {
         },
       );
 
-      if (response.data && response.data.success) {
+      if (response.status === 200 && response.data) {
         // Move order to completed
         const newCompletedOrder = {
           id: selectedOrder.id,
@@ -481,10 +481,12 @@ const Home = () => {
         // Refresh stats to update today's earnings and deliveries
         await fetchRiderStats();
 
-        // Close modal
+        // Close modal and navigate to completed tab
         setShowPinModal(false);
         setSelectedOrder(null);
         setCustomerPin("");
+        setActiveTab("completed");
+        showSuccess("Delivery completed successfully!");
       }
     } catch (err) {
       console.error("Error verifying PIN:", err);
