@@ -96,24 +96,27 @@ const RoleSelection = () => {
           </div>
 
           {/* Role Buttons */}
-          <div className="space-y-4">
+          <div className="space-y-3 sm:space-y-4">
             {roles.map((role) => {
               const Icon = role.icon;
               return (
                 <button
                   key={role.id}
                   onClick={() => handleRoleSelect(role.path)}
-                  className="w-full bg-secondary/80 hover:bg-secondary/60 text-white p-6 rounded-lg transition-all transform hover:scale-[1.02] hover:shadow-xl border-2 border-transparent hover:border-primary group"
+                  className="w-full bg-secondary/80 hover:bg-secondary/60 text-white p-4 sm:p-6 rounded-lg transition-all transform hover:scale-[1.02] hover:shadow-xl border-2 border-transparent hover:border-primary group"
                 >
-                  <div className="flex items-center space-x-4">
-                    <div className="bg-gradient-to-r from-primary to-accent p-4 rounded-lg group-hover:from-accent group-hover:to-accent-dark transition-all">
-                      <Icon className="w-8 h-8 text-white" strokeWidth={2} />
+                  <div className="flex items-center space-x-3 sm:space-x-4">
+                    <div className="bg-gradient-to-r from-primary to-accent p-3 sm:p-4 rounded-lg group-hover:from-accent group-hover:to-accent-dark transition-all flex-shrink-0">
+                      <Icon
+                        className="w-6 h-6 sm:w-8 sm:h-8 text-white"
+                        strokeWidth={2}
+                      />
                     </div>
                     <div className="flex-1 text-left">
-                      <h3 className="text-xl font-bold text-white mb-1">
+                      <h3 className="text-lg sm:text-xl font-bold text-white mb-0.5 sm:mb-1">
                         Login as {role.title}
                       </h3>
-                      <p className="text-white/70 text-sm">
+                      <p className="text-white/70 text-xs sm:text-sm">
                         {role.description}
                       </p>
                     </div>
