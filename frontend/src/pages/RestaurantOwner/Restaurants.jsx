@@ -669,35 +669,15 @@ const Restaurants = () => {
     <div className="min-h-screen bg-bgPrimary flex flex-col">
       <OwnerNavbar />
 
-      <main className="flex-1 p-4 lg:p-8">
+      <main className="flex-1 p-4 sm:p-6 lg:p-8 pt-20 sm:pt-24 lg:pt-24">
         <div className="max-w-7xl mx-auto">
-          <div className="flex items-center justify-between mb-8">
-            <div>
-              <h1 className="text-4xl font-bold text-gray-800 mb-2">
-                My Restaurants
-              </h1>
-              <p className="text-gray-600">
-                Manage all your restaurant locations
-              </p>
-            </div>
-            <button
-              onClick={() => {
-                console.log(`Debug = ${ownerStatus}`);
-
-                if (ownerStatus !== "Approved") {
-                  showError(
-                    "Your account must be approved before you can add restaurants",
-                  );
-                  return;
-                }
-                setShowAddModal(true);
-              }}
-              disabled={loading}
-              className="bg-primary text-white px-6 py-3 rounded-full hover:bg-accent-dark transition-all font-semibold flex items-center space-x-2 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              <Plus className="w-5 h-5" />
-              <span>Add Restaurant</span>
-            </button>
+          <div className="mb-6 sm:mb-8">
+            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-800 mb-1 sm:mb-2">
+              My Restaurants
+            </h1>
+            <p className="text-sm sm:text-base text-gray-600">
+              Manage all your restaurant locations
+            </p>
           </div>
 
           {/* Show approval notice if not approved */}
@@ -714,19 +694,21 @@ const Restaurants = () => {
           {/* Loading State */}
           {loading && restaurants.length === 0 && (
             <div className="text-center py-12">
-              <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
-              <p className="mt-4 text-gray-600">Loading restaurants...</p>
+              <div className="inline-block animate-spin rounded-full h-10 w-10 sm:h-12 sm:w-12 border-b-2 border-primary"></div>
+              <p className="mt-4 text-sm sm:text-base text-gray-600">
+                Loading restaurants...
+              </p>
             </div>
           )}
 
           {/* Empty State */}
           {!loading && restaurants.length === 0 && (
-            <div className="text-center py-12 bg-tertiary rounded-2xl">
-              <Store className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-              <h3 className="text-xl font-semibold text-gray-700 mb-2">
+            <div className="text-center py-12 bg-tertiary rounded-xl sm:rounded-2xl px-4">
+              <Store className="w-12 h-12 sm:w-16 sm:h-16 text-gray-400 mx-auto mb-4" />
+              <h3 className="text-lg sm:text-xl font-semibold text-gray-700 mb-2">
                 No restaurants yet
               </h3>
-              <p className="text-gray-600 mb-4">
+              <p className="text-sm sm:text-base text-gray-600 mb-4">
                 {ownerStatus !== "Approved"
                   ? "Your account needs to be approved before you can add restaurants"
                   : "Start by adding your first restaurant"}
@@ -734,9 +716,9 @@ const Restaurants = () => {
               {ownerStatus === "Approved" && (
                 <button
                   onClick={() => setShowAddModal(true)}
-                  className="bg-primary text-white px-6 py-3 rounded-full hover:bg-accent-dark transition-all font-semibold inline-flex items-center space-x-2"
+                  className="bg-primary text-white px-4 sm:px-6 py-2.5 sm:py-3 rounded-full hover:bg-accent-dark transition-all font-semibold inline-flex items-center space-x-2 text-sm sm:text-base"
                 >
-                  <Plus className="w-5 h-5" />
+                  <Plus className="w-4 h-4 sm:w-5 sm:h-5" />
                   <span>Add Restaurant</span>
                 </button>
               )}
@@ -744,106 +726,135 @@ const Restaurants = () => {
           )}
 
           {/* Restaurant Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-            {restaurants.map((restaurant) => (
-              <div
-                key={restaurant._id}
-                className="bg-tertiary rounded-2xl overflow-hidden shadow-lg hover:shadow-xl transition-all"
+          {restaurants.length > 0 && (
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6 mb-6">
+              {restaurants.map((restaurant) => (
+                <div
+                  key={restaurant._id}
+                  className="bg-tertiary rounded-xl sm:rounded-2xl overflow-hidden shadow-lg hover:shadow-xl transition-all"
+                >
+                  <div className="aspect-video overflow-hidden relative">
+                    <img
+                      src={
+                        restaurant.restaurant_image?.url ||
+                        restaurant.restaurant_image ||
+                        "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=400&q=80"
+                      }
+                      alt={restaurant.restaurant_name}
+                      className="w-full h-full object-cover hover:scale-110 transition-transform duration-500"
+                    />
+                    <div className="absolute top-3 sm:top-4 right-3 sm:right-4 bg-primary text-white px-2 sm:px-3 py-1 rounded-full text-xs sm:text-sm font-semibold">
+                      {restaurant.restaurant_category?.[0] || "Restaurant"}
+                    </div>
+                  </div>
+                  <div className="p-4 sm:p-5">
+                    <h3 className="text-xl sm:text-2xl font-bold text-gray-800 mb-2">
+                      {restaurant.restaurant_name}
+                    </h3>
+                    <p className="text-gray-600 text-xs sm:text-sm mb-4 line-clamp-2">
+                      {restaurant.restaurant_description}
+                    </p>
+                    <div className="space-y-2 mb-4">
+                      <div className="flex items-start space-x-2">
+                        <MapPin className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-primary mt-0.5 flex-shrink-0" />
+                        <p className="text-xs sm:text-sm text-gray-700">
+                          {restaurant.restaurant_address ||
+                            "No address provided"}
+                        </p>
+                      </div>
+                      {restaurant.restaurant_contact_info?.phone && (
+                        <div className="flex items-center space-x-2">
+                          <Phone className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-primary flex-shrink-0" />
+                          <p className="text-xs sm:text-sm text-gray-700">
+                            {restaurant.restaurant_contact_info.phone}
+                          </p>
+                        </div>
+                      )}
+                      {restaurant.restaurant_contact_info?.email && (
+                        <div className="flex items-center space-x-2">
+                          <Mail className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-primary flex-shrink-0" />
+                          <p className="text-xs sm:text-sm text-gray-700 break-all">
+                            {restaurant.restaurant_contact_info.email}
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                    <div className="grid grid-cols-2 gap-2 mb-4">
+                      <div className="bg-surface p-2 rounded-lg text-center">
+                        <div className="flex items-center justify-center mb-1">
+                          <Star className="w-3.5 h-3.5 sm:w-4 sm:h-4 fill-yellow-400 text-yellow-400" />
+                        </div>
+                        <p className="text-xs text-gray-600">Rating</p>
+                        <p className="text-sm sm:text-base font-bold text-gray-800">
+                          {restaurant.restaurant_rating?.average || "N/A"}
+                        </p>
+                      </div>
+                      <div className="bg-surface p-2 rounded-lg text-center">
+                        <div className="flex items-center justify-center mb-1">
+                          <Package className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-primary" />
+                        </div>
+                        <p className="text-xs text-gray-600">Sales</p>
+                        <p className="text-sm sm:text-base font-bold text-gray-800">
+                          {restaurant.restaurant_total_sales || 0}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex flex-col sm:flex-row gap-2">
+                      <button
+                        onClick={() => handleManageRestaurant(restaurant)}
+                        className="flex-1 bg-primary text-white py-2.5 sm:py-3 rounded-full hover:bg-accent-dark transition-all font-semibold flex items-center justify-center space-x-2 text-sm sm:text-base"
+                      >
+                        <span>Manage</span>
+                        <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5" />
+                      </button>
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => handleEditRestaurant(restaurant)}
+                          disabled={loading}
+                          className="bg-blue-500 text-white px-3 sm:px-4 py-2.5 sm:py-3 rounded-full hover:bg-blue-600 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                          title="Edit Restaurant"
+                        >
+                          <Edit className="w-4 h-4 sm:w-5 sm:h-5" />
+                        </button>
+                        <button
+                          onClick={() => handleDeleteRestaurant(restaurant._id)}
+                          disabled={loading}
+                          className="bg-red-500 text-white px-3 sm:px-4 py-2.5 sm:py-3 rounded-full hover:bg-red-600 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                          title="Delete Restaurant"
+                        >
+                          <Trash2 className="w-4 h-4 sm:w-5 sm:h-5" />
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* Add Restaurant Button - only show when there are existing restaurants */}
+          {restaurants.length > 0 && (
+            <div className="flex justify-center mt-8">
+              <button
+                onClick={() => {
+                  console.log(`Debug = ${ownerStatus}`);
+
+                  if (ownerStatus !== "Approved") {
+                    showError(
+                      "Your account must be approved before you can add restaurants",
+                    );
+                    return;
+                  }
+                  setShowAddModal(true);
+                }}
+                disabled={loading}
+                className="bg-primary text-white px-6 sm:px-8 py-3 sm:py-4 rounded-full hover:bg-accent-dark transition-all font-semibold flex items-center justify-center space-x-2 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed text-base sm:text-lg"
               >
-                <div className="aspect-video overflow-hidden relative">
-                  <img
-                    src={
-                      restaurant.restaurant_image?.url ||
-                      restaurant.restaurant_image ||
-                      "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=400&q=80"
-                    }
-                    alt={restaurant.restaurant_name}
-                    className="w-full h-full object-cover hover:scale-110 transition-transform duration-500"
-                  />
-                  <div className="absolute top-4 right-4 bg-primary text-white px-3 py-1 rounded-full text-sm font-semibold">
-                    {restaurant.restaurant_category?.[0] || "Restaurant"}
-                  </div>
-                </div>
-                <div className="p-5">
-                  <h3 className="text-2xl font-bold text-gray-800 mb-2">
-                    {restaurant.restaurant_name}
-                  </h3>
-                  <p className="text-gray-600 text-sm mb-4 line-clamp-2">
-                    {restaurant.restaurant_description}
-                  </p>
-                  <div className="space-y-2 mb-4">
-                    <div className="flex items-start space-x-2">
-                      <MapPin className="w-4 h-4 text-primary mt-0.5 flex-shrink-0" />
-                      <p className="text-sm text-gray-700">
-                        {restaurant.restaurant_address || "No address provided"}
-                      </p>
-                    </div>
-                    {restaurant.restaurant_contact_info?.phone && (
-                      <div className="flex items-center space-x-2">
-                        <Phone className="w-4 h-4 text-primary flex-shrink-0" />
-                        <p className="text-sm text-gray-700">
-                          {restaurant.restaurant_contact_info.phone}
-                        </p>
-                      </div>
-                    )}
-                    {restaurant.restaurant_contact_info?.email && (
-                      <div className="flex items-center space-x-2">
-                        <Mail className="w-4 h-4 text-primary flex-shrink-0" />
-                        <p className="text-sm text-gray-700">
-                          {restaurant.restaurant_contact_info.email}
-                        </p>
-                      </div>
-                    )}
-                  </div>
-                  <div className="grid grid-cols-2 gap-2 mb-4">
-                    <div className="bg-surface p-2 rounded-lg text-center">
-                      <div className="flex items-center justify-center mb-1">
-                        <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
-                      </div>
-                      <p className="text-xs text-gray-600">Rating</p>
-                      <p className="font-bold text-gray-800">
-                        {restaurant.restaurant_rating?.average || "N/A"}
-                      </p>
-                    </div>
-                    <div className="bg-surface p-2 rounded-lg text-center">
-                      <div className="flex items-center justify-center mb-1">
-                        <Package className="w-4 h-4 text-primary" />
-                      </div>
-                      <p className="text-xs text-gray-600">Sales</p>
-                      <p className="font-bold text-gray-800">
-                        {restaurant.restaurant_total_sales || 0}
-                      </p>
-                    </div>
-                  </div>
-                  <div className="flex space-x-2">
-                    <button
-                      onClick={() => handleManageRestaurant(restaurant)}
-                      className="flex-1 bg-primary text-white py-3 rounded-full hover:bg-accent-dark transition-all font-semibold flex items-center justify-center space-x-2"
-                    >
-                      <span>Manage</span>
-                      <ChevronRight className="w-5 h-5" />
-                    </button>
-                    <button
-                      onClick={() => handleEditRestaurant(restaurant)}
-                      disabled={loading}
-                      className="bg-blue-500 text-white px-4 py-3 rounded-full hover:bg-blue-600 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-                      title="Edit Restaurant"
-                    >
-                      <Edit className="w-5 h-5" />
-                    </button>
-                    <button
-                      onClick={() => handleDeleteRestaurant(restaurant._id)}
-                      disabled={loading}
-                      className="bg-red-500 text-white px-4 py-3 rounded-full hover:bg-red-600 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-                      title="Delete Restaurant"
-                    >
-                      <Trash2 className="w-5 h-5" />
-                    </button>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
+                <Plus className="w-5 h-5 sm:w-6 sm:h-6" />
+                <span>Add Restaurant</span>
+              </button>
+            </div>
+          )}
         </div>
       </main>
 
@@ -851,7 +862,7 @@ const Restaurants = () => {
 
       {showAddModal && (
         <div
-          className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4 overflow-y-auto"
+          className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-start sm:items-center justify-center p-2 sm:p-4 overflow-y-auto"
           onClick={(e) => {
             // Close modal if clicking on the backdrop (not the modal content)
             if (e.target === e.currentTarget) {
@@ -861,11 +872,11 @@ const Restaurants = () => {
           }}
         >
           <div
-            className="bg-surface rounded-2xl max-w-4xl w-full my-8 max-h-[90vh] overflow-y-auto"
+            className="bg-surface rounded-xl sm:rounded-2xl max-w-4xl w-full my-4 sm:my-8 max-h-[95vh] sm:max-h-[90vh] overflow-y-auto"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="sticky top-0 bg-secondary p-6 flex items-center justify-between rounded-t-2xl z-10">
-              <h2 className="text-2xl font-bold text-white">
+            <div className="sticky top-0 bg-secondary p-4 sm:p-6 flex items-center justify-between rounded-t-xl sm:rounded-t-2xl z-10">
+              <h2 className="text-xl sm:text-2xl font-bold text-white">
                 {isEditMode ? "Edit Restaurant" : "Add New Restaurant"}
               </h2>
               <button
@@ -875,17 +886,17 @@ const Restaurants = () => {
                 }}
                 className="text-white hover:text-gray-200"
               >
-                <X className="w-6 h-6" />
+                <X className="w-5 h-5 sm:w-6 sm:h-6" />
               </button>
             </div>
 
-            <div className="p-6 space-y-6">
-              <div className="bg-tertiary p-6 rounded-xl space-y-4">
-                <h3 className="text-xl font-bold text-gray-800">
+            <div className="p-4 sm:p-6 space-y-4 sm:space-y-6">
+              <div className="bg-tertiary p-4 sm:p-6 rounded-xl space-y-4">
+                <h3 className="text-lg sm:text-xl font-bold text-gray-800">
                   Basic Information
                 </h3>
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  <label className="block text-xs sm:text-sm font-semibold text-gray-700 mb-2">
                     Restaurant Name *
                   </label>
                   <input
@@ -893,21 +904,21 @@ const Restaurants = () => {
                     name="restaurant_name"
                     value={formData.restaurant_name}
                     onChange={handleInputChange}
-                    className="w-full px-4 py-3 rounded-lg border-2 border-secondary focus:border-primary focus:outline-none bg-white"
+                    className="w-full px-3 sm:px-4 py-2.5 sm:py-3 rounded-lg border-2 border-secondary focus:border-primary focus:outline-none bg-white text-sm sm:text-base"
                     placeholder="Enter restaurant name"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  <label className="block text-xs sm:text-sm font-semibold text-gray-700 mb-2">
                     Restaurant Categories *
                   </label>
-                  <div className="flex flex-wrap gap-2 mb-2">
+                  <div className="flex flex-wrap gap-1.5 sm:gap-2 mb-2">
                     {restaurantTypes.map((type) => (
                       <button
                         key={type}
                         type="button"
                         onClick={() => handleCategoryToggle(type)}
-                        className={`px-3 py-1 rounded-full text-sm font-medium transition-all ${
+                        className={`px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-full text-xs sm:text-sm font-medium transition-all ${
                           formData.restaurant_category.includes(type)
                             ? "bg-primary text-white"
                             : "bg-white text-gray-700 border border-secondary hover:border-primary"
@@ -923,7 +934,7 @@ const Restaurants = () => {
                   </p>
                 </div>
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  <label className="block text-xs sm:text-sm font-semibold text-gray-700 mb-2">
                     Description *
                   </label>
                   <textarea
@@ -931,15 +942,15 @@ const Restaurants = () => {
                     value={formData.restaurant_description}
                     onChange={handleInputChange}
                     rows="3"
-                    className="w-full px-4 py-3 rounded-lg border-2 border-secondary focus:border-primary focus:outline-none bg-white resize-none"
+                    className="w-full px-3 sm:px-4 py-2.5 sm:py-3 rounded-lg border-2 border-secondary focus:border-primary focus:outline-none bg-white resize-none text-sm sm:text-base"
                     placeholder="Describe your restaurant"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  <label className="block text-xs sm:text-sm font-semibold text-gray-700 mb-2">
                     Restaurant Image
                   </label>
-                  <div className="flex items-center space-x-4">
+                  <div className="flex flex-col sm:flex-row items-start sm:items-center space-y-3 sm:space-y-0 sm:space-x-4">
                     {formData.restaurant_image && (
                       <img
                         src={formData.restaurant_image}
@@ -948,10 +959,10 @@ const Restaurants = () => {
                       />
                     )}
                     <label className="flex-1 cursor-pointer">
-                      <div className="border-2 border-dashed border-secondary rounded-lg p-4 hover:border-primary transition-colors bg-white">
+                      <div className="border-2 border-dashed border-secondary rounded-lg p-3 sm:p-4 hover:border-primary transition-colors bg-white">
                         <div className="flex flex-col items-center space-y-2">
-                          <Image className="w-8 h-8 text-primary" />
-                          <span className="text-sm text-gray-600">
+                          <Image className="w-6 h-6 sm:w-8 sm:h-8 text-primary" />
+                          <span className="text-xs sm:text-sm text-gray-600">
                             Click to upload
                           </span>
                         </div>
@@ -967,14 +978,14 @@ const Restaurants = () => {
                 </div>
               </div>
 
-              <div className="bg-tertiary p-6 rounded-xl space-y-4">
-                <h3 className="text-xl font-bold text-gray-800">
+              <div className="bg-tertiary p-4 sm:p-6 rounded-xl space-y-4">
+                <h3 className="text-lg sm:text-xl font-bold text-gray-800">
                   Location & Address
                 </h3>
 
                 {/* Location Selector */}
-                <div className="bg-surface p-4 rounded-lg space-y-3">
-                  <label className="block text-sm font-semibold text-gray-700">
+                <div className="bg-surface p-3 sm:p-4 rounded-lg space-y-3">
+                  <label className="block text-xs sm:text-sm font-semibold text-gray-700">
                     Quick Location Selection
                   </label>
                   <div className="flex flex-col sm:flex-row gap-3">
@@ -982,9 +993,9 @@ const Restaurants = () => {
                       type="button"
                       onClick={handleUseMyLocation}
                       disabled={loadingLocation}
-                      className="flex-1 bg-primary text-white px-4 py-3 rounded-lg hover:bg-accent-dark transition-all font-semibold flex items-center justify-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="flex-1 bg-primary text-white px-3 sm:px-4 py-2.5 sm:py-3 rounded-lg hover:bg-accent-dark transition-all font-semibold flex items-center justify-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base"
                     >
-                      <Navigation className="w-5 h-5" />
+                      <Navigation className="w-4 h-4 sm:w-5 sm:h-5" />
                       <span>
                         {loadingLocation
                           ? "Getting Location..."
@@ -995,11 +1006,11 @@ const Restaurants = () => {
 
                   {/* Address Search */}
                   <div className="relative">
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    <label className="block text-xs sm:text-sm font-semibold text-gray-700 mb-2">
                       Search Address
                     </label>
                     <div className="relative">
-                      <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+                      <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 sm:w-5 sm:h-5 text-gray-400" />
                       <input
                         type="text"
                         value={searchQuery}
@@ -1010,23 +1021,23 @@ const Restaurants = () => {
                         onFocus={() =>
                           searchResults.length > 0 && setShowSearchResults(true)
                         }
-                        className="w-full pl-10 pr-4 py-3 rounded-lg border-2 border-secondary focus:border-primary focus:outline-none bg-white"
+                        className="w-full pl-9 sm:pl-10 pr-3 sm:pr-4 py-2.5 sm:py-3 rounded-lg border-2 border-secondary focus:border-primary focus:outline-none bg-white text-sm sm:text-base"
                         placeholder="Search for an address..."
                       />
                     </div>
 
                     {/* Search Results Dropdown */}
                     {showSearchResults && searchResults.length > 0 && (
-                      <div className="absolute z-20 w-full mt-1 bg-white border-2 border-secondary rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                      <div className="absolute z-20 w-full mt-1 bg-white border-2 border-secondary rounded-lg shadow-lg max-h-48 sm:max-h-60 overflow-y-auto">
                         {searchResults.map((result, index) => (
                           <button
                             key={index}
                             type="button"
                             onClick={() => handleSelectLocation(result)}
-                            className="w-full text-left px-4 py-3 hover:bg-surface transition-colors border-b border-gray-200 last:border-b-0"
+                            className="w-full text-left px-3 sm:px-4 py-2.5 sm:py-3 hover:bg-surface transition-colors border-b border-gray-200 last:border-b-0"
                           >
                             <div className="flex items-start space-x-2">
-                              <MapPin className="w-4 h-4 text-primary mt-1 flex-shrink-0" />
+                              <MapPin className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-primary mt-1 flex-shrink-0" />
                               <div>
                                 <p className="font-medium text-gray-800 text-sm">
                                   {result.text}
@@ -1058,7 +1069,7 @@ const Restaurants = () => {
 
                 {/* Full Address Field */}
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  <label className="block text-xs sm:text-sm font-semibold text-gray-700 mb-2">
                     Full Address *
                   </label>
                   <textarea
@@ -1066,7 +1077,7 @@ const Restaurants = () => {
                     value={formData.restaurant_address}
                     onChange={handleInputChange}
                     rows="3"
-                    className="w-full px-4 py-3 rounded-lg border-2 border-secondary focus:border-primary focus:outline-none bg-white resize-none"
+                    className="w-full px-3 sm:px-4 py-2.5 sm:py-3 rounded-lg border-2 border-secondary focus:border-primary focus:outline-none bg-white resize-none text-sm sm:text-base"
                     placeholder="Enter full address or use location tools above to auto-fill"
                   />
                   <p className="text-xs text-gray-500 mt-1">
@@ -1076,12 +1087,12 @@ const Restaurants = () => {
                 </div>
               </div>
 
-              <div className="bg-tertiary p-6 rounded-xl space-y-4">
-                <h3 className="text-xl font-bold text-gray-800">
+              <div className="bg-tertiary p-4 sm:p-6 rounded-xl space-y-4">
+                <h3 className="text-lg sm:text-xl font-bold text-gray-800">
                   Contact Information
                 </h3>
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  <label className="block text-xs sm:text-sm font-semibold text-gray-700 mb-2">
                     Phone Number *
                   </label>
                   <input
@@ -1089,12 +1100,12 @@ const Restaurants = () => {
                     name="contact_phone"
                     value={formData.restaurant_contact_info.phone}
                     onChange={handleInputChange}
-                    className="w-full px-4 py-3 rounded-lg border-2 border-secondary focus:border-primary focus:outline-none bg-white"
+                    className="w-full px-3 sm:px-4 py-2.5 sm:py-3 rounded-lg border-2 border-secondary focus:border-primary focus:outline-none bg-white text-sm sm:text-base"
                     placeholder="+8801712345678"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  <label className="block text-xs sm:text-sm font-semibold text-gray-700 mb-2">
                     Email (Optional)
                   </label>
                   <input
@@ -1102,22 +1113,22 @@ const Restaurants = () => {
                     name="contact_email"
                     value={formData.restaurant_contact_info.email}
                     onChange={handleInputChange}
-                    className="w-full px-4 py-3 rounded-lg border-2 border-secondary focus:border-primary focus:outline-none bg-white"
+                    className="w-full px-3 sm:px-4 py-2.5 sm:py-3 rounded-lg border-2 border-secondary focus:border-primary focus:outline-none bg-white text-sm sm:text-base"
                     placeholder="restaurant@example.com"
                   />
                 </div>
               </div>
 
-              <div className="bg-tertiary p-6 rounded-xl">
-                <h3 className="text-xl font-bold text-gray-800 mb-4">
+              <div className="bg-tertiary p-4 sm:p-6 rounded-xl">
+                <h3 className="text-lg sm:text-xl font-bold text-gray-800 mb-4">
                   Operating Hours
                 </h3>
                 <div className="space-y-3">
                   {daysOfWeek.map((day) => (
-                    <div key={day} className="bg-surface p-4 rounded-lg">
+                    <div key={day} className="bg-surface p-3 sm:p-4 rounded-lg">
                       <div className="flex flex-col md:flex-row md:items-center md:space-x-4">
                         <div className="flex items-center space-x-3 mb-3 md:mb-0 md:w-40">
-                          <label className="text-sm font-semibold text-gray-700 capitalize">
+                          <label className="text-xs sm:text-sm font-semibold text-gray-700 capitalize">
                             {day}
                           </label>
                         </div>
@@ -1134,7 +1145,7 @@ const Restaurants = () => {
                               onChange={(e) =>
                                 handleHoursChange(day, "open", e.target.value)
                               }
-                              className="w-full px-3 py-2 rounded-lg border-2 border-secondary focus:border-primary focus:outline-none bg-white text-sm"
+                              className="w-full px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg border-2 border-secondary focus:border-primary focus:outline-none bg-white text-xs sm:text-sm"
                             />
                           </div>
                           <span className="text-gray-600 mt-5">to</span>
@@ -1150,7 +1161,7 @@ const Restaurants = () => {
                               onChange={(e) =>
                                 handleHoursChange(day, "close", e.target.value)
                               }
-                              className="w-full px-3 py-2 rounded-lg border-2 border-secondary focus:border-primary focus:outline-none bg-white text-sm"
+                              className="w-full px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg border-2 border-secondary focus:border-primary focus:outline-none bg-white text-xs sm:text-sm"
                             />
                           </div>
                         </div>
@@ -1160,7 +1171,7 @@ const Restaurants = () => {
                 </div>
               </div>
 
-              <div className="flex space-x-4">
+              <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
                 <button
                   type="button"
                   onClick={() => {
@@ -1168,7 +1179,7 @@ const Restaurants = () => {
                     resetForm();
                   }}
                   disabled={loading}
-                  className="flex-1 bg-gray-400 text-white py-3 rounded-full hover:bg-gray-500 transition-all font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="flex-1 bg-gray-400 text-white py-2.5 sm:py-3 rounded-full hover:bg-gray-500 transition-all font-semibold disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base"
                 >
                   Cancel
                 </button>
@@ -1176,7 +1187,7 @@ const Restaurants = () => {
                   type="button"
                   onClick={handleSubmit}
                   disabled={loading}
-                  className="flex-1 bg-primary text-white py-3 rounded-full hover:bg-accent-dark transition-all font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="flex-1 bg-primary text-white py-2.5 sm:py-3 rounded-full hover:bg-accent-dark transition-all font-semibold disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base"
                 >
                   {loading
                     ? isEditMode

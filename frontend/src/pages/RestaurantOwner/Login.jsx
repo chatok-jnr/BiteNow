@@ -23,7 +23,7 @@ const Login = () => {
   return (
     <div className="min-h-screen flex">
       {/* Left Side - Illustration */}
-      <div className="hidden lg:flex lg:w-1/2 bg-accent-light items-center justify-center p-12 relative overflow-hidden">
+      <div className="hidden lg:flex lg:w-1/2 bg-accent-light items-center justify-center p-8 sm:p-12 relative overflow-hidden">
         <div className="relative z-10 max-w-lg">
           <div className="text-center animate-fade-in">
             <div className="bg-white/10 backdrop-blur-sm rounded-full p-8 inline-block mb-8 shadow-2xl">
@@ -48,38 +48,42 @@ const Login = () => {
               import.meta.env.VITE_FRONTEND_URL || window.location.origin;
             window.location.href = `${frontendUrl}/login`;
           }}
-          className="absolute bottom-8 left-8 flex items-center space-x-3 text-white hover:opacity-90 transition-all group"
+          className="absolute bottom-4 left-4 sm:bottom-8 sm:left-8 flex items-center space-x-2 sm:space-x-3 text-white hover:opacity-90 transition-all group"
         >
-          <div className="bg-white rounded-full p-3 shadow-xl group-hover:shadow-2xl transition-all group-hover:scale-110">
-            <ArrowLeft className="w-6 h-6 text-primary" />
+          <div className="bg-white rounded-full p-2 sm:p-3 shadow-xl group-hover:shadow-2xl transition-all group-hover:scale-110">
+            <ArrowLeft className="w-5 h-5 sm:w-6 sm:h-6 text-primary" />
           </div>
-          <span className="text-lg font-semibold drop-shadow-md">
+          <span className="text-sm sm:text-lg font-semibold drop-shadow-md">
             Return to Role Selection Page
           </span>
         </button>
       </div>
 
       {/* Right Side - OAuth Login */}
-      <div className="w-full lg:w-1/2 bg-secondary flex items-center justify-center p-8">
+      <div className="w-full lg:w-1/2 bg-secondary flex items-center justify-center p-6 sm:p-8">
         <div className="w-full max-w-md">
           {/* Logo for mobile */}
-          <div className="lg:hidden text-center mb-8">
-            <div className="bg-white/10 backdrop-blur-sm rounded-full p-6 inline-block mb-4 shadow-lg">
-              <ChefHat className="w-16 h-16 text-white" />
+          <div className="lg:hidden text-center mb-6 sm:mb-8">
+            <div className="bg-white/10 backdrop-blur-sm rounded-full p-4 sm:p-6 inline-block mb-3 sm:mb-4 shadow-lg">
+              <ChefHat className="w-12 h-12 sm:w-16 sm:h-16 text-white" />
             </div>
-            <h1 className="text-4xl font-bold text-white">BiteNow</h1>
-            <p className="text-white/80 mt-2">Restaurant Owner Portal</p>
+            <h1 className="text-3xl sm:text-4xl font-bold text-white">
+              BiteNow
+            </h1>
+            <p className="text-white/80 mt-2 text-sm sm:text-base">
+              Restaurant Owner Portal
+            </p>
           </div>
 
           {/* Welcome Card */}
-          <div className="bg-gradient-to-br from-secondary/80 to-secondary rounded-xl p-8 text-center shadow-lg mb-6">
-            <h2 className="text-3xl font-bold text-white mb-3">
+          <div className="bg-gradient-to-br from-secondary/80 to-secondary rounded-xl p-6 sm:p-8 text-center shadow-lg mb-4 sm:mb-6">
+            <h2 className="text-2xl sm:text-3xl font-bold text-white mb-2 sm:mb-3">
               Grow Your Business
             </h2>
-            <p className="text-white/90 text-lg leading-relaxed mb-2">
+            <p className="text-white/90 text-base sm:text-lg leading-relaxed mb-1 sm:mb-2">
               Sign in to manage your restaurant
             </p>
-            <p className="text-white/70 text-sm">
+            <p className="text-white/70 text-xs sm:text-sm">
               Quick, secure, and hassle-free authentication with Google
             </p>
           </div>
@@ -87,9 +91,9 @@ const Login = () => {
           {/* Google OAuth Button */}
           <button
             onClick={handleGoogleAuth}
-            className="w-full bg-white text-gray-700 py-4 rounded-xl font-semibold text-lg hover:bg-gray-50 transition-all flex items-center justify-center space-x-3 shadow-xl hover:shadow-2xl transform hover:scale-[1.02]"
+            className="w-full bg-white text-gray-700 py-3 sm:py-4 rounded-xl font-semibold text-base sm:text-lg hover:bg-gray-50 transition-all flex items-center justify-center space-x-2 sm:space-x-3 shadow-xl hover:shadow-2xl transform hover:scale-[1.02]"
           >
-            <svg className="w-7 h-7" viewBox="0 0 24 24">
+            <svg className="w-6 h-6 sm:w-7 sm:h-7" viewBox="0 0 24 24">
               <path
                 fill="#4285F4"
                 d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
@@ -111,9 +115,25 @@ const Login = () => {
           </button>
 
           {/* Info text */}
-          <p className="text-white/60 text-center text-sm mt-6 leading-relaxed">
-            By continuing, you agree to BiteNow's Terms of Service and Privacy Policy
+          <p className="text-white/60 text-center text-xs sm:text-sm mt-4 sm:mt-6 leading-relaxed px-2">
+            By continuing, you agree to BiteNow's Terms of Service and Privacy
+            Policy
           </p>
+
+          {/* Back button for mobile */}
+          <button
+            onClick={() => {
+              const frontendUrl =
+                import.meta.env.VITE_FRONTEND_URL || window.location.origin;
+              window.location.href = `${frontendUrl}/login`;
+            }}
+            className="lg:hidden w-full mt-6 flex items-center justify-center space-x-2 text-white hover:opacity-90 transition-all py-3 rounded-xl bg-white/10 backdrop-blur-sm"
+          >
+            <ArrowLeft className="w-5 h-5" />
+            <span className="text-sm font-semibold">
+              Back to Role Selection
+            </span>
+          </button>
         </div>
       </div>
     </div>

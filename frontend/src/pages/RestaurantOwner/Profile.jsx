@@ -207,243 +207,258 @@ const Profile = () => {
   return (
     <div className="min-h-screen bg-bgPrimary flex flex-col">
       <OwnerNavbar />
-      <main className="flex-1 p-4 md:p-8">
-        <div className="max-w-4xl mx-auto space-y-6">
+      <main className="flex-1 p-4 sm:p-6 md:p-8 pt-20 sm:pt-24 md:pt-24">
+        <div className="max-w-4xl mx-auto space-y-4 sm:space-y-6">
           {/* Page Header */}
-          <div className="flex items-center justify-between">
-            <h1 className="text-3xl font-bold text-primary">My Profile</h1>
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-0">
+            <h1 className="text-2xl sm:text-3xl font-bold text-primary">
+              My Profile
+            </h1>
             {!isEditing && (
               <button
                 onClick={() => setIsEditing(true)}
-                className="px-6 py-2 bg-secondary text-white rounded-xl hover:bg-primary transition-all shadow-lg"
+                className="hidden sm:block sm:w-auto px-4 sm:px-6 py-2 bg-secondary text-white rounded-xl hover:bg-primary transition-all shadow-lg text-sm sm:text-base"
               >
                 Edit Profile
               </button>
             )}
           </div>
-            {/* Profile Card */}
-            <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
-              {/* Header with Image */}
-              <div className="bg-gradient-to-r from-secondary to-primary p-8 text-center">
-                <div className="relative inline-block">
-                  <img
-                    src={
-                      profileData.restaurant_owner_image?.url ||
-                      "https://ui-avatars.com/api/?name=" +
-                        encodeURIComponent(
-                          profileData.restaurant_owner_name || "Owner",
-                        )
-                    }
-                    alt="Profile"
-                    className="w-32 h-32 rounded-full border-4 border-white shadow-xl object-cover"
-                  />
-                  {isEditing && (
-                    <label className="absolute bottom-0 right-0 bg-white rounded-full p-2 shadow-lg cursor-pointer hover:bg-gray-100 transition-all">
-                      <Camera className="w-5 h-5 text-primary" />
-                      <input
-                        type="file"
-                        accept="image/*"
-                        onChange={handleImageUpload}
-                        className="hidden"
-                      />
-                    </label>
-                  )}
-                </div>
-                <h2 className="text-2xl font-bold text-white mt-4">
-                  {profileData.restaurant_owner_name}
-                </h2>
-                <p className="text-white/90">Restaurant Owner</p>
-                <p className="text-white/70 text-sm mt-2">
-                  Member since{" "}
-                  {profileData.restaurant_owner_created_at
-                    ? new Date(
-                        profileData.restaurant_owner_created_at,
-                      ).toLocaleDateString()
-                    : ""}
-                </p>
-              </div>
-              {/* Profile Information */}
-              <div className="p-8">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div>
-                    <label className="text-sm font-semibold text-gray-600 mb-2 block">
-                      Full Name
-                    </label>
-                    {isEditing ? (
-                      <input
-                        type="text"
-                        name="restaurant_owner_name"
-                        value={profileData.restaurant_owner_name || ""}
-                        onChange={handleInputChange}
-                        className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#8DBC96]"
-                      />
-                    ) : (
-                      <div className="flex items-center space-x-3 px-4 py-3 bg-gray-50 rounded-xl">
-                        <User className="w-5 h-5 text-primary" />
-                        <span className="text-gray-800">
-                          {profileData.restaurant_owner_name}
-                        </span>
-                      </div>
-                    )}
-                  </div>
-                  <div>
-                    <label className="text-sm font-semibold text-gray-600 mb-2 block">
-                      Email Address
-                    </label>
-                    {isEditing ? (
-                      <input
-                        type="email"
-                        name="restaurant_owner_email"
-                        value={profileData.restaurant_owner_email || ""}
-                        onChange={handleInputChange}
-                        className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#8DBC96]"
-                      />
-                    ) : (
-                      <div className="flex items-center space-x-3 px-4 py-3 bg-gray-50 rounded-xl">
-                        <Mail className="w-5 h-5 text-primary" />
-                        <span className="text-gray-800">
-                          {profileData.restaurant_owner_email}
-                        </span>
-                      </div>
-                    )}
-                  </div>
-                  <div>
-                    <label className="text-sm font-semibold text-gray-600 mb-2 block">
-                      Phone Number
-                    </label>
-                    {isEditing ? (
-                      <input
-                        type="tel"
-                        name="restaurant_owner_phone"
-                        value={profileData.restaurant_owner_phone || ""}
-                        onChange={handleInputChange}
-                        className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#8DBC96]"
-                      />
-                    ) : (
-                      <div className="flex items-center space-x-3 px-4 py-3 bg-gray-50 rounded-xl">
-                        <Phone className="w-5 h-5 text-primary" />
-                        <span className="text-gray-800">
-                          {profileData.restaurant_owner_phone}
-                        </span>
-                      </div>
-                    )}
-                  </div>
-                  <div>
-                    <label className="text-sm font-semibold text-gray-600 mb-2 block">
-                      Address
-                    </label>
-                    {isEditing ? (
-                      <input
-                        type="text"
-                        name="restaurant_owner_address"
-                        value={profileData.restaurant_owner_address || ""}
-                        onChange={handleInputChange}
-                        className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#8DBC96]"
-                      />
-                    ) : (
-                      <div className="flex items-center space-x-3 px-4 py-3 bg-gray-50 rounded-xl">
-                        <MapPin className="w-5 h-5 text-primary" />
-                        <span className="text-gray-800">
-                          {profileData.restaurant_owner_address}
-                        </span>
-                      </div>
-                    )}
-                  </div>
-                  {/* Add more fields as needed, e.g. gender, dob, status, etc. */}
-                </div>
-                {/* Document Management Section */}
-                <div className="mt-8">
-                  <div className="flex items-center justify-between mb-2">
-                    <h3 className="text-lg font-bold text-primary">
-                      Documents
-                    </h3>
-                    <label className="inline-block">
-                      <input
-                        type="file"
-                        accept="application/pdf"
-                        multiple
-                        ref={fileInputRef}
-                        onChange={handleDocUpload}
-                        className="hidden"
-                      />
-                      <button
-                        type="button"
-                        className="px-4 py-2 bg-secondary text-white rounded-lg hover:bg-primary transition-all text-sm"
-                        disabled={uploadingDoc}
-                        onClick={() =>
-                          fileInputRef.current && fileInputRef.current.click()
-                        }
-                      >
-                        {uploadingDoc ? "Uploading..." : "Add Document"}
-                      </button>
-                    </label>
-                  </div>
-                  {docError && (
-                    <div className="text-red-500 text-sm mb-2">{docError}</div>
-                  )}
-                  <div className="space-y-2">
-                    {profileData.restaurant_owner_documents &&
-                    profileData.restaurant_owner_documents.length > 0 ? (
-                      profileData.restaurant_owner_documents.map((doc, idx) => (
-                        <div
-                          key={doc.public_id || idx}
-                          className="flex items-center justify-between bg-gray-50 rounded-lg px-4 py-2"
-                        >
-                          <div className="flex items-center gap-2">
-                            <span className="text-primary font-semibold">
-                              Document {idx + 1}
-                            </span>
-                            {doc.url && (
-                              <a
-                                href={doc.url}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="text-blue-600 underline text-sm ml-2"
-                              >
-                                View
-                              </a>
-                            )}
-                          </div>
-                          <button
-                            type="button"
-                            className="text-red-500 hover:underline text-sm"
-                            onClick={() => handleDeleteDoc(doc.public_id)}
-                          >
-                            Delete
-                          </button>
-                        </div>
-                      ))
-                    ) : (
-                      <div className="text-gray-500 text-sm">
-                        No documents uploaded.
-                      </div>
-                    )}
-                  </div>
-                </div>
-                {/* Save/Cancel Buttons */}
+          {/* Profile Card */}
+          <div className="bg-white rounded-xl sm:rounded-2xl shadow-lg overflow-hidden">
+            {/* Header with Image */}
+            <div className="bg-gradient-to-r from-secondary to-primary p-4 sm:p-6 md:p-8 text-center">
+              <div className="relative inline-block">
+                <img
+                  src={
+                    profileData.restaurant_owner_image?.url ||
+                    "https://ui-avatars.com/api/?name=" +
+                      encodeURIComponent(
+                        profileData.restaurant_owner_name || "Owner",
+                      )
+                  }
+                  alt="Profile"
+                  className="w-24 h-24 sm:w-28 sm:h-28 md:w-32 md:h-32 rounded-full border-4 border-white shadow-xl object-cover"
+                />
                 {isEditing && (
-                  <div className="flex justify-end space-x-4 mt-6">
-                    <button
-                      onClick={() => setIsEditing(false)}
-                      className="px-6 py-2 border border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 transition-all"
-                    >
-                      Cancel
-                    </button>
-                    <button
-                      onClick={handleSaveProfile}
-                      className="px-6 py-2 bg-secondary text-white rounded-xl hover:bg-primary transition-all shadow-lg flex items-center space-x-2"
-                    >
-                      <Save className="w-4 h-4" />
-                      <span>Save Changes</span>
-                    </button>
-                  </div>
+                  <label className="absolute bottom-0 right-0 bg-white rounded-full p-1.5 sm:p-2 shadow-lg cursor-pointer hover:bg-gray-100 transition-all">
+                    <Camera className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={handleImageUpload}
+                      className="hidden"
+                    />
+                  </label>
                 )}
               </div>
+              <h2 className="text-xl sm:text-2xl font-bold text-white mt-3 sm:mt-4 px-2">
+                {profileData.restaurant_owner_name}
+              </h2>
+              <p className="text-sm sm:text-base text-white/90">
+                Restaurant Owner
+              </p>
+              <p className="text-white/70 text-xs sm:text-sm mt-2">
+                Member since{" "}
+                {profileData.restaurant_owner_created_at
+                  ? new Date(
+                      profileData.restaurant_owner_created_at,
+                    ).toLocaleDateString()
+                  : ""}
+              </p>
             </div>
-            {/* ...existing code for statistics and account actions... */}
+            {/* Profile Information */}
+            <div className="p-4 sm:p-6 md:p-8">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
+                <div>
+                  <label className="text-xs sm:text-sm font-semibold text-gray-600 mb-2 block">
+                    Full Name
+                  </label>
+                  {isEditing ? (
+                    <input
+                      type="text"
+                      name="restaurant_owner_name"
+                      value={profileData.restaurant_owner_name || ""}
+                      onChange={handleInputChange}
+                      className="w-full px-3 sm:px-4 py-2 sm:py-3 text-sm sm:text-base border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#8DBC96]"
+                    />
+                  ) : (
+                    <div className="flex items-center space-x-2 sm:space-x-3 px-3 sm:px-4 py-2 sm:py-3 bg-gray-50 rounded-xl">
+                      <User className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
+                      <span className="text-sm sm:text-base text-gray-800">
+                        {profileData.restaurant_owner_name}
+                      </span>
+                    </div>
+                  )}
+                </div>
+                <div>
+                  <label className="text-xs sm:text-sm font-semibold text-gray-600 mb-2 block">
+                    Email Address
+                  </label>
+                  {isEditing ? (
+                    <input
+                      type="email"
+                      name="restaurant_owner_email"
+                      value={profileData.restaurant_owner_email || ""}
+                      onChange={handleInputChange}
+                      className="w-full px-3 sm:px-4 py-2 sm:py-3 text-sm sm:text-base border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#8DBC96]"
+                    />
+                  ) : (
+                    <div className="flex items-center space-x-2 sm:space-x-3 px-3 sm:px-4 py-2 sm:py-3 bg-gray-50 rounded-xl">
+                      <Mail className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
+                      <span className="text-sm sm:text-base text-gray-800 break-all">
+                        {profileData.restaurant_owner_email}
+                      </span>
+                    </div>
+                  )}
+                </div>
+                <div>
+                  <label className="text-xs sm:text-sm font-semibold text-gray-600 mb-2 block">
+                    Phone Number
+                  </label>
+                  {isEditing ? (
+                    <input
+                      type="tel"
+                      name="restaurant_owner_phone"
+                      value={profileData.restaurant_owner_phone || ""}
+                      onChange={handleInputChange}
+                      className="w-full px-3 sm:px-4 py-2 sm:py-3 text-sm sm:text-base border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#8DBC96]"
+                    />
+                  ) : (
+                    <div className="flex items-center space-x-2 sm:space-x-3 px-3 sm:px-4 py-2 sm:py-3 bg-gray-50 rounded-xl">
+                      <Phone className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
+                      <span className="text-sm sm:text-base text-gray-800">
+                        {profileData.restaurant_owner_phone}
+                      </span>
+                    </div>
+                  )}
+                </div>
+                <div>
+                  <label className="text-xs sm:text-sm font-semibold text-gray-600 mb-2 block">
+                    Address
+                  </label>
+                  {isEditing ? (
+                    <input
+                      type="text"
+                      name="restaurant_owner_address"
+                      value={profileData.restaurant_owner_address || ""}
+                      onChange={handleInputChange}
+                      className="w-full px-3 sm:px-4 py-2 sm:py-3 text-sm sm:text-base border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#8DBC96]"
+                    />
+                  ) : (
+                    <div className="flex items-center space-x-2 sm:space-x-3 px-3 sm:px-4 py-2 sm:py-3 bg-gray-50 rounded-xl">
+                      <MapPin className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
+                      <span className="text-sm sm:text-base text-gray-800">
+                        {profileData.restaurant_owner_address}
+                      </span>
+                    </div>
+                  )}
+                </div>
+                {/* Add more fields as needed, e.g. gender, dob, status, etc. */}
+              </div>
+              {/* Document Management Section */}
+              <div className="mt-6 sm:mt-8">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 sm:gap-0 mb-2">
+                  <h3 className="text-base sm:text-lg font-bold text-primary">
+                    Documents
+                  </h3>
+                  <label className="inline-block">
+                    <input
+                      type="file"
+                      accept="application/pdf"
+                      multiple
+                      ref={fileInputRef}
+                      onChange={handleDocUpload}
+                      className="hidden"
+                    />
+                    <button
+                      type="button"
+                      className="w-full sm:w-auto px-3 sm:px-4 py-2 bg-secondary text-white rounded-lg hover:bg-primary transition-all text-xs sm:text-sm"
+                      disabled={uploadingDoc}
+                      onClick={() =>
+                        fileInputRef.current && fileInputRef.current.click()
+                      }
+                    >
+                      {uploadingDoc ? "Uploading..." : "Add Document"}
+                    </button>
+                  </label>
+                </div>
+                {docError && (
+                  <div className="text-red-500 text-xs sm:text-sm mb-2">
+                    {docError}
+                  </div>
+                )}
+                <div className="space-y-2">
+                  {profileData.restaurant_owner_documents &&
+                  profileData.restaurant_owner_documents.length > 0 ? (
+                    profileData.restaurant_owner_documents.map((doc, idx) => (
+                      <div
+                        key={doc.public_id || idx}
+                        className="flex flex-col sm:flex-row items-start sm:items-center justify-between bg-gray-50 rounded-lg px-3 sm:px-4 py-2 gap-2 sm:gap-0"
+                      >
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <span className="text-primary font-semibold text-sm sm:text-base">
+                            Document {idx + 1}
+                          </span>
+                          {doc.url && (
+                            <a
+                              href={doc.url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-blue-600 underline text-xs sm:text-sm"
+                            >
+                              View
+                            </a>
+                          )}
+                        </div>
+                        <button
+                          type="button"
+                          className="text-red-500 hover:underline text-xs sm:text-sm w-full sm:w-auto text-left sm:text-right"
+                          onClick={() => handleDeleteDoc(doc.public_id)}
+                        >
+                          Delete
+                        </button>
+                      </div>
+                    ))
+                  ) : (
+                    <div className="text-gray-500 text-xs sm:text-sm">
+                      No documents uploaded.
+                    </div>
+                  )}
+                </div>
+              </div>
+              {/* Save/Cancel Buttons */}
+              {isEditing && (
+                <div className="flex flex-col sm:flex-row justify-end gap-3 sm:gap-4 mt-4 sm:mt-6">
+                  <button
+                    onClick={() => setIsEditing(false)}
+                    className="w-full sm:w-auto px-4 sm:px-6 py-2 border border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 transition-all text-sm sm:text-base"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={handleSaveProfile}
+                    className="w-full sm:w-auto px-4 sm:px-6 py-2 bg-secondary text-white rounded-xl hover:bg-primary transition-all shadow-lg flex items-center justify-center space-x-2 text-sm sm:text-base"
+                  >
+                    <Save className="w-4 h-4" />
+                    <span>Save Changes</span>
+                  </button>
+                </div>
+              )}
+            </div>
           </div>
-        </main>
-        {/* ...existing code for modals... */}
+          {/* Mobile-only Edit Profile button — shown below all content */}
+          {!isEditing && (
+            <button
+              onClick={() => setIsEditing(true)}
+              className="sm:hidden w-full px-4 py-2 bg-secondary text-white rounded-xl hover:bg-primary transition-all shadow-lg text-sm"
+            >
+              Edit Profile
+            </button>
+          )}
+          {/* ...existing code for statistics and account actions... */}
+        </div>
+      </main>
+      {/* ...existing code for modals... */}
     </div>
   );
 };

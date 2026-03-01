@@ -391,65 +391,67 @@ const OrderStatus = () => {
         {/* Modal for Food Item Details */}
         {selectedOrder && (
           <div
-            className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40 backdrop-blur-sm"
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40 backdrop-blur-sm p-4"
             onClick={() => setSelectedOrder(null)}
           >
             <div
-              className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 relative animate-fadeIn"
+              className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-5 sm:p-6 relative animate-fadeIn max-h-[90vh] overflow-y-auto"
               onClick={(e) => e.stopPropagation()}
             >
               <button
-                className="absolute top-4 right-4 text-gray-500 hover:text-gray-800"
+                className="absolute top-3 right-3 sm:top-4 sm:right-4 text-gray-500 hover:text-gray-800"
                 onClick={() => setSelectedOrder(null)}
                 aria-label="Close"
               >
-                <X className="w-6 h-6" />
+                <X className="w-5 h-5 sm:w-6 sm:h-6" />
               </button>
-              <h2 className="text-2xl font-bold mb-2 text-primary">
+              <h2 className="text-xl sm:text-2xl font-bold mb-2 text-primary pr-8">
                 Order #{selectedOrder.id}
               </h2>
-              <h3 className="text-lg font-semibold mb-4 text-gray-800">
+              <h3 className="text-base sm:text-lg font-semibold mb-4 text-gray-800">
                 {selectedOrder.restaurant}
               </h3>
               <div className="mb-4 flex items-center space-x-3">
                 <img
                   src={selectedOrder.restaurantImage}
                   alt={selectedOrder.restaurant}
-                  className="w-16 h-16 rounded-xl object-cover"
+                  className="w-14 h-14 sm:w-16 sm:h-16 rounded-xl object-cover"
                 />
-                <span className="text-gray-700 font-medium">
+                <span className="text-sm sm:text-base text-gray-700 font-medium">
                   {selectedOrder.restaurant}
                 </span>
               </div>
               <div>
-                <p className="text-sm text-gray-600 mb-2">
+                <p className="text-xs sm:text-sm text-gray-600 mb-2">
                   Food Items Ordered:
                 </p>
-                <ul className="space-y-3">
+                <ul className="space-y-2 sm:space-y-3">
                   {selectedOrder.items.map((item, idx) => (
                     <li
                       key={idx}
-                      className="flex items-center space-x-3 bg-surface px-4 py-2 rounded-lg"
+                      className="flex items-center space-x-2 sm:space-x-3 bg-surface px-3 py-2 sm:px-4 rounded-lg"
                     >
                       <img
                         src={item.image}
                         alt={item.name}
-                        className="w-12 h-12 rounded-lg object-cover"
+                        className="w-10 h-10 sm:w-12 sm:h-12 rounded-lg object-cover flex-shrink-0"
                       />
-                      <span className="text-gray-800 font-medium flex-1">
+                      <span className="text-sm sm:text-base text-gray-800 font-medium flex-1 min-w-0 truncate">
                         {item.name}
                       </span>
-                      <span className="text-primary font-semibold">
+                      <span className="text-sm sm:text-base text-primary font-semibold flex-shrink-0">
                         ৳{item.price.toFixed(2)}
                       </span>
                     </li>
                   ))}
                 </ul>
               </div>
-              <div className="mt-6">
+              <div className="mt-5 sm:mt-6">
                 <div className="flex justify-between items-center mb-2">
-                  <span className="text-gray-600">Delivery Charge</span>
-                  <span className="text-primary font-semibold">
+                  <span className="text-sm sm:text-base text-gray-600">
+                    Delivery Charge
+                  </span>
+                  <span className="text-sm sm:text-base text-primary font-semibold">
                     ৳
                     {selectedOrder.deliveryCharge
                       ? selectedOrder.deliveryCharge.toFixed(2)
@@ -457,19 +459,21 @@ const OrderStatus = () => {
                   </span>
                 </div>
                 <div className="flex justify-between items-center mb-2">
-                  <span className="text-gray-600">Total Amount</span>
-                  <span className="text-primary font-bold">
+                  <span className="text-sm sm:text-base text-gray-600">
+                    Total Amount
+                  </span>
+                  <span className="text-base sm:text-lg text-primary font-bold">
                     ৳{selectedOrder.total.toFixed(2)}
                   </span>
                 </div>
                 {selectedOrder.confirmationPin &&
                   selectedOrder.status?.toLowerCase() ===
                     "out_for_delivery" && (
-                    <div className="flex justify-between items-center mt-4 bg-primary px-4 py-2 rounded-lg">
-                      <span className="text-white font-medium">
+                    <div className="flex flex-col sm:flex-row justify-between items-center gap-2 mt-4 bg-primary px-3 py-2 sm:px-4 rounded-lg">
+                      <span className="text-sm sm:text-base text-white font-medium">
                         Confirmation PIN
                       </span>
-                      <span className="bg-white text-primary font-bold px-4 py-2 rounded-lg text-xl tracking-wider">
+                      <span className="bg-white text-primary font-bold px-3 py-2 sm:px-4 rounded-lg text-lg sm:text-xl tracking-wider">
                         {selectedOrder.confirmationPin}
                       </span>
                     </div>
@@ -480,64 +484,64 @@ const OrderStatus = () => {
         )}
 
         {/* Page Header */}
-        <div className="bg-secondary py-12">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <h1 className="text-4xl md:text-5xl font-bold text-white mb-3">
+        <div className="bg-secondary py-8 sm:py-12">
+          <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-8">
+            <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold text-white mb-2 sm:mb-3">
               My Orders
             </h1>
-            <p className="text-white/90 text-lg">
+            <p className="text-sm sm:text-base lg:text-lg text-white/90">
               Track and manage your food deliveries
             </p>
           </div>
         </div>
 
         {/* Tabs */}
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-6">
-          <div className="flex space-x-4">
+        <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-8 -mt-6">
+          <div className="flex space-x-2 sm:space-x-4">
             <button
               onClick={() => setActiveTab("active")}
-              className={`flex-1 py-4 px-6 rounded-t-2xl font-semibold transition-all ${
+              className={`flex-1 py-3 px-2 sm:py-4 sm:px-6 rounded-t-2xl font-semibold transition-all ${
                 activeTab === "active"
                   ? "bg-surface text-primary shadow-lg"
                   : "bg-tertiary text-gray-600 hover:bg-surface/50"
               }`}
             >
-              <div className="flex items-center justify-center space-x-2">
-                <Truck className="w-5 h-5" />
-                <span>Active Deliveries</span>
-                <span className="bg-primary text-white px-2 py-1 rounded-full text-xs">
+              <div className="flex items-center justify-center space-x-1 sm:space-x-2">
+                <Truck className="w-4 h-4 sm:w-5 sm:h-5" />
+                <span className="text-xs sm:text-base">Active</span>
+                <span className="bg-primary text-white px-1.5 py-0.5 sm:px-2 sm:py-1 rounded-full text-xs">
                   {activeOrders.length}
                 </span>
               </div>
             </button>
             <button
               onClick={() => setActiveTab("completed")}
-              className={`flex-1 py-4 px-6 rounded-t-2xl font-semibold transition-all ${
+              className={`flex-1 py-3 px-2 sm:py-4 sm:px-6 rounded-t-2xl font-semibold transition-all ${
                 activeTab === "completed"
                   ? "bg-surface text-primary shadow-lg"
                   : "bg-tertiary text-gray-600 hover:bg-surface/50"
               }`}
             >
-              <div className="flex items-center justify-center space-x-2">
-                <CheckCircle className="w-5 h-5" />
-                <span>Completed Orders</span>
-                <span className="bg-primary text-white px-2 py-1 rounded-full text-xs">
+              <div className="flex items-center justify-center space-x-1 sm:space-x-2">
+                <CheckCircle className="w-4 h-4 sm:w-5 sm:h-5" />
+                <span className="text-xs sm:text-base">Completed</span>
+                <span className="bg-primary text-white px-1.5 py-0.5 sm:px-2 sm:py-1 rounded-full text-xs">
                   {completedOrders.length}
                 </span>
               </div>
             </button>
             <button
               onClick={() => setActiveTab("cancelled")}
-              className={`flex-1 py-4 px-6 rounded-t-2xl font-semibold transition-all ${
+              className={`flex-1 py-3 px-2 sm:py-4 sm:px-6 rounded-t-2xl font-semibold transition-all ${
                 activeTab === "cancelled"
                   ? "bg-surface text-primary shadow-lg"
                   : "bg-tertiary text-gray-600 hover:bg-surface/50"
               }`}
             >
-              <div className="flex items-center justify-center space-x-2">
-                <X className="w-5 h-5" />
-                <span>Cancelled Orders</span>
-                <span className="bg-primary text-white px-2 py-1 rounded-full text-xs">
+              <div className="flex items-center justify-center space-x-1 sm:space-x-2">
+                <X className="w-4 h-4 sm:w-5 sm:h-5" />
+                <span className="text-xs sm:text-base">Cancelled</span>
+                <span className="bg-primary text-white px-1.5 py-0.5 sm:px-2 sm:py-1 rounded-full text-xs">
                   {cancelledOrders.length}
                 </span>
               </div>
@@ -547,24 +551,28 @@ const OrderStatus = () => {
 
         {/* Orders Content */}
         <div className="bg-surface min-h-screen">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-8 py-6 sm:py-8">
             {/* Loading State */}
             {loading && (
-              <div className="text-center py-16">
-                <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-primary mx-auto mb-4"></div>
-                <p className="text-gray-600 text-lg">Loading your orders...</p>
+              <div className="text-center py-12 sm:py-16">
+                <div className="animate-spin rounded-full h-12 w-12 sm:h-16 sm:w-16 border-t-4 border-b-4 border-primary mx-auto mb-4"></div>
+                <p className="text-sm sm:text-base lg:text-lg text-gray-600">
+                  Loading your orders...
+                </p>
               </div>
             )}
 
             {/* Error State */}
             {error && !loading && (
-              <div className="text-center py-16">
-                <div className="bg-red-100 border border-red-400 text-red-700 px-6 py-4 rounded-lg mx-auto max-w-md">
-                  <p className="font-bold mb-2">Error Loading Orders</p>
-                  <p>{error}</p>
+              <div className="text-center py-12 sm:py-16">
+                <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-4 sm:px-6 rounded-lg mx-auto max-w-md">
+                  <p className="text-sm sm:text-base font-bold mb-2">
+                    Error Loading Orders
+                  </p>
+                  <p className="text-sm sm:text-base">{error}</p>
                   <button
                     onClick={fetchOrders}
-                    className="mt-4 bg-red-600 text-white px-6 py-2 rounded-full hover:bg-red-700 transition-all"
+                    className="mt-4 bg-red-600 text-white px-4 py-2 sm:px-6 rounded-full hover:bg-red-700 transition-all text-sm sm:text-base"
                   >
                     Try Again
                   </button>
@@ -576,7 +584,7 @@ const OrderStatus = () => {
             {!loading && !error && activeTab === "active" && (
               <div>
                 {activeOrders.length > 0 ? (
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
                     {activeOrders.map((order) => (
                       <OrderCard
                         key={order._id || order.id}
@@ -586,12 +594,12 @@ const OrderStatus = () => {
                     ))}
                   </div>
                 ) : (
-                  <div className="text-center py-16">
-                    <Package className="w-20 h-20 text-gray-400 mx-auto mb-4" />
-                    <h3 className="text-2xl font-bold text-gray-600 mb-2">
+                  <div className="text-center py-12 sm:py-16">
+                    <Package className="w-16 h-16 sm:w-20 sm:h-20 text-gray-400 mx-auto mb-4" />
+                    <h3 className="text-xl sm:text-2xl font-bold text-gray-600 mb-2">
                       No Active Orders
                     </h3>
-                    <p className="text-gray-500">
+                    <p className="text-sm sm:text-base text-gray-500">
                       You don't have any active deliveries at the moment
                     </p>
                   </div>
@@ -602,7 +610,7 @@ const OrderStatus = () => {
             {!loading && !error && activeTab === "completed" && (
               <div>
                 {completedOrders.length > 0 ? (
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
                     {completedOrders.map((order) => (
                       <OrderCard
                         key={order._id || order.id}
@@ -612,12 +620,12 @@ const OrderStatus = () => {
                     ))}
                   </div>
                 ) : (
-                  <div className="text-center py-16">
-                    <CheckCircle className="w-20 h-20 text-gray-400 mx-auto mb-4" />
-                    <h3 className="text-2xl font-bold text-gray-600 mb-2">
+                  <div className="text-center py-12 sm:py-16">
+                    <CheckCircle className="w-16 h-16 sm:w-20 sm:h-20 text-gray-400 mx-auto mb-4" />
+                    <h3 className="text-xl sm:text-2xl font-bold text-gray-600 mb-2">
                       No Completed Orders
                     </h3>
-                    <p className="text-gray-500">
+                    <p className="text-sm sm:text-base text-gray-500">
                       Your order history will appear here
                     </p>
                   </div>
@@ -628,7 +636,7 @@ const OrderStatus = () => {
             {!loading && !error && activeTab === "cancelled" && (
               <div>
                 {cancelledOrders.length > 0 ? (
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
                     {cancelledOrders.map((order) => (
                       <OrderCard
                         key={order._id || order.id}
@@ -638,12 +646,12 @@ const OrderStatus = () => {
                     ))}
                   </div>
                 ) : (
-                  <div className="text-center py-16">
-                    <X className="w-20 h-20 text-gray-400 mx-auto mb-4" />
-                    <h3 className="text-2xl font-bold text-gray-600 mb-2">
+                  <div className="text-center py-12 sm:py-16">
+                    <X className="w-16 h-16 sm:w-20 sm:h-20 text-gray-400 mx-auto mb-4" />
+                    <h3 className="text-xl sm:text-2xl font-bold text-gray-600 mb-2">
                       No Cancelled Orders
                     </h3>
-                    <p className="text-gray-500">
+                    <p className="text-sm sm:text-base text-gray-500">
                       Your cancelled or rejected orders will appear here
                     </p>
                   </div>

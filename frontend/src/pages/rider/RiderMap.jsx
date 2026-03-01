@@ -786,26 +786,28 @@ const RiderMap = ({ orderId, onClose }) => {
     >
       {/* Modal Container */}
       <div
-        className="relative w-full max-w-6xl h-[90vh] mx-4 bg-white rounded-2xl shadow-2xl overflow-hidden flex flex-col"
+        className="relative w-full max-w-6xl h-full sm:h-[90vh] sm:mx-4 bg-white sm:rounded-2xl shadow-2xl overflow-hidden flex flex-col"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="flex items-center justify-between p-4 bg-white border-b border-gray-200">
-          <h1 className="text-xl font-bold text-gray-800">Delivery address</h1>
-          <div className="flex items-center gap-3">
+        <div className="flex items-center justify-between px-3 py-2 sm:p-4 bg-white border-b border-gray-200">
+          <h1 className="text-base sm:text-xl font-bold text-gray-800">
+            Delivery Address
+          </h1>
+          <div className="flex items-center gap-2 sm:gap-3">
             {isTracking && (
-              <div className="flex items-center gap-2 text-green-600">
+              <div className="flex items-center gap-1 sm:gap-2 text-green-600">
                 <div className="w-2 h-2 bg-green-600 rounded-full animate-pulse"></div>
-                <span className="text-sm font-medium">Live Tracking</span>
+                <span className="text-xs sm:text-sm font-medium">Live</span>
               </div>
             )}
             <button
               onClick={() => onClose()}
-              className="p-2 hover:bg-gray-100 rounded-full transition"
+              className="p-1.5 sm:p-2 hover:bg-gray-100 rounded-full transition"
               title="Close"
             >
               <svg
-                className="w-6 h-6 text-gray-600"
+                className="w-5 h-5 sm:w-6 sm:h-6 text-gray-600"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -904,24 +906,24 @@ const RiderMap = ({ orderId, onClose }) => {
         </div>
 
         {/* Information Panel */}
-        <div className="bg-white border-t border-gray-200 p-6">
+        <div className="bg-white border-t border-gray-200 px-3 py-3 sm:p-6">
           <div className="max-w-4xl mx-auto">
             {/* Delivery Info Header */}
-            <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center justify-between mb-3 sm:mb-4">
               <div className="flex items-center gap-2">
-                <div className="bg-green-100 p-2 rounded-full">
-                  <MapPin className="w-5 h-5 text-green-600" />
+                <div className="bg-green-100 p-1.5 sm:p-2 rounded-full">
+                  <MapPin className="w-4 h-4 sm:w-5 sm:h-5 text-green-600" />
                 </div>
                 <div>
-                  <p className="text-sm text-gray-500">Delivering to</p>
-                  <p className="font-semibold text-gray-800">
+                  <p className="text-xs text-gray-500">Delivering to</p>
+                  <p className="text-sm sm:text-base font-semibold text-gray-800">
                     Delivery Address
                   </p>
                 </div>
               </div>
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2 sm:gap-3">
                 {isNavigating && (
-                  <div className="flex items-center gap-2 px-3 py-1 bg-blue-100 rounded-full">
+                  <div className="hidden sm:flex items-center gap-2 px-3 py-1 bg-blue-100 rounded-full">
                     <Navigation className="w-4 h-4 text-blue-600" />
                     <span className="text-sm font-medium text-blue-700">
                       Navigation Mode
@@ -930,10 +932,10 @@ const RiderMap = ({ orderId, onClose }) => {
                 )}
                 <button
                   onClick={fetchDeliveryRoute}
-                  className="text-blue-600 hover:text-blue-700 text-sm font-medium flex items-center gap-1"
+                  className="text-blue-600 hover:text-blue-700 text-xs sm:text-sm font-medium flex items-center gap-1"
                 >
                   <svg
-                    className="w-4 h-4"
+                    className="w-3.5 h-3.5 sm:w-4 sm:h-4"
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
@@ -951,20 +953,18 @@ const RiderMap = ({ orderId, onClose }) => {
             </div>
 
             {/* Metrics Grid */}
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-2 gap-2 sm:gap-4">
               {/* Distance */}
-              <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl p-4">
-                <div className="flex items-center gap-3">
-                  <div className="bg-blue-600 p-2 rounded-lg">
-                    <TrendingUp className="w-5 h-5 text-white" />
+              <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl p-2.5 sm:p-4">
+                <div className="flex items-center gap-2 sm:gap-3">
+                  <div className="bg-blue-600 p-1.5 sm:p-2 rounded-lg flex-shrink-0">
+                    <TrendingUp className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
                   </div>
-                  <div>
-                    <p className="text-xs text-gray-600 mb-1">
-                      Remaining Distance
-                    </p>
-                    <p className="text-2xl font-bold text-gray-800">
+                  <div min-w-0>
+                    <p className="text-xs text-gray-600 mb-0.5">Distance</p>
+                    <p className="text-lg sm:text-2xl font-bold text-gray-800">
                       {remainingDistance.toFixed(1)}
-                      <span className="text-sm font-normal text-gray-600 ml-1">
+                      <span className="text-xs sm:text-sm font-normal text-gray-600 ml-1">
                         km
                       </span>
                     </p>
@@ -973,16 +973,16 @@ const RiderMap = ({ orderId, onClose }) => {
               </div>
 
               {/* Estimated Time */}
-              <div className="bg-gradient-to-br from-green-50 to-green-100 rounded-xl p-4">
-                <div className="flex items-center gap-3">
-                  <div className="bg-green-600 p-2 rounded-lg">
-                    <Clock className="w-5 h-5 text-white" />
+              <div className="bg-gradient-to-br from-green-50 to-green-100 rounded-xl p-2.5 sm:p-4">
+                <div className="flex items-center gap-2 sm:gap-3">
+                  <div className="bg-green-600 p-1.5 sm:p-2 rounded-lg flex-shrink-0">
+                    <Clock className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
                   </div>
                   <div>
-                    <p className="text-xs text-gray-600 mb-1">Estimated Time</p>
-                    <p className="text-2xl font-bold text-gray-800">
+                    <p className="text-xs text-gray-600 mb-0.5">Est. Time</p>
+                    <p className="text-lg sm:text-2xl font-bold text-gray-800">
                       {Math.ceil(remainingDuration)}
-                      <span className="text-sm font-normal text-gray-600 ml-1">
+                      <span className="text-xs sm:text-sm font-normal text-gray-600 ml-1">
                         min
                       </span>
                     </p>

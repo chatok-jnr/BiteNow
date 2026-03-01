@@ -2,8 +2,10 @@ import React from "react";
 import { Link } from "react-router-dom";
 import { ArrowLeft, Mail, Linkedin, Code2, User } from "lucide-react";
 import Footer from "../components/Footer";
+import { getCurrentUserRole, getHomeRouteByRole } from "../utils/roleRoutes";
 
 const Contact = () => {
+  const homeRoute = getHomeRouteByRole(getCurrentUserRole());
   const developers = [
     {
       name: "Suraia Mim",
@@ -14,7 +16,7 @@ const Contact = () => {
     {
       name: "A.O.M. Ramim Chowdhury",
       role: "Frontend Developer",
-      email: "0432220005101146@uits.edu.bd",
+      email: "ramim.c26@gmail.com",
       linkedin: "https://www.linkedin.com/in/a-o-m-ramim-chowdhury/",
     },
     {
@@ -24,9 +26,9 @@ const Contact = () => {
       linkedin: "https://www.linkedin.com/in/chatok-junior/",
     },
     {
-      name: "Atik Shahriar Opu",
+      name: "Atik Shahria Opu",
       role: "Backend Developer",
-      email: "0432220005101079@uits.edu.bd",
+      email: "atikshariaropu@gmail.com",
       linkedin: "https://www.linkedin.com/in/atikshahriaopu/",
     },
   ];
@@ -38,7 +40,7 @@ const Contact = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex items-center justify-between">
             <Link
-              to="/"
+              to={homeRoute}
               className="flex items-center space-x-2 text-white hover:text-accent-light transition-all"
             >
               <ArrowLeft className="w-5 h-5" />
@@ -55,24 +57,25 @@ const Contact = () => {
       </header>
 
       {/* Main Content */}
-      <main className="flex-1 py-12">
+      <main className="flex-1 py-8 sm:py-12">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* Hero Section */}
-          <div className="text-center mb-16">
-            <h1 className="text-5xl font-bold text-textPrimary mb-4 font-display">
+          <div className="text-center mb-10 sm:mb-16">
+            <h1 className="text-3xl sm:text-5xl font-bold text-textPrimary mb-3 sm:mb-4 font-display">
               Meet the Developers
             </h1>
-            <p className="text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
-              Have questions or want to connect? Feel free to reach out to our development team.
+            <p className="text-base sm:text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
+              Have questions or want to connect? Feel free to reach out to our
+              development team.
             </p>
           </div>
 
           {/* Developer Cards */}
-          <div className="grid md:grid-cols-2 gap-6 mb-16">
+          <div className="grid sm:grid-cols-2 gap-4 sm:gap-6 mb-10 sm:mb-16">
             {developers.map((developer, index) => (
               <div
                 key={index}
-                className="bg-white shadow-soft p-6 border border-gray-200 hover:border-black transition-colors"
+                className="bg-white shadow-soft p-5 sm:p-6 border border-gray-200 hover:border-black transition-colors"
               >
                 <div className="flex items-center justify-center mb-4">
                   <div className="w-16 h-16 bg-gradient-primary rounded-full flex items-center justify-center">
@@ -86,7 +89,9 @@ const Contact = () => {
                   </h2>
                   <div className="flex items-center justify-center space-x-2 text-gray-600 mb-2">
                     <Code2 className="w-4 h-4" />
-                    <span className="text-sm font-medium">{developer.role}</span>
+                    <span className="text-sm font-medium">
+                      {developer.role}
+                    </span>
                   </div>
                 </div>
 
@@ -147,12 +152,14 @@ const Contact = () => {
           </div>
 
           {/* Info Section */}
-          <div className="bg-gradient-primary rounded-3xl shadow-soft p-8 text-center text-white">
-            <h2 className="text-2xl font-bold mb-3 font-display">
+          <div className="bg-gradient-primary rounded-2xl sm:rounded-3xl shadow-soft p-6 sm:p-8 text-center text-white">
+            <h2 className="text-xl sm:text-2xl font-bold mb-2 sm:mb-3 font-display">
               Want to Collaborate?
             </h2>
             <p className="text-white/90 max-w-2xl mx-auto">
-              We're always open to discussing new projects, creative ideas, or opportunities to be part of your vision. Don't hesitate to reach out!
+              We're always open to discussing new projects, creative ideas, or
+              opportunities to be part of your vision. Don't hesitate to reach
+              out!
             </p>
           </div>
         </div>

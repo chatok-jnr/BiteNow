@@ -435,7 +435,7 @@ const Manage_Restaurant = () => {
       setShowPinModal(false);
       setRiderPin("");
       showSuccess("Rider verified! Order is now out for delivery.");
-      
+
       // Refresh orders after successful verification
       await fetchOrders();
     } catch (err) {
@@ -514,14 +514,15 @@ const Manage_Restaurant = () => {
   };
 
   const categorizedOrders = categorizeOrders();
-  const filteredOrders =
+  const filteredOrders = (
     categorizedOrders[orderStatus]?.filter(
       (o) =>
         o.customer_id?.customer_name
           ?.toLowerCase()
           .includes(searchQuery.toLowerCase()) ||
         o.order_id?.toLowerCase().includes(searchQuery.toLowerCase()),
-    ) || [];
+    ) || []
+  ).sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
 
   const calculateOrderTotal = (items) => {
     return items.reduce((sum, item) => sum + (item.total_price || 0), 0);
@@ -560,10 +561,12 @@ const Manage_Restaurant = () => {
           setShowOrderDetailsModal(true);
         }}
       >
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="text-xl font-bold text-gray-800">#{order.order_id}</h3>
+        <div className="flex items-center justify-between mb-4 gap-2">
+          <h3 className="text-xl font-bold text-gray-800 truncate">
+            #{order.order_id}
+          </h3>
           <div
-            className={`px-3 py-1 rounded-full text-sm font-semibold text-white ${statusColors[order.order_status]}`}
+            className={`px-3 py-1 rounded-full text-xs font-semibold text-white whitespace-nowrap flex-shrink-0 ${statusColors[order.order_status]}`}
           >
             {statusLabels[order.order_status]}
           </div>
@@ -571,13 +574,18 @@ const Manage_Restaurant = () => {
 
         <div className="bg-surface p-4 rounded-xl mb-4">
           <p className="text-xs font-semibold text-gray-700 mb-2">Customer</p>
-          <div className="space-y-1">
-            <div className="flex items-center space-x-2">
-              <User className="w-4 h-4 text-primary" />
-              <span className="text-sm">
-                {order.customer_id?.customer_name || "N/A"}
-              </span>
-            </div>
+          <div className="flex items-center space-x-2">
+            <User className="w-4 h-4 text-primary" />
+            <span className="text-sm font-medium">
+              {typeof order.customer_id === "object" &&
+              order.customer_id !== null
+                ? order.customer_id.customer_name || "Unknown Customer"
+                : `Customer #${
+                    String(order.customer_id || "")
+                      .slice(-6)
+                      .toUpperCase() || "—"
+                  }`}
+            </span>
           </div>
         </div>
 
@@ -592,9 +600,7 @@ const Manage_Restaurant = () => {
           </div>
           <div className="flex justify-between text-lg pt-2 border-t border-secondary/30">
             <span className="font-bold">Total</span>
-            <span className="font-bold text-primary">
-              ৳{total.toFixed(2)}
-            </span>
+            <span className="font-bold text-primary">৳{total.toFixed(2)}</span>
           </div>
         </div>
 
@@ -605,7 +611,7 @@ const Manage_Restaurant = () => {
                 e.stopPropagation();
                 handleUpdateOrderStatus(order._id, "cancelled");
               }}
-              className="bg-red-500 text-white py-2 rounded-full hover:bg-red-600 font-semibold"
+              className="bg-red-500 text-white py-2 rounded-full hover:bg-red-600 font-semibold whitespace-nowrap text-sm"
             >
               Reject
             </button>
@@ -614,25 +620,39 @@ const Manage_Restaurant = () => {
                 e.stopPropagation();
                 handleUpdateOrderStatus(order._id, "look_rider");
               }}
-              className="bg-primary text-white py-2 rounded-full hover:bg-accent-dark font-semibold"
+              className="bg-primary text-white py-2 rounded-full hover:bg-accent-dark font-semibold whitespace-nowrap text-sm"
             >
               Accept
             </button>
           </div>
         )}
 
-        {order.order_status === "look_rider" && (
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              handleUpdateOrderStatus(order._id, "preparing");
-            }}
-            className="w-full bg-primary text-white py-3 rounded-full hover:bg-accent-dark font-semibold flex items-center justify-center space-x-2"
-          >
-            <ChefHat className="w-5 h-5" />
-            <span>Start Preparing</span>
-          </button>
-        )}
+        {order.order_status === "look_rider" &&
+          (order.rider_id ? (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                handleUpdateOrderStatus(order._id, "preparing");
+              }}
+              className="w-full bg-green-500 text-white py-3 rounded-full hover:bg-green-600 font-semibold flex items-center justify-center gap-2"
+            >
+              <ChefHat className="w-5 h-5 flex-shrink-0" />
+              <span className="whitespace-nowrap">Start Preparing</span>
+            </button>
+          ) : (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                showWarning(
+                  "Rider not found yet. Please wait until a rider accepts the order.",
+                );
+              }}
+              className="w-full bg-gray-300 text-gray-500 py-3 rounded-full font-semibold flex items-center justify-center gap-2 cursor-not-allowed"
+            >
+              <ChefHat className="w-5 h-5 flex-shrink-0" />
+              <span className="whitespace-nowrap">Waiting for Rider...</span>
+            </button>
+          ))}
 
         {order.order_status === "preparing" && (
           <button
@@ -640,10 +660,10 @@ const Manage_Restaurant = () => {
               e.stopPropagation();
               handleUpdateOrderStatus(order._id, "ready_for_pickup");
             }}
-            className="w-full bg-primary text-white py-3 rounded-full hover:bg-accent-dark font-semibold flex items-center justify-center space-x-2"
+            className="w-full bg-primary text-white py-3 rounded-full hover:bg-accent-dark font-semibold flex items-center justify-center gap-2"
           >
-            <Package className="w-5 h-5" />
-            <span>Mark Ready for Pickup</span>
+            <Package className="w-5 h-5 flex-shrink-0" />
+            <span className="whitespace-nowrap">Mark Ready for Pickup</span>
           </button>
         )}
 
@@ -654,10 +674,10 @@ const Manage_Restaurant = () => {
               setSelectedOrder(order);
               setShowPinModal(true);
             }}
-            className="w-full bg-primary text-white py-3 rounded-full hover:bg-accent-dark font-semibold flex items-center justify-center space-x-2"
+            className="w-full bg-primary text-white py-3 rounded-full hover:bg-accent-dark font-semibold flex items-center justify-center gap-2"
           >
-            <Bike className="w-5 h-5" />
-            <span>Hand to Rider</span>
+            <Bike className="w-5 h-5 flex-shrink-0" />
+            <span className="whitespace-nowrap">Hand to Rider</span>
           </button>
         )}
       </div>
@@ -683,22 +703,22 @@ const Manage_Restaurant = () => {
   return (
     <div className="min-h-screen bg-bgPrimary">
       {/* Header */}
-      <div className="bg-secondary py-8 shadow-md">
+      <div className="bg-secondary py-4 sm:py-8 shadow-md">
         <div className="max-w-7xl mx-auto px-4">
-          <div className="flex items-center space-x-6">
+          <div className="flex items-center space-x-3 sm:space-x-6">
             <button
               onClick={() => navigate("/restaurant_owner/restaurants")}
-              className="bg-white/20 hover:bg-white/30 p-3 rounded-full transition-all duration-200 flex items-center justify-center backdrop-blur-sm"
+              className="bg-white/20 hover:bg-white/30 p-2 sm:p-3 rounded-full transition-all duration-200 flex items-center justify-center backdrop-blur-sm flex-shrink-0"
               title="Back to All Restaurants"
             >
-              <ArrowLeft className="w-6 h-6 text-white" />
+              <ArrowLeft className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
             </button>
-            <Store className="w-24 h-24 text-white" />
-            <div>
-              <h1 className="text-4xl font-bold text-white mb-2">
+            <Store className="w-10 h-10 sm:w-16 sm:h-16 text-white flex-shrink-0" />
+            <div className="min-w-0">
+              <h1 className="text-lg sm:text-3xl font-bold text-white mb-1 truncate">
                 {restaurant?.restaurant_name || "Manage Restaurant"}
               </h1>
-              <p className="text-white/90">Food & Order Management</p>
+              <p className="text-white/90 text-sm">Food & Order Management</p>
             </div>
           </div>
         </div>
@@ -727,29 +747,29 @@ const Manage_Restaurant = () => {
       ) : null}
 
       {/* Mode Switcher */}
-      <div className="max-w-7xl mx-auto px-4 py-6">
-        <div className="flex space-x-4 mb-6">
+      <div className="max-w-7xl mx-auto px-3 sm:px-4 py-4 sm:py-6">
+        <div className="flex space-x-2 sm:space-x-4 mb-4 sm:mb-6">
           <button
             onClick={() => setActiveMode("food")}
-            className={`flex-1 py-3 px-6 rounded-full font-semibold transition-all ${activeMode === "food" ? "bg-primary text-white shadow-lg" : "bg-tertiary text-gray-700"}`}
+            className={`flex-1 py-2.5 sm:py-3 px-3 sm:px-6 rounded-full font-semibold transition-all text-sm sm:text-base ${activeMode === "food" ? "bg-primary text-white shadow-lg" : "bg-tertiary text-gray-700"}`}
           >
-            <ShoppingCart className="w-5 h-5 inline mr-2" />
-            Manage Food
+            <ShoppingCart className="w-4 h-4 sm:w-5 sm:h-5 inline mr-1 sm:mr-2" />
+            <span className="hidden xs:inline">Manage </span>Food
           </button>
           <button
             onClick={() => setActiveMode("order")}
-            className={`flex-1 py-3 px-6 rounded-full font-semibold transition-all ${activeMode === "order" ? "bg-primary text-white shadow-lg" : "bg-tertiary text-gray-700"}`}
+            className={`flex-1 py-2.5 sm:py-3 px-3 sm:px-6 rounded-full font-semibold transition-all text-sm sm:text-base ${activeMode === "order" ? "bg-primary text-white shadow-lg" : "bg-tertiary text-gray-700"}`}
           >
-            <Package className="w-5 h-5 inline mr-2" />
-            Manage Orders
+            <Package className="w-4 h-4 sm:w-5 sm:h-5 inline mr-1 sm:mr-2" />
+            <span className="hidden xs:inline">Manage </span>Orders
           </button>
         </div>
 
         {/* FOOD MANAGEMENT */}
         {activeMode === "food" && (
           <div>
-            <div className="flex items-center justify-between mb-6">
-              <div className="flex-1 max-w-md relative">
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 mb-4 sm:mb-6">
+              <div className="w-full sm:max-w-md relative">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
                 <input
                   type="text"
@@ -778,7 +798,7 @@ const Manage_Restaurant = () => {
                 disabled={
                   ownerStatus !== "Approved" || restaurantStatus !== "Accepted"
                 }
-                className="bg-primary text-white px-6 py-3 rounded-full hover:bg-accent-dark font-semibold flex items-center space-x-2 shadow-lg ml-4 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="bg-primary text-white px-6 py-3 rounded-full hover:bg-accent-dark font-semibold flex items-center justify-center space-x-2 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed sm:w-auto w-full"
               >
                 <Plus className="w-5 h-5" />
                 <span>Add Food</span>
@@ -889,8 +909,8 @@ const Manage_Restaurant = () => {
         {/* ORDER MANAGEMENT */}
         {activeMode === "order" && (
           <div>
-            <div className="mb-6">
-              <div className="relative max-w-md mb-4">
+            <div className="mb-4 sm:mb-6">
+              <div className="relative max-w-full sm:max-w-md mb-4">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
                 <input
                   type="text"
@@ -901,7 +921,7 @@ const Manage_Restaurant = () => {
                 />
               </div>
 
-              <div className="flex flex-wrap gap-2">
+              <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-2">
                 {[
                   "pending",
                   "look_rider",
@@ -914,15 +934,28 @@ const Manage_Restaurant = () => {
                   <button
                     key={status}
                     onClick={() => setOrderStatus(status)}
-                    className={`px-4 py-2 rounded-full font-semibold transition-all ${orderStatus === status ? "bg-primary text-white" : "bg-tertiary text-gray-700"}`}
+                    className={`flex flex-col items-center justify-center gap-1 px-3 py-2.5 rounded-xl font-semibold transition-all text-xs text-center w-full ${
+                      orderStatus === status
+                        ? "bg-primary text-white shadow-md"
+                        : "bg-tertiary text-gray-700 hover:bg-secondary/20"
+                    }`}
                   >
-                    {status
-                      .split("_")
-                      .map(
-                        (word) => word.charAt(0).toUpperCase() + word.slice(1),
-                      )
-                      .join(" ")}
-                    <span className="ml-2 bg-white text-primary px-2 py-0.5 rounded-full text-xs">
+                    <span className="leading-tight">
+                      {status
+                        .split("_")
+                        .map(
+                          (word) =>
+                            word.charAt(0).toUpperCase() + word.slice(1),
+                        )
+                        .join(" ")}
+                    </span>
+                    <span
+                      className={`px-2 py-0.5 rounded-full text-xs font-bold ${
+                        orderStatus === status
+                          ? "bg-white/20 text-white"
+                          : "bg-primary/10 text-primary"
+                      }`}
+                    >
                       {categorizedOrders[status]?.length || 0}
                     </span>
                   </button>
@@ -942,7 +975,7 @@ const Manage_Restaurant = () => {
               ))}
 
               {!loading && filteredOrders.length === 0 && (
-                <div className="col-span-3 text-center py-16">
+                <div className="col-span-1 md:col-span-3 text-center py-16">
                   <Package className="w-20 h-20 text-gray-400 mx-auto mb-4" />
                   <h3 className="text-2xl font-bold text-gray-600">
                     No Orders
@@ -959,7 +992,7 @@ const Manage_Restaurant = () => {
 
       {showAddFoodModal && (
         <div
-          className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+          className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-3 sm:p-4"
           onClick={(e) => {
             if (e.target === e.currentTarget) {
               setShowAddFoodModal(false);
@@ -968,9 +1001,9 @@ const Manage_Restaurant = () => {
             }
           }}
         >
-          <div className="bg-surface rounded-2xl max-w-2xl w-full p-6 max-h-[90vh] overflow-y-auto">
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-2xl font-bold">Add New Food</h2>
+          <div className="bg-surface rounded-2xl max-w-2xl w-full p-4 sm:p-6 max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between mb-4 sm:mb-6">
+              <h2 className="text-xl sm:text-2xl font-bold">Add New Food</h2>
               <button
                 onClick={() => {
                   setShowAddFoodModal(false);
@@ -1008,18 +1041,18 @@ const Manage_Restaurant = () => {
                 <label className="block text-sm font-semibold mb-2">
                   Food Image
                 </label>
-                <div className="flex items-center space-x-4">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:space-x-4">
                   <input
                     type="file"
                     accept="image/*"
                     onChange={handleFoodImageUpload}
-                    className="w-full px-4 py-3 rounded-lg border-2 border-secondary focus:border-primary focus:outline-none bg-white"
+                    className="w-full px-3 sm:px-4 py-2 sm:py-3 rounded-lg border-2 border-secondary focus:border-primary focus:outline-none bg-white text-sm"
                   />
                   {imagePreview && (
                     <img
                       src={imagePreview}
                       alt="Preview"
-                      className="w-20 h-20 object-cover rounded-lg border-2 border-secondary"
+                      className="w-16 h-16 sm:w-20 sm:h-20 object-cover rounded-lg border-2 border-secondary"
                     />
                   )}
                 </div>
@@ -1132,7 +1165,7 @@ const Manage_Restaurant = () => {
 
       {showEditFoodModal && selectedFood && (
         <div
-          className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+          className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-3 sm:p-4"
           onClick={(e) => {
             if (e.target === e.currentTarget) {
               setShowEditFoodModal(false);
@@ -1140,9 +1173,9 @@ const Manage_Restaurant = () => {
             }
           }}
         >
-          <div className="bg-surface rounded-2xl max-w-2xl w-full p-6 max-h-[90vh] overflow-y-auto">
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-2xl font-bold">Edit Food</h2>
+          <div className="bg-surface rounded-2xl max-w-2xl w-full p-4 sm:p-6 max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between mb-4 sm:mb-6">
+              <h2 className="text-xl sm:text-2xl font-bold">Edit Food</h2>
               <button
                 onClick={() => {
                   setShowEditFoodModal(false);
@@ -1428,7 +1461,7 @@ const Manage_Restaurant = () => {
 
       {showOrderDetailsModal && selectedOrder && (
         <div
-          className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+          className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-3 sm:p-4"
           onClick={(e) => {
             if (e.target === e.currentTarget) {
               setShowOrderDetailsModal(false);
@@ -1436,10 +1469,10 @@ const Manage_Restaurant = () => {
             }
           }}
         >
-          <div className="bg-surface rounded-2xl max-w-2xl w-full p-6 max-h-[90vh] overflow-y-auto">
+          <div className="bg-surface rounded-2xl max-w-2xl w-full p-4 sm:p-6 max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-2xl font-bold">
-                Order Details - #{selectedOrder.id}
+                Order Details - #{selectedOrder.order_id}
               </h2>
               <button
                 onClick={() => {
@@ -1489,59 +1522,83 @@ const Manage_Restaurant = () => {
                 <p className="text-sm font-semibold text-gray-700 mb-3">
                   Customer Information
                 </p>
-                <div className="space-y-2">
-                  <div className="flex items-center space-x-2">
-                    <User className="w-5 h-5 text-primary" />
-                    <span className="font-semibold">
-                      {selectedOrder.customer.name}
+                {typeof selectedOrder.customer_id === "object" &&
+                selectedOrder.customer_id !== null ? (
+                  <div className="space-y-2">
+                    {selectedOrder.customer_id.customer_name && (
+                      <div className="flex items-center space-x-2">
+                        <User className="w-5 h-5 text-primary flex-shrink-0" />
+                        <span className="font-semibold">
+                          {selectedOrder.customer_id.customer_name}
+                        </span>
+                      </div>
+                    )}
+                    {selectedOrder.customer_id.customer_phone && (
+                      <div className="flex items-center space-x-2">
+                        <Phone className="w-5 h-5 text-primary flex-shrink-0" />
+                        <span>{selectedOrder.customer_id.customer_phone}</span>
+                      </div>
+                    )}
+                    {selectedOrder.customer_id.customer_email && (
+                      <div className="flex items-center space-x-2">
+                        <Mail className="w-5 h-5 text-primary flex-shrink-0" />
+                        <span>{selectedOrder.customer_id.customer_email}</span>
+                      </div>
+                    )}
+                    {selectedOrder.special_instruction && (
+                      <div className="flex items-start space-x-2">
+                        <MessageSquare className="w-5 h-5 text-primary mt-0.5 flex-shrink-0" />
+                        <span className="italic">
+                          {selectedOrder.special_instruction}
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <div className="flex items-center space-x-2 text-gray-500">
+                    <User className="w-5 h-5" />
+                    <span className="text-sm">
+                      Customer #
+                      {String(selectedOrder.customer_id)
+                        .slice(-6)
+                        .toUpperCase()}
                     </span>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <Phone className="w-5 h-5 text-primary" />
-                    <span>{selectedOrder.customer.phone}</span>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <Mail className="w-5 h-5 text-primary" />
-                    <span>{selectedOrder.customer.email}</span>
-                  </div>
-                  <div className="flex items-start space-x-2">
-                    <MapPin className="w-5 h-5 text-primary mt-0.5" />
-                    <span>{selectedOrder.customer.address}</span>
-                  </div>
-                  {selectedOrder.customer.message && (
-                    <div className="flex items-start space-x-2">
-                      <MessageSquare className="w-5 h-5 text-primary mt-0.5" />
-                      <span className="italic">
-                        {selectedOrder.customer.message}
+                    {selectedOrder.special_instruction && (
+                      <span className="ml-2 text-xs italic text-gray-400">
+                        — {selectedOrder.special_instruction}
                       </span>
-                    </div>
-                  )}
-                </div>
+                    )}
+                  </div>
+                )}
               </div>
               <div className="bg-tertiary p-4 rounded-xl">
                 <p className="text-sm font-semibold text-gray-700 mb-3">
                   Order Items
                 </p>
                 <div className="space-y-2">
-                  {selectedOrder.items.map((item, idx) => (
+                  {(selectedOrder.items || []).map((item, idx) => (
                     <div
                       key={idx}
                       className="flex justify-between items-center py-2 border-b border-secondary/30 last:border-0"
                     >
                       <div>
-                        <p className="font-semibold">{item.food}</p>
+                        <p className="font-semibold">{item.food_name}</p>
                         <p className="text-sm text-gray-600">
                           Quantity: {item.quantity}
                         </p>
                       </div>
                       <p className="font-bold text-primary">
-                        ৳{(item.price * item.quantity).toFixed(2)}
+                        ৳
+                        {(
+                          item.total_price ||
+                          (item.unit_price || 0) * (item.quantity || 1)
+                        ).toFixed(2)}
                       </p>
                     </div>
                   ))}
                 </div>
               </div>
-              {selectedOrder.rider && (
+              {selectedOrder.rider_id && (
                 <div className="bg-primary p-4 rounded-xl text-white">
                   <p className="text-sm font-semibold mb-3">
                     Rider Information
@@ -1549,20 +1606,19 @@ const Manage_Restaurant = () => {
                   <div className="flex items-center justify-between">
                     <div>
                       <p className="font-semibold text-lg">
-                        {selectedOrder.rider.name}
+                        {typeof selectedOrder.rider_id === "object"
+                          ? selectedOrder.rider_id?.rider_name ||
+                            "Assigned Rider"
+                          : "Assigned Rider"}
                       </p>
-                      <p className="text-sm">{selectedOrder.rider.phone}</p>
+                      <p className="text-sm opacity-80">
+                        {typeof selectedOrder.rider_id === "object"
+                          ? selectedOrder.rider_id?.rider_email || ""
+                          : ""}
+                      </p>
                     </div>
                     <Bike className="w-8 h-8" />
                   </div>
-                  {selectedOrder.confirmationPin && (
-                    <div className="mt-3 pt-3 border-t border-white/20">
-                      <p className="text-sm mb-1">Confirmation PIN</p>
-                      <p className="text-3xl font-bold">
-                        {selectedOrder.confirmationPin}
-                      </p>
-                    </div>
-                  )}
                 </div>
               )}
               <div className="bg-tertiary p-4 rounded-xl">
@@ -1571,25 +1627,21 @@ const Manage_Restaurant = () => {
                 </p>
                 <div className="space-y-2">
                   <div className="flex justify-between">
-                    <span>Food Total</span>
+                    <span>Food Subtotal</span>
                     <span className="font-semibold">
-                      ৳{calculateTotal(selectedOrder.items).toFixed(2)}
+                      ৳{(selectedOrder.subtotal || 0).toFixed(2)}
                     </span>
                   </div>
                   <div className="flex justify-between">
-                    <span>Delivery Cost</span>
+                    <span>Delivery Charge</span>
                     <span className="font-semibold">
-                      ৳{selectedOrder.deliveryCost.toFixed(2)}
+                      ৳{(selectedOrder.delivery_charge || 0).toFixed(2)}
                     </span>
                   </div>
                   <div className="flex justify-between text-xl pt-2 border-t border-secondary/30">
                     <span className="font-bold">Total</span>
                     <span className="font-bold text-primary">
-                      ৳
-                      {(
-                        calculateTotal(selectedOrder.items) +
-                        selectedOrder.deliveryCost
-                      ).toFixed(2)}
+                      ৳{(selectedOrder.total_amount || 0).toFixed(2)}
                     </span>
                   </div>
                 </div>
